@@ -1,0 +1,21 @@
+# waypoint sequence for armadillo AB-line executor
+# position = UTM Coordinates [e,n,u]
+--- 
+- id: 001
+  position: [0,0,0]
+  actions: 
+   - action: startStop
+- id: 002
+  position: [5,0,0]
+  actions: 
+   - action: none
+- id: 003
+  position: [10,10,0]
+  actions: 
+   - action: startStop
+- id: 004
+  position: [0,10,0]
+  actions: 
+   - action: none
+
+

@@ -22,6 +22,11 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_gensrv()
 
 
+rosbuild_add_executable(rabbitPlanner src/waypoint_executors/AB_lines_executor/rabbitPlanner_node.cpp)
+rosbuild_add_executable(rabbitPlanner src/waypoint_executors/AB_lines_executor/rabbitPlanner.cpp)
+rosbuild_add_executable(rabbitPlanner src/waypoint_executors/AB_lines_executor/pathParser.cpp)
+target_link_libraries(rabbitPlanner yaml-cpp)
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)

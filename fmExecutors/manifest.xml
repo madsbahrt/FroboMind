@@ -9,11 +9,19 @@
   <review status="unreviewed" notes=""/>
   <url></url>
   <depend package="roscpp"/>
-  <depend package="fmMsgs"/>
+  <depend package="common_rosdeps" />
   
+  <depend package="tf"/>
+  <depend package="visualization_msgs"/>
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>
+  <depend package="nav_msgs"/>
+  
+  <depend package="fmMsgs"/>
   <depend package="fmControllers"/>
+
+  
+  <rosdep name="yaml-cpp" />
 
 </package>
 
