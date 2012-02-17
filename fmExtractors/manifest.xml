@@ -15,6 +15,7 @@
   <depend package="fmMsgs"/>
 
   <depend package="sensor_msgs"/>
+  <depend package="nav_msgs"/>
   <depend package="laser_geometry"/>
   <depend package="laser_filters"/>
   <depend package="pcl"/>
