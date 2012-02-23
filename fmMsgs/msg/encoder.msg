@@ -1,3 +1,3 @@
 Header header
-int16 encoderticks
+int32 encoderticks
 																		
