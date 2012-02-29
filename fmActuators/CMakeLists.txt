@@ -25,9 +25,10 @@ rosbuild_add_boost_directories()
 
 rosbuild_add_executable(aes25_node src/Topcon_AES25/AES-25_electric_steering.cpp)
 rosbuild_add_executable(aes25_node src/Topcon_AES25/AES-25_node.cpp)
+rosbuild_link_boost(aes25_node system)
 
 rosbuild_add_executable(testnode_rtq src/RoboteQ/testnode_rtq.cpp)
-
+rosbuild_link_boost(testnode_rtq system)
 rosbuild_add_executable(roboteq_node src/RoboteQ/rtq_node.cpp)
 
 rosbuild_add_executable(isb_cam_trigger src/ISB/isb_camera_trigger_node.cpp src/ISB/isb_pseudo_ts.cpp)
@@ -36,6 +37,6 @@ rosbuild_add_executable(isb_cam_trigger src/ISB/isb_camera_trigger_node.cpp src/
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
 #rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
+
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
