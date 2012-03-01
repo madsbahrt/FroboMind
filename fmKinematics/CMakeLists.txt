@@ -25,6 +25,7 @@ rosbuild_add_boost_directories()
 
 rosbuild_add_executable(armadillo_ifk src/Armadillo/armadillo_ifk.cpp)
 rosbuild_link_boost(armadillo_ifk system)
+rosbuild_add_executable(asubot_twist_to_angle_cmd src/ASuBot/ASuBot_twist_to_angle_cmd.cpp)
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
