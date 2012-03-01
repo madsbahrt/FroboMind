@@ -23,6 +23,7 @@ int main(int argc, char **argv)
   std::string host;
   std::string topic_id;
   std::string frame_id;
+  bool invert;
 
   /* variables */
   int retrycount = 0;
@@ -34,6 +35,7 @@ int main(int argc, char **argv)
   n.param<std::string> ("host", host, "192.168.0.10");
   n.param<std::string> ("topic_id", topic_id, "scan_msg");
   n.param<std::string> ("frame_id", frame_id, "/map");
+  n.param<bool> ("invert_output",invert,false);
 
   ros::Publisher scan_pub = nh.advertise<sensor_msgs::LaserScan> (topic_id, 1);
 
@@ -117,14 +119,29 @@ int main(int argc, char **argv)
 
         laser.getData(data);
 
-        for (int i = 0; i < data.dist_len1; i++)
+        if(invert == false)
         {
-          scan_msg.ranges[i] = data.dist1[i] * 0.001;
-        }
+			for (int i = 0; i < data.dist_len1; i++)
+			{
+			  scan_msg.ranges[i] = data.dist1[i] * 0.001;
+			}
 
-        for (int i = 0; i < data.rssi_len1; i++)
+			for (int i = 0; i < data.rssi_len1; i++)
+			{
+			  scan_msg.intensities[i] = data.rssi1[i];
+			}
+        }
+        else
         {
-          scan_msg.intensities[i] = data.rssi1[i];
+			for (int i = 0; i < data.dist_len1; i++)
+			{
+			  scan_msg.ranges[i] = data.dist1[data.dist_len1 - i - 1] * 0.001;
+			}
+
+			for (int i = 0; i < data.rssi_len1; i++)
+			{
+			  scan_msg.intensities[i] = data.rssi1[data.rssi_len1 - i- 1];
+			}
         }
 
         scan_pub.publish(scan_msg);
