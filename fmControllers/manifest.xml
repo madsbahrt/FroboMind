@@ -9,7 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/fmControllers</url>
   <depend package="fmMsgs"/>
-  <depend package="fmBSP"/>
+  <depend package="fmCSP"/>
   <depend package="geometry_msgs"/>
   <depend package="actionlib"/>
   <depend package="actionlib_msgs"/>

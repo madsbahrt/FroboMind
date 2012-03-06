@@ -22,13 +22,14 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_gensrv()
 
 rosbuild_add_boost_directories()
-#rosbuild_link_boost(serial_node boost/asio)
 
-rosbuild_add_executable(serial_node src/serial/serial_node.cpp)
-rosbuild_add_executable(serial_node src/serial/serialInterface.cpp)
+
+rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serial_string.cpp)
+rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serialInterface.cpp)
+rosbuild_link_boost(serial_string system)
 
 IF(EXISTS /usr/include/can4linux.h)
-rosbuild_add_executable(can_node src/can/can_node.cpp)
+rosbuild_add_executable(can_can4linux src/CAN_bus/can_can4linux/can_can4linux.cpp)
 ENDIF(EXISTS /usr/include/can4linux.h)
 
 #common commands for building c++ executables and libraries

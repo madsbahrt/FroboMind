@@ -82,7 +82,7 @@ void serialInterface::readSome() {
     if (ros::ok()) {
         //serial_.async_read_some(boost::asio::buffer(&rx_buffer_, 1), boost::bind(&serialInterface::readHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
         boost::asio::async_read_until(serial_, readbuffer,
-                boost::regex("\n"), boost::bind(
+                "\n", boost::bind(
                         &serialInterface::readHandler, this,
                         boost::asio::placeholders::error,
                         boost::asio::placeholders::bytes_transferred));
