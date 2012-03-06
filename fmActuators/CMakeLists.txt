@@ -23,15 +23,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_boost_directories()
 
-rosbuild_add_executable(aes25_node src/Topcon_AES25/AES-25_electric_steering.cpp)
-rosbuild_add_executable(aes25_node src/Topcon_AES25/AES-25_node.cpp)
-rosbuild_link_boost(aes25_node system)
-
-rosbuild_add_executable(testnode_rtq src/RoboteQ/testnode_rtq.cpp)
-rosbuild_link_boost(testnode_rtq system)
-rosbuild_add_executable(roboteq_node src/RoboteQ/rtq_node.cpp)
-
-rosbuild_add_executable(isb_cam_trigger src/ISB/isb_camera_trigger_node.cpp src/ISB/isb_pseudo_ts.cpp)
+rosbuild_add_executable(roboteq src/Motor_Controllers/RoboteQ/rtq_node.cpp)
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
