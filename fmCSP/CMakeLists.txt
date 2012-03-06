@@ -28,6 +28,11 @@ rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serial_strin
 rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serialInterface.cpp)
 rosbuild_link_boost(serial_string system)
 
+rosbuild_add_executable(serial_binary src/Serial_Port/serial_binary/serial_binary.cpp)
+rosbuild_add_executable(serial_binary src/Serial_Port/serial_binary/serial_binary_interface.cpp)
+rosbuild_link_boost(serial_binary system)
+
+
 IF(EXISTS /usr/include/can4linux.h)
 rosbuild_add_executable(can_can4linux src/CAN_bus/can_can4linux/can_can4linux.cpp)
 ENDIF(EXISTS /usr/include/can4linux.h)
