@@ -1,0 +1,16 @@
+<package>
+  <description brief="fmISP">
+
+     fmISP
+
+  </description>
+  <author>molar</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/fmISP</url>
+  <depend package="roscpp"/>
+  <depend package="fmMsgs"/>
+
+</package>
+
+
