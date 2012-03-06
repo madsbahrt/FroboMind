@@ -35,7 +35,7 @@ Thumbs.db
 
 # ROS Stuff
 .cproject
-.project
+#.project
 .pydevproject
 .metadata/
 .settings/
