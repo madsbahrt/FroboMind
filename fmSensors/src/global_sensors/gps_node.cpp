@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <sstream>
 #include "ros/ros.h"
-#include "fmMsgs/serial.h"
+#include "std_msgs/ByteMultiArray.h"
 #include "fmMsgs/gpgga.h"
 #include "boost/tokenizer.hpp"
 #include "boost/lexical_cast.hpp"
@@ -24,61 +25,74 @@ double nmea_to_deg(double pos, std::string dir) {
 	return res;
 }
 
-void gpsCallback(const fmMsgs::serial::ConstPtr& msg)
+void gpsCallback(const std_msgs::ByteMultiArray::ConstPtr& msg)
 {
-	std::string nmeastr = msg->data;
-	boost::replace_all(nmeastr, ",,", ", ,"); // we need to replace ,, with , , to avoid lexical cast problems
-	boost::replace_all(nmeastr, ",,", ", ,"); // replaces the rest of ,, with , , Not pretty but it works
-	boost::char_separator<char> sep(",");
-	tokenizer tokens(nmeastr, sep);
-	std::vector<std::string> nmea;
 
-	try {
-		nmea.assign (tokens.begin(), tokens.end());
+	static std::stringstream ss;
+	char linedata[80*10];
 
-			if (nmea.at(0) == "$GPGGA" && nmea.size() == 15)
-			{
-				// !!! we need to check the checksum of the NMEA string here !!!
+	for(size_t i = 0 ; i < msg->data.size(); i++){
+		ss << (msg->data[i]);
+	}
 
-				// save current time
-				gpgga_msg.header.stamp = ros::Time::now();
+    while(ss.getline(linedata, 80, '\n')) {
 
-				// save data received time
-				gpgga_msg.time_recv = msg->header.stamp;
+		std::string nmeastr = linedata;
+		boost::replace_all(nmeastr, ",,", ", ,"); // we need to replace ,, with , , to avoid lexical cast problems
+		boost::replace_all(nmeastr, ",,", ", ,"); // replaces the rest of ,, with , , Not pretty but it works
+		boost::char_separator<char> sep(",");
+		tokenizer tokens(nmeastr, sep);
+		std::vector<std::string> nmea;
 
-				// import satellite fix from the NMEA string
-				gpgga_msg.fix = boost::lexical_cast<int>(nmea.at(6));
-				if (gpgga_msg.fix >= 1)
+		try {
+			nmea.assign (tokens.begin(), tokens.end());
+
+				if (nmea.at(0) == "$GPGGA" && nmea.size() == 15)
 				{
-					// import data from the NMEA string
-					gpgga_msg.time = boost::lexical_cast<std::string>(nmea.at(1));
-					gpgga_msg.sat = boost::lexical_cast<int>(nmea.at(7));
-					gpgga_msg.hdop = boost::lexical_cast<double>(nmea.at(8));
-					gpgga_msg.alt = boost::lexical_cast<double>(nmea.at(9));
-					gpgga_msg.geoid_height = boost::lexical_cast<double>(nmea.at(11));
+					// !!! we need to check the checksum of the NMEA string here !!!
 
-					// import lat/lon and convert from hdm.m to hd.d
-					gpgga_msg.lat = nmea_to_deg (boost::lexical_cast<double>(nmea.at(2)), boost::lexical_cast<std::string>(nmea.at(3)));
-					gpgga_msg.lon = nmea_to_deg (boost::lexical_cast<double>(nmea.at(4)), boost::lexical_cast<std::string>(nmea.at(5)));
-				}
-				else {
-					// reset data
-					gpgga_msg.time = "";
-					gpgga_msg.lat = 0;
-					gpgga_msg.lon = 0;
-					gpgga_msg.sat = 0;
-					gpgga_msg.hdop = 0;
-					gpgga_msg.alt = 0;
-					gpgga_msg.geoid_height = 0;
-				}
+					// save current time
+					gpgga_msg.header.stamp = ros::Time::now();
 
-				// publish the gpgga message
-				gpgga_pub.publish(gpgga_msg);
-			}
-	}
-	catch(boost::bad_lexical_cast &) {
-  		ROS_WARN("gps_parser: bad lexical cast: %s", msg->data.c_str());
-	}
+					// save data received time
+					//gpgga_msg.time_recv = msg->header.stamp;
+
+					// import satellite fix from the NMEA string
+					gpgga_msg.fix = boost::lexical_cast<int>(nmea.at(6));
+					if (gpgga_msg.fix >= 1)
+					{
+						// import data from the NMEA string
+						gpgga_msg.time = boost::lexical_cast<std::string>(nmea.at(1));
+						gpgga_msg.sat = boost::lexical_cast<int>(nmea.at(7));
+						gpgga_msg.hdop = boost::lexical_cast<double>(nmea.at(8));
+						gpgga_msg.alt = boost::lexical_cast<double>(nmea.at(9));
+						gpgga_msg.geoid_height = boost::lexical_cast<double>(nmea.at(11));
+
+						// import lat/lon and convert from hdm.m to hd.d
+						gpgga_msg.lat = nmea_to_deg (boost::lexical_cast<double>(nmea.at(2)), boost::lexical_cast<std::string>(nmea.at(3)));
+						gpgga_msg.lon = nmea_to_deg (boost::lexical_cast<double>(nmea.at(4)), boost::lexical_cast<std::string>(nmea.at(5)));
+					}
+					else {
+						// reset data
+						gpgga_msg.time = "";
+						gpgga_msg.lat = 0;
+						gpgga_msg.lon = 0;
+						gpgga_msg.sat = 0;
+						gpgga_msg.hdop = 0;
+						gpgga_msg.alt = 0;
+						gpgga_msg.geoid_height = 0;
+					}
+
+					// publish the gpgga message
+					gpgga_pub.publish(gpgga_msg);
+				}
+		}
+		catch(boost::bad_lexical_cast &) {
+			ROS_WARN("gps_parser: bad lexical cast: %s", linedata);
+		}
+    }
+	ss.clear();
+	ss.seekg ( 0, std::ios::beg );
 }
 
 int main(int argc, char **argv)
