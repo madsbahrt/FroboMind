@@ -37,6 +37,9 @@
 #ifndef SERIALINTERFACE_H_
 #define SERIALINTERFACE_H_
 
+#include <iostream>
+#include <string>
+
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
