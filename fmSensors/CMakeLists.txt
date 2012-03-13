@@ -22,9 +22,13 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_gensrv()
 
 rosbuild_add_executable(sduimu_node src/global_sensors/sduimu_node.cpp)
-rosbuild_add_executable(imu_razor_node src/global_sensors/imu_sparkfun_razor_node.cpp)
+
 rosbuild_add_executable(gps_node src/global_sensors/gps_node.cpp)
-#rosbuild_add_executable(lms111_node src/local_sensors/lms111_node.cpp)
+
+rosbuild_add_executable(sparkfun_razor_node src/global_sensors/SparkFun9DOF.cpp)
+rosbuild_add_executable(sparkfun_razor_node src/global_sensors/sparkfun_razor_node.cpp)
+
+rosbuild_add_executable(lms111_node src/local_sensors/lms111_node.cpp)
 
 rosbuild_add_executable(ll_encoder_node src/odometry_feedback/LeineLindeEncoder.cpp)
 rosbuild_add_executable(ll_encoder_node src/odometry_feedback/ll_encoder_node.cpp)
