@@ -168,9 +168,16 @@ void WiiToTwist::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
   roll = atan2(y_acceleration, sqrt(pow(x_acceleration, 2) + pow(z_acceleration, 2))) / M_PI_2;
 
 
-  twist_msg.twist.linear.x = pitch * max_linear_velocity * scale_linear_velocity_x;
-
-  twist_msg.twist.angular.z = roll * max_angular_velocity * scale_angular_velocity_z;
+  if(joy->buttons[3])
+  {
+    twist_msg.twist.linear.x = pitch * max_linear_velocity * scale_linear_velocity_x;
+    twist_msg.twist.angular.z = roll * max_angular_velocity * scale_angular_velocity_z;
+  }
+  else
+  {
+    twist_msg.twist.linear.x = 0.0;
+    twist_msg.twist.angular.z = 0.0;
+  }
 
   twist_msg.twist.linear.y = 0.0;
   twist_msg.twist.linear.z = 0.0;
