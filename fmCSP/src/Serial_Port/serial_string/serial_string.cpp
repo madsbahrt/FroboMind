@@ -51,6 +51,7 @@ int main(int argc, char **argv)
   std::string publisher_topic;
   std::string subscriber_topic;
   int baudrate;
+  int term;
 
   /* initialize ros usage */
   ros::init(argc, argv, "vic_serial_interface");
@@ -65,12 +66,15 @@ int main(int argc, char **argv)
   n.param<std::string> ("device", device, "/dev/ttyS0");
   n.param<std::string> ("publisher_topic", publisher_topic, "S0_rx_msg");
   n.param<std::string> ("subscriber_topic", subscriber_topic, "S0_tx_msg");
+  n.param<int> ("termination_character", term,10);
   n.param<int> ("baudrate", baudrate, 115200);
 
   s_publisher = nh.advertise<fmMsgs::serial> (publisher_topic.c_str(), 20,1);
 
   serialInterface serialInterface(s_publisher);
+  serialInterface.term_char = (char)term;
   serialInterface.openDevice(device, baudrate);
+
 
   s_subscriber = nh.subscribe<fmMsgs::serial> (subscriber_topic.c_str(), 20, &serialInterface::writeHandler, &serialInterface);
 

@@ -60,6 +60,7 @@ private:
 
   fmMsgs::serial serial_rx_msg;
 
+
   /* private methods */
   void readSome();
   void readHandler(const boost::system::error_code& error, size_t bytes_transferred);
@@ -71,6 +72,8 @@ public:
   bool openDevice(std::string device, int baudrate);
   void writeHandler(const fmMsgs::serial::ConstPtr& msg);
   virtual ~serialInterface();
+
+  char term_char;
 };
 
 #endif /* SERIALINTERFACE_H_ */
