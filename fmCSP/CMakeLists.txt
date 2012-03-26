@@ -37,6 +37,10 @@ IF(EXISTS /usr/include/can4linux.h)
 rosbuild_add_executable(can_can4linux src/CAN_bus/can_can4linux/can_can4linux.cpp)
 ENDIF(EXISTS /usr/include/can4linux.h)
 
+rosbuild_add_executable(can_socketcan src/CAN_bus/can_socketcan/can_socketcan.cpp)
+rosbuild_add_executable(can_socketcan src/CAN_bus/can_socketcan/SocketCan.cpp)
+rosbuild_link_boost(can_socketcan system thread)
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
