@@ -30,6 +30,8 @@ rosbuild_add_executable(sparkfun_razor_node src/global_sensors/sparkfun_razor_no
 
 
 
+rosbuild_add_executable(eye_drive src/local_sensors/eye_drive.cpp)
+
 rosbuild_add_executable(ll_encoder_node src/odometry_feedback/LeineLindeEncoder.cpp)
 rosbuild_add_executable(ll_encoder_node src/odometry_feedback/ll_encoder_node.cpp)
 
