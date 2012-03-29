@@ -87,7 +87,11 @@ public:
 	EyeDrive(CameraConfig config)
 	{
 		this->config = config;
-		timeout = 5;
+		timeout = 1;
+		communication_timeout = 2;
+		is_initialised = false;
+		quality = heading = offset = 0;
+		last_update = ros::Time::now();
 	}
 
 	~EyeDrive()
@@ -109,7 +113,7 @@ public:
 	void processCanRxEvent(const fmMsgs::can::ConstPtr& msg)
 	{
 		int temp_val;
-		if(msg->id == (0x142000C8 | (1 << 31)))
+		if(msg->id == (uint32_t)(0x142000C8 | (1 << 31)))
 		{
 			quality = msg->data[1];
 
@@ -130,27 +134,40 @@ public:
 			heading = temp_val;
 			debug = ((msg->data[6] * 0x100 + msg->data[7])/100);
 
-			if((msg->header.stamp - last_update).toSec() > timeout )
+			if((msg->header.stamp - last_update).toSec() > timeout)
 			{
 				ROS_WARN("Timeout value exceeded");
 			}
 
 			last_update = msg->header.stamp;
 		}
-		else if(msg->id == 0xC0000B8)
-		{
-
-		}
 	}
 
 	void processTimerEvent(const ros::TimerEvent& e)
 	{
-		cam_tx_msg.header.stamp = ros::Time::now();
-		cam_tx_msg.quality = quality;
-		cam_tx_msg.heading = heading;
-		cam_tx_msg.offset = offset;
+		if(!is_initialised)
+		{
+			initCamera();
+			is_initialised = true;
+			last_update = ros::Time::now();
+		}
+		else
+		{
+			ros::Time t = ros::Time::now();
+			if( (t - last_update).toSec() > communication_timeout)
+			{
+				is_initialised = false;
+				ROS_WARN("Lost Connection to eye drive, retrying");
+				quality = heading = offset = 0;
+			}
+			cam_tx_msg.header.stamp = ros::Time::now();
+			cam_tx_msg.quality = quality;
+			cam_tx_msg.heading = heading;
+			cam_tx_msg.offset = offset;
 
-		cam_row_pub.publish(cam_tx_msg);
+			cam_row_pub.publish(cam_tx_msg);
+		}
+
 
 	}
 
@@ -186,7 +203,10 @@ private:
 	int offset;
 	int debug;
 
+	bool is_initialised;
+
 	double timeout;
+	double communication_timeout;
 };
 
 
@@ -232,7 +252,7 @@ int main(int argc, char **argv)
 
 	while(camera.can_tx_pub.getNumSubscribers() == 0)
 	{
-		ROS_INFO_THROTTLE(1,"Waiting for can to subscribe");
+		ROS_INFO_THROTTLE(1,"Waiting for can node to subscribe");
 	}
 
 	ROS_INFO("Can has subscribed");
