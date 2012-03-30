@@ -12,7 +12,6 @@
 #include <boost/system/system_error.hpp>
 #include <boost/thread.hpp>
 
-#include <pcan.h>
 
 SocketCan::SocketCan() : descriptor_(ioService_)
 {
