@@ -57,7 +57,7 @@ void LeineLindeEncoder::processRXEvent(const fmMsgs::can::ConstPtr & msg)
 	}
 	else if((uint16_t)msg->id == (LL_DEF_HEARTBEAT + this->node_id))
 	{
-		ROS_INFO("HEARTBEAT Detected, %d",msg->data[0]);
+		ROS_DEBUG_THROTTLE(1,"HEARTBEAT Detected, %d",msg->data[0]);
 		// heart beat received store time at which it was received
 		last_heartbeat = ros::Time::now();
 		// store encoder state
@@ -305,32 +305,32 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 	case LL_STATE_INIT:
 		this->config_state = LL_CONFIG_PREOP;
 		this->state = LL_STATE_CONFIGURE;
-		ROS_INFO("Entered Init state");
+		ROS_DEBUG("Entered Init state");
 		break;
 	case LL_STATE_CONFIGURE:
 		switch(this->config_state)
 		{
 		case LL_CONFIG_PREOP:
-			ROS_INFO_ONCE("Entered Config step PREOP");
+			ROS_DEBUG_ONCE("Entered Config step PREOP");
 			// When encoder is running it does not respond to NMT_PREOP cmds so we try reset instead
 			transmitNMTRequest(NMT_RESET);
 			this->config_state = LL_CONFIG_WAIT_PREOP;
 			break;
 		case LL_CONFIG_WAIT_PREOP:
 			// wait for node to change state into preop
-			ROS_INFO_ONCE("Entered Config step WAIT PREOP");
+			ROS_DEBUG_ONCE("Entered Config step WAIT PREOP");
 			if(this->encoder_state == S_NMT_BOOT)
 			{
 				this->config_state = LL_CONFIG_CYCLE_TIME;
 			}
 			if((ros::Time::now() - this->last_heartbeat ).toSec() > this->preop_timeout)
 			{
-				ROS_ERROR("Encoder Boot message not detected, retrying");
+				ROS_ERROR_THROTTLE(0.5,"Encoder Boot message not detected, retrying");
 				this->config_state = LL_CONFIG_PREOP;
 			}
 			break;
 		case LL_CONFIG_CYCLE_TIME:
-			ROS_INFO_ONCE("Entered Config step CYCLE_TIME");
+			ROS_DEBUG_ONCE("Entered Config step CYCLE_TIME");
 			// configure cycle time
 			data[0] = this->cycle_time_ms;
 			data[1] = this->cycle_time_ms >> 8;
@@ -356,7 +356,7 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 			break;
 		case LL_CONFIG_DISABLE1:
 			// set bit 31 in TPDO COMM param meaning that it is disabled
-			ROS_INFO_ONCE("Entered Config step DISABLE_1");
+			ROS_DEBUG_ONCE("Entered Config step DISABLE_1");
 
 			tmp = (node_id + LL_DEF_TPDO1) | (1 << 31);
 			data[0] = tmp;
@@ -382,7 +382,7 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 
 		case LL_CONFIG_DISABLE2:
 			// disable PDO mapping by writing 0 to num_entries
-			ROS_INFO_ONCE("Entered Config step DISABLE2");
+			ROS_DEBUG_ONCE("Entered Config step DISABLE2");
 
 			data[0] = 0;
 			ret = transmitSDOWriteRequest(0x1A00,00,data,1,err_code);
@@ -402,7 +402,7 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 			break;
 		case LL_CONFIG_MAPP1:
 			// modify pdomapping, in this case map position entry 6004 to first TPDO entry
-			ROS_INFO_ONCE("Entered Config step MAPP1");
+			ROS_DEBUG_ONCE("Entered Config step MAPP1");
 
 			data[0] = 32;
 			data[1] = 00;
@@ -496,7 +496,7 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 				this->last_position |= ((uint32_t)recv_data[1]) << 8;
 				this->last_position |= ((uint32_t)recv_data[2]) << 16;
 				this->last_position |= ((uint32_t)recv_data[3]) << 24;
-				ROS_INFO_ONCE("Preloading encoder value with %d",this->last_position);
+				ROS_DEBUG_ONCE("Preloading encoder value with %d",this->last_position);
 
 			}
 			else if(ret == SDO_ERROR)
@@ -511,7 +511,7 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 			break;
 		case LL_CONFIG_OP:
 			// bring node into operational state
-			ROS_INFO_ONCE("Entered Config step OPERATIONAL");
+			ROS_DEBUG_ONCE("Entered Config step OPERATIONAL");
 
 			transmitNMTRequest(NMT_OP);
 			this->state = LL_STATE_READY;
@@ -538,7 +538,7 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 
 			current_position += diff;
 			last_position = pos;
-			ROS_INFO("Read: pos %d, vel %d, diff %d",pos,vel,diff);
+			ROS_DEBUG("Read: pos %d, vel %d, diff %d",pos,vel,diff);
 
 		}
 
