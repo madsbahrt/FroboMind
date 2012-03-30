@@ -1,0 +1,7 @@
+<launch>
+ 
+<group ns="visualization">
+    <node pkg="rviz" name="visualization" type="rviz" />      
+</group>
+
+</launch>

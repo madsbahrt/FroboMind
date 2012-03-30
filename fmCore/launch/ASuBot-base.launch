@@ -1,0 +1,57 @@
+<launch>
+<group ns="fmCSP">
+    <node pkg="fmCSP" name="CAN0" type="can_can4linux">
+        <param name="device" value="/dev/can0" />
+        <param name="publisher_topic" value="/fmCSP/can0_rx" />
+        <param name="subscriber_topic" value="/fmCSP/can0_tx" />
+    </node>
+</group>
+
+<group ns="fmSensors">
+    <node pkg="fmSensors" name="ll_encoder_angle" type="ll_encoder_node">
+        <param name="encoder_id" value="33"/>
+        <param name="publish_rate" value="10"/>
+        <param name="poll_interval_ms" value="20"/>
+        <param name="publisher_topic" value="/fmCSP/can0_tx" />
+        <param name="subscriber_topic" value="/fmCSP/can0_rx" />
+        <param name="enc_publisher_topic" value="encoder_angle" />
+    </node>
+    <node pkg="fmSensors" name="ll_encoder_left" type="ll_encoder_node">
+        <param name="encoder_id" value="11"/>
+        <param name="publish_rate" value="10"/>
+        <param name="poll_interval_ms" value="20"/>
+        <param name="publisher_topic" value="/fmCSP/can0_tx" />
+        <param name="subscriber_topic" value="/fmCSP/can0_rx" />
+        <param name="enc_publisher_topic" value="encoder_left" />
+    </node>
+    <node pkg="fmSensors" name="ll_encoder_right" type="ll_encoder_node">
+        <param name="encoder_id" value="22"/>
+        <param name="publish_rate" value="10"/>
+        <param name="poll_interval_ms" value="20"/>
+        <param name="publisher_topic" value="/fmCSP/can0_tx" />
+        <param name="subscriber_topic" value="/fmCSP/can0_rx" />
+        <param name="enc_publisher_topic" value="encoder_right" />
+    </node>
+</group>
+
+<group ns="fmExtractors">
+    <node pkg="fmExtractors" name="wheel_odometry" type="encoder_ackerman_to_pose">
+        <param name="conv_ticks_to_meter_left" value="0.000180237"/>
+        <param name="conv_ticks_to_meter_right" value="0.000180237"/>
+        <param name="conv_ticks_to_rad_angle" value="0.000766968"/>
+        <param name="use_angle_sensor" value="true"/>
+        <param name="encoders_on_front_wheel" value="false"/>
+        <param name="Publish_rate" value="10"/>            
+        <param name="max_time_difference" value="1.0"/>
+        <param name="distance_between_axles_in_meter" value="1.16"/>            
+        <param name="publisher_topic" value="wheel_odom" />
+        <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_right" />
+        <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_left" />
+        <param name="angle_subscriber_topic" value="/fmSensors/encoder_angle" />
+    </node>
+</group>
+
+
+
+</launch>
+

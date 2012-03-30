@@ -1,0 +1,26 @@
+<launch>
+
+    <node pkg="tf" type="static_transform_publisher" name="imu_link_broadcaster" args="0 0 0 0 0 0 base_link imu_link 100"/>
+    
+<group ns="fmCSP">
+    <node pkg="fmCSP" name="USB0" type="serial_string">
+        <param name="publisher_topic" value="com0_rx" />	 
+        <param name="subscriber_topic" value="com0_tx" />	
+        <param name="device" value="/dev/ttyUSB0" />	
+        <param name="baudrate" value="57600" />
+	</node>
+</group>
+
+<group ns="fmSensors">
+	<node pkg="fmSensors" name="IMU" type="sparkfun_razor_node" > 
+	    <param name="sub_serial_string_topic_id" value="/fmCSP/com0_rx" />
+		<param name="pub_accelerometer_topic_id" value="Accelerometer" />
+		<param name="pub_gyroscope_topic_id" value="Gyroscope" />
+		<param name="pub_magnetometer_topic_id" value="Magnetometer" />
+  	    <param name="frame_id" value="imu_link" />
+		<param name="publish_accelerometer" value="true" />
+		<param name="publish_gyroscope" value="true" />
+		<param name="publish_magnetometer" value="true" />			
+	</node>
+</group>
+</launch>
