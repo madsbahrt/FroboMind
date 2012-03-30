@@ -1,7 +1,7 @@
 #include <csignal>
 #include <cstdio>
 #include "ros/ros.h"
-#include "can_node.hpp"
+#include "can_can4linux.hpp"
 
 int main(int argc, char **argv)
 {
