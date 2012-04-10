@@ -70,6 +70,8 @@ public:
 	void transmitNMTRequest(ll_canopen_nmt state);
 	void processStateMachine(const ros::TimerEvent& e);
 
+	bool invert;
+
 
 private:
 	bool processTPDO(uint32_t& pos, int16_t& vel);
@@ -107,6 +109,8 @@ private:
 	ros::Time last_heartbeat;
 
 	ll_canopen_nmt_state encoder_state;
+
+
 
 
 

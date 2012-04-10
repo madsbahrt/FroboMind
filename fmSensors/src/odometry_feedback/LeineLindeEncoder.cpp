@@ -314,6 +314,7 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 			ROS_DEBUG_ONCE("Entered Config step PREOP");
 			// When encoder is running it does not respond to NMT_PREOP cmds so we try reset instead
 			transmitNMTRequest(NMT_RESET);
+			this->last_heartbeat = ros::Time::now();
 			this->config_state = LL_CONFIG_WAIT_PREOP;
 			break;
 		case LL_CONFIG_WAIT_PREOP:
@@ -325,7 +326,7 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 			}
 			if((ros::Time::now() - this->last_heartbeat ).toSec() > this->preop_timeout)
 			{
-				ROS_ERROR_THROTTLE(0.5,"Encoder Boot message not detected, retrying");
+				ROS_ERROR_THROTTLE(1,"Encoder Boot message not detected, retrying");
 				this->config_state = LL_CONFIG_PREOP;
 			}
 			break;
@@ -535,8 +536,14 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 			{
 				diff = (diff + 8191);
 			}
-
-			current_position += diff;
+			if(invert)
+			{
+				current_position -= diff;
+			}
+			else
+			{
+				current_position += diff;
+			}
 			last_position = pos;
 			ROS_DEBUG("Read: pos %d, vel %d, diff %d",pos,vel,diff);
 

@@ -26,6 +26,7 @@ int main(int argc, char **argv)
   //returned objects needs to be stored
   ros::Timer t;
   ros::Subscriber sub;
+  bool invert;
 
   std::string enc_publisher_topic;
   std::string publisher_topic;
@@ -33,17 +34,20 @@ int main(int argc, char **argv)
 
   int encoder_id,publish_rate,poll_interval_ms;
 
-  n.param<std::string>("publisher_topic", publisher_topic, "/fmSensors/can0_tx");
-  n.param<std::string>("subscriber_topic", subscriber_topic, "/fmSensors/can0_rx");
-  n.param<std::string>("enc_publisher_topic", enc_publisher_topic, "/fmSensors/encoder");
+  nh.param<std::string>("publisher_topic", publisher_topic, "/fmSensors/can0_tx");
+  nh.param<std::string>("subscriber_topic", subscriber_topic, "/fmSensors/can0_rx");
+  nh.param<std::string>("enc_publisher_topic", enc_publisher_topic, "/fmSensors/encoder");
 
-  n.param<int>("encoder_id", encoder_id, 11);
-  n.param<int>("publish_rate",publish_rate,10);
-  n.param<int>("poll_interval_ms",poll_interval_ms,20);
+  nh.param<int>("encoder_id", encoder_id, 11);
+  nh.param<int>("publish_rate",publish_rate,10);
+  nh.param<int>("poll_interval_ms",poll_interval_ms,20);
+  nh.param<bool>("invert_output",invert,false);
 
   ll.setID(encoder_id);
 
   ll.setPollInterval(poll_interval_ms);
+
+  ll.invert = invert;
 
   ll.setCanPub(nh.advertise<fmMsgs::can> (publisher_topic.c_str(), 5));
   ll.setEncoderPub(nh.advertise<fmMsgs::encoder> (enc_publisher_topic.c_str(), 5));
