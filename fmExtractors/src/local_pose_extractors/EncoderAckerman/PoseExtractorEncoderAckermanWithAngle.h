@@ -31,6 +31,8 @@ protected:
 	double angle_ticks_to_rad;
 	bool angle_updated;
 
+	double previous_l,previous_r;
+
 	double vehicle_length;
 
 private:

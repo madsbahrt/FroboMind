@@ -11,6 +11,9 @@ PoseExtractorEncoderAckermanWithAngle::PoseExtractorEncoderAckermanWithAngle() {
 
 	this->angle_ticks_to_rad = 1.0;
 	this->vehicle_length = 1.0;
+	x = y =  0.0;
+	vx = vy = 0.0;
+	previous_l = previous_r = 0.0;
 }
 
 PoseExtractorEncoderAckermanWithAngle::PoseExtractorEncoderAckermanWithAngle(ros::Publisher p, double rate,double max_diff)
@@ -18,6 +21,9 @@ PoseExtractorEncoderAckermanWithAngle::PoseExtractorEncoderAckermanWithAngle(ros
 {
 	this->angle_ticks_to_rad = 1.0;
 	this->vehicle_length = 1.0;
+	x = y =  0.0;
+	vx = vy = 0.0;
+	previous_l = previous_r = 0.0;
 }
 
 PoseExtractorEncoderAckermanWithAngle::~PoseExtractorEncoderAckermanWithAngle() {
@@ -56,48 +62,45 @@ void PoseExtractorEncoderAckermanWithAngle::calculatePose()
 
 
 	double alpha = this->current_angle.encoderticks * this->angle_ticks_to_rad;
-	double odo_l = this->current_left.encoderticks * this->l_ticks_to_m;
-	double odo_r = this->current_right.encoderticks * this->r_ticks_to_m;
+	double dt_alpha;
+	double odo_l,dt_odo_l;
+	double odo_r;
 
-	double dt_angle,dt_odom;
+	double odl,odr;
 
-	// temporary calculation variables
-	double R,phi;
-	double odo_mean;
+	odl = this->current_left.encoderticks * this->l_ticks_to_m;
+	odr = this->current_right.encoderticks * this->r_ticks_to_m;
 
-	odo_mean = (odo_l+odo_r) / 2.0;
 
-	dt_angle = (this->current_angle.header.stamp - this->previous_angle.header.stamp).toSec();
-	dt_odom = (this->current_left.header.stamp - this->previous_left.header.stamp).toSec();
+	odo_l = odl - previous_l;
+	odo_r = odr - previous_r;
 
-	if(alpha > 0.01 || alpha < 0.01)
-	{
-		// rotation large enough
-		R = this->vehicle_length / tan(alpha);
-		phi = odo_mean / R;
+	dt_odo_l = (current_left.header.stamp - previous_left.header.stamp).toSec();
 
-		dx = R*sin(phi);
-		dy = R-R*cos(phi);
-		dtheta = phi;
-	}
-	else
-	{
-		// rotation not large enough for good calculations
-		dx = odo_mean;
-		dy = 0.0;
-		dtheta = 0.0;
-	}
+	dt_alpha = (current_angle.header.stamp - previous_angle.header.stamp).toSec();
+	previous_l = odl;
+	previous_r = odr;
 
+	// calculate the mean distance traveled
+	double dist = (odo_l + odo_r)/2;
+
+	ROS_DEBUG("Distance traveled: %.5f",dist);
+
+	dx = dist * cos(theta) * cos(alpha);
+	dy = dist * sin(theta) * cos(alpha);
+	dtheta = dist/this->vehicle_length * sin(alpha);
+
+
+	ROS_DEBUG("dx: %.4f dy: %.4f dtheta: %.4f",dx,dy,dtheta);
 
 	// update state
 	x+=dx;
 	y+=dy;
 	theta+=dtheta;
 
-	vx = dx / dt_odom;
-	vy = dy / dt_odom;
-	vtheta = dtheta/dt_angle;
-
+	vx = dx / dt_odo_l;
+	vy = dy / dt_odo_l;
+	vtheta = dtheta/dt_alpha;
 }
 
 

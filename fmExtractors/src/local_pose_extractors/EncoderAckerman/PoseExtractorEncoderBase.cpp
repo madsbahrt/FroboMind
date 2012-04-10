@@ -167,7 +167,7 @@ void PoseExtractorEncoderBase::spin(const ros::TimerEvent& e)
 	// get the time this loop got called
 	ros::Time current_time = ros::Time::now();
 
-	ROS_INFO("Spinng Odometry at %f",current_time.toSec());
+	//ROS_INFO("Spinng Odometry at %f",current_time.toSec());
 
 	// check for updated encoder input
 	if(checkUpdated())
