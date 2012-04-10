@@ -136,7 +136,7 @@ public:
 
 			if((msg->header.stamp - last_update).toSec() > timeout)
 			{
-				ROS_WARN("Timeout value exceeded");
+				ROS_WARN_THROTTLE(1,"Timeout value exceeded");
 			}
 
 			last_update = msg->header.stamp;
@@ -147,9 +147,16 @@ public:
 	{
 		if(!is_initialised)
 		{
-			initCamera();
-			is_initialised = true;
-			last_update = ros::Time::now();
+			if(can_tx_pub.getNumSubscribers() == 0)
+			{
+				ROS_INFO_THROTTLE(1,"Waiting for can node to subscribe");
+			}
+			else
+			{
+				initCamera();
+				is_initialised = true;
+				last_update = ros::Time::now();
+			}
 		}
 		else
 		{
@@ -157,7 +164,7 @@ public:
 			if( (t - last_update).toSec() > communication_timeout)
 			{
 				is_initialised = false;
-				ROS_WARN("Lost Connection to eye drive, retrying");
+				ROS_WARN_THROTTLE(1,"Lost Connection to eye drive, retrying");
 				quality = heading = offset = 0;
 			}
 			cam_tx_msg.header.stamp = ros::Time::now();
@@ -250,14 +257,6 @@ int main(int argc, char **argv)
 
 	t= nh.createTimer(ros::Duration(1.0/publish_rate),&EyeDrive::processTimerEvent,&camera);
 
-	while(camera.can_tx_pub.getNumSubscribers() == 0)
-	{
-		ROS_INFO_THROTTLE(1,"Waiting for can node to subscribe");
-	}
-
-	ROS_INFO("Can has subscribed");
-
-	camera.initCamera();
 
 	ros::spin();
 
