@@ -5,6 +5,4 @@
         <param name="frame_id" value="laser_link"/>
         <param name="invert_output" value="true" />
     </node>
-    
-    <node pkg="tf" type="static_transform_publisher" name="laser_link_broadcaster" args="1.2 0 0.2 0 0 0 base_link laser_link 100"/>
 </launch>

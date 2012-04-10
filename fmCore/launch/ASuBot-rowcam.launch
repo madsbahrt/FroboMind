@@ -25,7 +25,5 @@
 		<param name="cam_rows_between_wheels" value="0x03"/>
 	</node>
   </group>
-  
-  <node pkg="tf" type="static_transform_publisher" name="rowcam_link_broadcaster" args="0 0 0 0 0 0 base_link cam_link 100"/>
 </launch>
 

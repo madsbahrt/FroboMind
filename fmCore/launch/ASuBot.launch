@@ -4,5 +4,7 @@
 <include file="$(find fmCore)/launch/ASuBot-imu.launch"/>
 <include file="$(find fmCore)/launch/ASuBot-laser.launch"/>
 <include file="$(find fmCore)/launch/ASuBot-rowcam.launch"/>
+<include file="$(find fmCore)/launch/ASuBot-tf.launch"/>
+<include file="$(find fmTools)/launch/webcam.launch"/>
 
 </launch>

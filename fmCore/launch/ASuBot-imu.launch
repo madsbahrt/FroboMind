@@ -1,6 +1,6 @@
 <launch>
 
-    <node pkg="tf" type="static_transform_publisher" name="imu_link_broadcaster" args="0 0 0 0 0 0 base_link imu_link 100"/>
+    
     
 <group ns="fmCSP">
     <node pkg="fmCSP" name="USB0" type="serial_string">

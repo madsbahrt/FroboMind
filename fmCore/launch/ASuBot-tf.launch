@@ -1,0 +1,5 @@
+<launch>
+ <node pkg="tf" type="static_transform_publisher" name="rowcam_link_broadcaster" args="1.2 0 0.8 0 0 0 base_link cam_link 100"/>
+ <node pkg="tf" type="static_transform_publisher" name="laser_link_broadcaster" args="1.2 0 0.2 0 0 0 base_link laser_link 100"/>
+ <node pkg="tf" type="static_transform_publisher" name="imu_link_broadcaster" args="0.8 0.2 0.8 0 0 0 base_link imu_link 100"/>
+</launch>
