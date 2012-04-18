@@ -16,6 +16,7 @@
         <param name="subscriber_topic" value="/fmCSP/can0_rx" />
         <param name="enc_publisher_topic" value="/fmSensors/encoder_angle" />
         <param name="invert_output" value="false"/>
+        <param name="use_current_position_as_offset" value="false"></param>
     </node>
     <node pkg="fmSensors" name="ll_encoder_left" type="ll_encoder_node">
         <param name="encoder_id" value="11"/>
@@ -25,6 +26,7 @@
         <param name="subscriber_topic" value="/fmCSP/can0_rx" />
         <param name="enc_publisher_topic" value="/fmSensors/encoder_left" />
         <param name="invert_output" value="true"/>
+        <param name="use_current_position_as_offset" value="true"></param>
     </node>
     <node pkg="fmSensors" name="ll_encoder_right" type="ll_encoder_node">
         <param name="encoder_id" value="22"/>
@@ -34,6 +36,7 @@
         <param name="subscriber_topic" value="/fmCSP/can0_rx" />
         <param name="enc_publisher_topic" value="/fmSensors/encoder_right" />
         <param name="invert_output" value="false"/>
+        <param name="use_current_position_as_offset" value="true"></param>
     </node>
 </group>
 
@@ -51,6 +54,8 @@
         <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_right" />
         <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_left" />
         <param name="angle_subscriber_topic" value="/fmSensors/encoder_angle" />
+        <param name="max_old_odometry_warn" value="5"></param>
+        <param name="angle_encoder_zero_offset" value="4720"></param> <!--  Straight ahead is -4720 ticks with current position -->
     </node>
 </group>
 
