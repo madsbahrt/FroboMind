@@ -63,8 +63,18 @@ void SocketCan::processCanTxEvent(const fmMsgs::can::ConstPtr& msg)
 {
 	can_frame tx;
 
-	tx.can_dlc = msg->length;
 	tx.can_id = msg->id;
+	// XXX
+	// Compatability with can4linux flags which are used in fmMsgs::can
+	// bit 2 is EFF which means we have to set bit 31 in the id flag
+	// other flags might become relevant also but currently only this flag is supported.
+	// XXX
+	if(msg->flags & 0x04)
+	{
+		tx.can_id = msg->id;
+	}
+	tx.can_dlc = msg->length & (1 << 31);
+
 	for(int i=0; i<msg->length; i++)
 	{
 		tx.data[i] = msg->data[i];
@@ -74,12 +84,17 @@ void SocketCan::processCanTxEvent(const fmMsgs::can::ConstPtr& msg)
 
 void SocketCan::canRxHandler(const boost::system::error_code& error, size_t bytes_transferred)
 {
+	// XXX
+	// Compatability with fmMsgs::can structure which means that the id in the can msg does not contain eff flags
+	// this bit is removed from the id before publishing this message, instead bit 2 is set in flags
+	// XXX
     can_rx_msg_.header.stamp = ros::Time::now();
     if (bytes_transferred)
     {
-      can_rx_msg_.flags = 0;
-      can_rx_msg_.cob = rx_.can_id;
-      can_rx_msg_.id = rx_.can_id;
+      // move bit 31 of id downto bit 2 of flags
+      can_rx_msg_.flags = (rx_.can_id & (1 << 31)) >> 29;
+      can_rx_msg_.cob = rx_.can_id & 0x1FFFFFFF; // mask out EFF/RTR/ERR flags from id
+      can_rx_msg_.id = rx_.can_id & 0x1FFFFFFF;
       can_rx_msg_.length = rx_.can_dlc;
       for (int i = 0; i <rx_.can_dlc; i++)
       {
