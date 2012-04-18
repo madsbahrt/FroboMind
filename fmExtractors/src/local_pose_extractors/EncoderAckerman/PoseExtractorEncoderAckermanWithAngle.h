@@ -20,6 +20,8 @@ public:
 	void setEncoderAngleConversionConst(double ticks_to_rad);
 	void setVehicleLength(double length);
 
+	int angle_offset;
+
 protected:
 
 	virtual void calculatePose();

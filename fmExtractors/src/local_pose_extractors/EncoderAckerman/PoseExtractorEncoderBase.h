@@ -28,6 +28,7 @@ public:
 
 	void setPublishTopic(ros::Publisher p);
 	void setPublishRate(double rate);
+	void setMaxOldWarnCount(int max);
 
 	void spin(const ros::TimerEvent& e);
 
@@ -59,6 +60,8 @@ private:
 	ros::Publisher odom_pub;
 	double pub_rate;
 
+	int warn_count;
+	int max_old_warn;
 
 
 	tf::TransformBroadcaster odom_broadcaster;

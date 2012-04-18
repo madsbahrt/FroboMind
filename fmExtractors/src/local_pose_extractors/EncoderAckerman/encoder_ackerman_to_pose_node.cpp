@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
 			vehicle_length;
 	bool use_angle, fwenc;
 	double max_diff, rate;
+	int max_warn,offset;
 	ros::Publisher p;
 	ros::Subscriber s1,s2,s3;
 	ros::Timer t;
@@ -49,6 +50,8 @@ int main(int argc, char** argv) {
 	nh.param<bool>("encoders_on_front_wheel", fwenc, false);
 	nh.param<double>("Publish_rate", rate, 1.0);
 	nh.param<double>("max_time_difference", max_diff, 1.0);
+	nh.param<int>("max_old_odometry_warn_count",max_warn,5);
+	nh.param<int>("angle_encoder_zero_offset",offset,0);
 
 	nh.param<double>("distance_between_axles_in_meter", vehicle_length, 1.18);
 
@@ -70,9 +73,13 @@ int main(int argc, char** argv) {
 		s3 = nh.subscribe<fmMsgs::encoder>(subscribe_enc_a.c_str(), 25,
 				&PoseExtractorEncoderAckermanWithAngle::processEncoderAngle,
 				(PoseExtractorEncoderAckermanWithAngle*) encoder_to_pose);
+
+		((PoseExtractorEncoderAckermanWithAngle*)encoder_to_pose)->angle_offset = offset;
 	} else {
 		encoder_to_pose = new PoseExtractorEncoderBase(p, rate, max_diff);
 	}
+
+	encoder_to_pose->setMaxOldWarnCount(max_warn);
 
 	s1 = nh.subscribe<fmMsgs::encoder>(subscribe_enc_l.c_str(), 25,
 			&PoseExtractorEncoderAckermanWithAngle::processEncoderLeft,

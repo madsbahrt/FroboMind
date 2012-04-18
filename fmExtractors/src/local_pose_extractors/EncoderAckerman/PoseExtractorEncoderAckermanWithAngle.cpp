@@ -61,7 +61,7 @@ void PoseExtractorEncoderAckermanWithAngle::calculatePose()
 	double dx,dy,dtheta;
 
 
-	double alpha = this->current_angle.encoderticks * this->angle_ticks_to_rad;
+	double alpha = this->current_angle.encoderticks * (this->angle_ticks_to_rad + angle_offset);
 	double dt_alpha;
 	double odo_l,dt_odo_l;
 	double odo_r;

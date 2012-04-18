@@ -134,6 +134,11 @@ void PoseExtractorEncoderBase::calculatePose()
 
 }
 
+void PoseExtractorEncoderBase::setMaxOldWarnCount(int max)
+{
+	max_old_warn = max;
+}
+
 void PoseExtractorEncoderBase::resetAll()
 {
 	this->l_ticks_to_m = 1.0;
@@ -141,6 +146,9 @@ void PoseExtractorEncoderBase::resetAll()
 
 	this->l_updated = false;
 	this->r_updated = false;
+
+	warn_count = 0;
+	max_old_warn = 10;
 
 	this->pub_rate = 1.0;
 
@@ -167,11 +175,11 @@ void PoseExtractorEncoderBase::spin(const ros::TimerEvent& e)
 	// get the time this loop got called
 	ros::Time current_time = ros::Time::now();
 
-	//ROS_INFO("Spinng Odometry at %f",current_time.toSec());
 
 	// check for updated encoder input
 	if(checkUpdated())
 	{
+		warn_count = 0;
 		clearUpdated();
 		calculatePose();
 
@@ -211,8 +219,12 @@ void PoseExtractorEncoderBase::spin(const ros::TimerEvent& e)
 	{
 		// new odometry not available
 		ROS_WARN("Odometry not updated due to old input");
+		warn_count++;
+		if(warn_count > max_old_warn)
+		{
+			ROS_ERROR("New odometry has not been received %d times in a row",warn_count);
+		}
 	}
-
 }
 
 
