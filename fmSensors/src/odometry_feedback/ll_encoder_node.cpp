@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   //returned objects needs to be stored
   ros::Timer t;
   ros::Subscriber sub;
-  bool invert;
+  bool invert,read_offset;
 
   std::string enc_publisher_topic;
   std::string publisher_topic;
@@ -42,12 +42,14 @@ int main(int argc, char **argv)
   nh.param<int>("publish_rate",publish_rate,10);
   nh.param<int>("poll_interval_ms",poll_interval_ms,20);
   nh.param<bool>("invert_output",invert,false);
+  nh.param<bool>("use_current_position_as_offset",read_offset,true);
 
   ll.setID(encoder_id);
 
   ll.setPollInterval(poll_interval_ms);
 
   ll.invert = invert;
+  ll.read_encoder_offset = read_offset;
 
   ll.setCanPub(nh.advertise<fmMsgs::can> (publisher_topic.c_str(), 5));
   ll.setEncoderPub(nh.advertise<fmMsgs::encoder> (enc_publisher_topic.c_str(), 5));

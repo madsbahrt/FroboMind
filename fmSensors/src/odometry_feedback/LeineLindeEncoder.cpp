@@ -476,7 +476,15 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 			ret = transmitSDOWriteRequest(0x1800,01,data,4,err_code);
 			if(ret == SDO_OK)
 			{
-				this->config_state = LL_CONFIG_GET_START;
+				if(read_encoder_offset)
+				{
+					this->config_state = LL_CONFIG_GET_START;
+				}
+				else
+				{
+					last_position = 0;
+					this->config_state = LL_CONFIG_OP;
+				}
 			}
 			else if(ret == SDO_ERROR)
 			{
@@ -556,6 +564,8 @@ void LeineLindeEncoder::processStateMachine(const ros::TimerEvent& e)
 		break;
 	case LL_STATE_ERROR:
 		// do nothing
+		this->state = LL_STATE_INIT;
+		ROS_ERROR("Error occurred Resetting...");
 		break;
 	default:
 		break;

@@ -71,6 +71,7 @@ public:
 	void processStateMachine(const ros::TimerEvent& e);
 
 	bool invert;
+	bool read_encoder_offset;
 
 
 private:
