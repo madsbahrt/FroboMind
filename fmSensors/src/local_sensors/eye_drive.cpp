@@ -113,7 +113,7 @@ public:
 	void processCanRxEvent(const fmMsgs::can::ConstPtr& msg)
 	{
 		int temp_val;
-		if(msg->id == (uint32_t)(0x142000C8 | (1 << 31)))
+		if(msg->id == (uint32_t)(0x142000C8))
 		{
 			quality = msg->data[1];
 
@@ -187,7 +187,9 @@ private:
 	void transmitInitMsg(uint8_t buf[8])
 	{
 		can_tx_msg.header.stamp = ros::Time::now();
-		can_tx_msg.id = 0x1424003C | (1 << 31); // set bit 31 to indicate EFF
+		can_tx_msg.flags = 0x04; // EFF is indicated in flags (atleast when using can4linux)
+		can_tx_msg.flags |= (1 << 0); // try RTR also
+		can_tx_msg.id = 0x1424003C;
 		can_tx_msg.length = 8;
 		for(int i=0;i<8;i++)
 		{
