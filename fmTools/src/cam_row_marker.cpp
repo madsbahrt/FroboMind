@@ -47,10 +47,10 @@ int main(int argc,char** argv)
 	  marker.action = visualization_msgs::Marker::ADD;
 	  marker.scale.x = 0.1;
 
-	  n.param<std::string>("row_subscriber_topic",sub_topic,"/fmSensors/row");
-	  n.param<std::string>("marker_publisher_topic",pub_topic,"/fmTools/row_marker");
-	  n.param<std::string>("frame_id",frame_id,"cam_link");
-	  n.param<double>("line_length",line_length,2);
+	  nh.param<std::string>("row_subscriber_topic",sub_topic,"/fmSensors/row");
+	  nh.param<std::string>("marker_publisher_topic",pub_topic,"/fmTools/row_marker");
+	  nh.param<std::string>("frame_id",frame_id,"cam_link");
+	  nh.param<double>("line_length",line_length,2);
 
 	  marker.header.frame_id = frame_id;
 

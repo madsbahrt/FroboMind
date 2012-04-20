@@ -1,7 +1,12 @@
 <launch>
- 
-<group ns="visualization">
-    <node pkg="rviz" name="visualization" type="rviz" />      
-</group>
-
+	<group ns="visualization">
+	    <node pkg="rviz" name="visualization" type="rviz" args="-d $(find fmCore)/conf/asubot.vcg"/>
+	    
+	    <node pkg="fmTools" name="row_marker" type="row_cam_marker">
+	    	<param name="row_subscriber_topic" value="/fmSensors/row"></param>
+	 		<param name="marker_publisher_topic" value="/visualization/row_marker"></param>   	
+	    	<param name="frame_id" value="cam_link"></param>
+			<param name="line_length" value="2"></param>
+	    </node>
+	</group>
 </launch>

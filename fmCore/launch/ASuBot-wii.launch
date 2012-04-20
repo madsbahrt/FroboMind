@@ -1,0 +1,29 @@
+<launch>
+
+<group ns="fmHMI">
+	<node pkg="wiimote" type="wiimote_node.py" name="remote_control" respawn="true">
+	</node>
+	<node pkg="fmHMI" type="wiimote_to_twist" name="wii_to_user_twist">
+		<param name="max_angular_velocity" value="1"/>
+		<param name="max_linear_velocity" value="1"/>
+	</node>
+</group>
+
+<group ns="fmKinematics">
+	<node pkg="fmKinematics" name="ASuBot_ifk" type="asubot_twist_to_angle_cmd">
+		<param name="twist_subscriber_topic" value="/fmDecisionMakers/cmd_vel"/>
+		<param name="steering_angle_publisher_topic" value="/fmActuators/angle_cmd" />
+	</node>
+</group>
+
+<group ns="fmDecisionMakers">
+	<node pkg="fmDecisionMakers" type="BS" name="behaviour_selector">
+		<param name="joy_topic" value="/fmHMI/joy"/>
+		<param name="autonomous_twist_topic" value="cmd_vel_autonomous"/>
+		<param name="manual_twist_topic" value="cmd_vel_user"/>
+		<param name="test_twist_topic" value="cmd_vel_test"/>
+		<param name="twist_topic" value="/fmDecisionMakers/cmd_vel"/>
+	</node>
+</group>
+
+</launch>

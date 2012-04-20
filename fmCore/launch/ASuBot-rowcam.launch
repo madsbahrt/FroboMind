@@ -1,24 +1,25 @@
 <launch>
-  <group ns="fmCSP">
-	<node pkg="fmCSP" name="can_2" type="can_socketcan">
-	<param name="publisher_topic" value="can_2_rx"/>
-	<param name="subscriber_topic" value="can_2_tx"/>
-	<param name="device" value="can0"/>
-	</node>
-  </group>
+<group ns="fmCSP">
+    <node pkg="fmCSP" name="CAN1" type="can_can4linux">
+        <param name="device" value="/dev/can1" />
+        <param name="publisher_topic" value="/fmCSP/can1_rx" />
+        <param name="subscriber_topic" value="/fmCSP/can1_tx" />
+    </node>
+</group>
+
 
   <group ns="fmSensors">
 	<node pkg="fmSensors" name="row_cam_0" type="eye_drive">
-		<param name="Can_rx_subscriber_topic" value="/fmCSP/can_2_rx"/>
-		<param name="Can_tx_publisher_topic" value="/fmCSP/can_2_tx"/>
+		<param name="Can_rx_subscriber_topic" value="/fmCSP/can1_rx"/>
+		<param name="Can_tx_publisher_topic" value="/fmCSP/can1_tx"/>
 		<param name="row_publisher_topic" value="row"/>
 		<param name="publish_rate" value="10.0"/>
 		<param name="cam_program" value="0x03"/>
-		<param name="cam_height" value="160"/>
+		<param name="cam_height" value="80"/>
 		<param name="cam_angle" value="45"/>
 		<param name="cam_threshold" value="0x80"/>
 		<param name="cam_target_width" value="15"/>
-		<param name="cam_target_height" value="12"/>
+		<param name="cam_target_height" value="8"/>
 		<param name="cam_target_distance" value="75"/>
 		<param name="cam_minor_distance" value="0"/>
 		<param name="cam_number_of_rows" value="1"/>

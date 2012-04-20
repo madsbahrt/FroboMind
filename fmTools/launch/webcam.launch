@@ -1,10 +1,12 @@
 <launch>
   <group ns="fmTools">
-	<node pkg="usb_cam" name="webcam" type="usb_cam_node">
-		<param name="pixel_format" value="yuyv"></param>
-		<param name="video_device" value="/dev/video0"></param>
-		<param name="image_width" value="640"></param>
-		<param name="image_height" value="480"></param>
+	<node pkg="uvc_camera" name="webcam" type="camera_node">
+		<remap from="image_raw" to="/visualization/image_raw"></remap>
+		<param name="device" value="/dev/video0"></param>
+		<param name="width" value="320"></param>
+		<param name="height" value="240"></param>
+		<param name="frame_id" value="cam_link"></param>
+		<param name="fps" value="5"></param>
 	</node>
   </group>
 </launch>
