@@ -45,7 +45,7 @@
         <param name="conv_ticks_to_meter_left" value="0.000180237"/>
         <param name="conv_ticks_to_meter_right" value="0.000180237"/>
         <param name="conv_ticks_to_rad_angle" value="0.000766968"/>
-        <param name="use_angle_sensor" value="true"/>
+        <param name="use_angle_sensor" value="false"/>
         <param name="encoders_on_front_wheel" value="false"/>
         <param name="Publish_rate" value="10"/>            
         <param name="max_time_difference" value="1.0"/>
@@ -55,7 +55,6 @@
         <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_left" />
         <param name="angle_subscriber_topic" value="/fmSensors/encoder_angle" />
         <param name="max_old_odometry_warn" value="5"></param>
-        <param name="angle_encoder_zero_offset" value="4720"></param> <!--  Straight ahead is -4720 ticks with current position -->
     </node>
 </group>
 

@@ -61,7 +61,7 @@ void PoseExtractorEncoderAckermanWithAngle::calculatePose()
 	double dx,dy,dtheta;
 
 
-	double alpha = this->current_angle.encoderticks * (this->angle_ticks_to_rad + angle_offset);
+	double alpha = (this->current_angle.encoderticks + angle_offset) * (this->angle_ticks_to_rad );
 	double dt_alpha;
 	double odo_l,dt_odo_l;
 	double odo_r;
@@ -84,7 +84,7 @@ void PoseExtractorEncoderAckermanWithAngle::calculatePose()
 	// calculate the mean distance traveled
 	double dist = (odo_l + odo_r)/2;
 
-	ROS_DEBUG("Distance traveled: %.5f",dist);
+	ROS_DEBUG("Distance traveled: %.5f theta %.5f aplha %.5f",dist,theta,alpha);
 
 	dx = dist * cos(theta) * cos(alpha);
 	dy = dist * sin(theta) * cos(alpha);

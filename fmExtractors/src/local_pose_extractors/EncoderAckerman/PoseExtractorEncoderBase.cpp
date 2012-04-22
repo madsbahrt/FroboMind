@@ -112,9 +112,10 @@ void PoseExtractorEncoderBase::calculatePose()
 
 	double dt = (dt_l + dt_r) / 2;
 
-	double velocity_ = (((2 * M_PI * (0.24)) * (-cl_ticks / (2) + cr_ticks / (2)) / 8192)) / dt_l;
+	// 0.24 is a magic number
+	double velocity_ = ((cl_ticks / (2) + cr_ticks / (2)) * this->l_ticks_to_m) / dt_l;
 
-	double omega_ = ((2 * M_PI * 0.24) * (((1/(0.47))*cl_ticks +(1/(0.4713))*cr_ticks)/8192)/dt_l)/5*M_PI;
+	double omega_ =  (((1/(0.4713))*cl_ticks - (1/(0.4713))*cr_ticks) * this->l_ticks_to_m)/dt_l;
 
 	ROS_DEBUG("Velocity: %f \t Omega: %f \t dt_l %f", velocity_, omega_, dt_l);
 
@@ -127,7 +128,6 @@ void PoseExtractorEncoderBase::calculatePose()
 	y += dy;
 	theta += dtheta;
 
-	// this may not be correct, but is what was found on the ASuBot
 	vx = velocity_;
 	vy = 0.0;
 	vtheta = omega_;

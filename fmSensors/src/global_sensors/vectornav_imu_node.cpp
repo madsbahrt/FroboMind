@@ -37,7 +37,7 @@ public:
 		imu_msg.orientation_covariance[8] = cov_z;
 	}
 
-	void processSerialCallback(const fmMsgs::serialConstPtr& rx_msg)
+	void processSerialCallback(const fmMsgs::serial::ConstPtr& rx_msg)
 	{
 		boost::char_separator<char> sep("$*,");
 		tokenizer::iterator tok_iter;
@@ -80,10 +80,10 @@ private:
 				{
 					imu_msg.header.stamp = ros::Time::now();
 					imu_msg.header.frame_id = frame_id;
-					imu_msg.orientation.w = boost::lexical_cast<float>(*tok_iter++);
 					imu_msg.orientation.x = boost::lexical_cast<float>(*tok_iter++);
 					imu_msg.orientation.y = boost::lexical_cast<float>(*tok_iter++);
 					imu_msg.orientation.z = boost::lexical_cast<float>(*tok_iter++);
+					imu_msg.orientation.w = boost::lexical_cast<float>(*tok_iter++);
 
 					tok_iter++; //skip magnetometer
 					tok_iter++;
@@ -180,7 +180,7 @@ int main(int argc, char **argv)
 
   nh.param<std::string> ("subscribe_topic_id", subscribe_topic_id, "fmCSP/com1_rx");
   nh.param<std::string> ("publish_topic_id", publish_topic_id, "imu_msg");
-  nh.param<std::string> ("frame_id", imu.frame_id, "/base");
+  nh.param<std::string> ("frame_id", imu.frame_id, "base_link");
 
   nh.param<double> ("cov_x",cov_x,1.0);
   nh.param<double> ("cov_y",cov_y,1.0);

@@ -28,6 +28,7 @@ rosbuild_add_executable(gps_node src/global_sensors/gps_node.cpp)
 rosbuild_add_executable(sparkfun_razor_node src/global_sensors/SparkFun9DOF.cpp)
 rosbuild_add_executable(sparkfun_razor_node src/global_sensors/sparkfun_razor_node.cpp)
 
+rosbuild_add_executable(vectornav_imu_node src/global_sensors/vectornav_imu_node.cpp)
 
 
 rosbuild_add_executable(eye_drive src/local_sensors/eye_drive.cpp)
