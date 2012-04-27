@@ -55,30 +55,21 @@ void utmCallback(const fmMsgs::gps_state::ConstPtr& msg)
 		odom.header.stamp = ros::Time::now();
 		odom.header.frame_id =frame_id;
 		//odom.pose.pose.position.x = msg->utm_n - ref_fix.utm_n;
-		odom.pose.pose.position.x = ref_fix.utm_e - msg->utm_e;
-		odom.pose.pose.position.y = ref_fix.utm_n - msg->utm_n;
+		odom.pose.pose.position.x = -(ref_fix.utm_e - msg->utm_e);
+		odom.pose.pose.position.y = -(ref_fix.utm_n - msg->utm_n);
 		odom.pose.pose.position.z = 0;
 
-		odom.pose.pose.orientation.x = 1;
-		odom.pose.pose.orientation.y = 0;
-		odom.pose.pose.orientation.z = 0;
-		odom.pose.pose.orientation.w = 0;
+		odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
 
-		odom.pose.covariance[0] = msg->hdop * msg->hdop;
-		odom.pose.covariance[1] = msg->hdop * msg->hdop;
-		odom.pose.covariance[2] = msg->hdop * msg->hdop;
+		odom.pose.covariance[0] = msg->hdop * msg->hdop * 0.01;
 
-		odom.pose.covariance[6] = msg->hdop * msg->hdop;
-		odom.pose.covariance[7] = msg->hdop * msg->hdop;
-		odom.pose.covariance[8] = msg->hdop * msg->hdop;
+		odom.pose.covariance[7] = msg->hdop * msg->hdop* 0.01;
 
-		odom.pose.covariance[12] = msg->hdop * msg->hdop;
-		odom.pose.covariance[13] = msg->hdop * msg->hdop;
-		odom.pose.covariance[14] = msg->hdop * msg->hdop;
+		odom.pose.covariance[14] = 0.00001;
 
-		odom.pose.covariance[21] = 99999;
-		odom.pose.covariance[28] = 99999;
-		odom.pose.covariance[35] = 99999;
+		odom.pose.covariance[21] = 999999;
+		odom.pose.covariance[28] = 999999;
+		odom.pose.covariance[35] = 999999;
 
 		odom.twist.twist.linear.x = sqrt(dx*dx + dy*dy)/dt;
 		odom.twist.twist.linear.y = 0.0;
