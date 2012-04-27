@@ -24,6 +24,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_add_executable(husmands_kalman src/state_estimators/husmandsKalman/husmandskalman_node.cpp)
 rosbuild_add_executable(row_kalman_estimate src/state_estimators/husmandsKalman/row_kalman_filter.cpp)
 
+rosbuild_add_executable(odom_estimation src/state_estimators/odometry/odometry_estimation.cpp src/state_estimators/odometry/PositionEstimator.cpp)
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
