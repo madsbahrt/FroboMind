@@ -1,0 +1,66 @@
+<launch>
+
+<include file="$(find fmCore)/launch/ASuBot-laser.launch"/>
+<include file="$(find fmCore)/launch/ASuBot-rowcam.launch"/>
+
+<group ns="fmCSP">
+    <node pkg="fmCSP" name="CAN0" type="can_can4linux">
+        <param name="device" value="/dev/can0" />
+        <param name="publisher_topic" value="/fmCSP/can0_rx" />
+        <param name="subscriber_topic" value="/fmCSP/can0_tx" />
+    </node>
+    
+    <node pkg="fmCSP" name="USB1" type="serial_string" output="screen" >
+        <param name="publisher_topic" value="S0_rx" />	 
+        <param name="subscriber_topic" value="S0_tx" />
+		<param name="device" value="/dev/ttyACM0" />	
+		<param name="baudrate" value="115200" />
+	</node>
+	
+	<node pkg="fmCSP" name="USB0" type="serial_string">
+        <param name="publisher_topic" value="com0_rx" />	 
+        <param name="subscriber_topic" value="com0_tx" />	
+        <param name="device" value="/dev/ttyUSB0" />	
+        <param name="baudrate" value="115200" />
+	</node>
+</group>
+
+<group ns="fmSensors">
+    <node pkg="fmSensors" name="ll_encoder_angle" type="ll_encoder_node">
+        <param name="encoder_id" value="33"/>
+        <param name="publish_rate" value="50"/>
+        <param name="poll_interval_ms" value="20"/>
+        <param name="publisher_topic" value="/fmCSP/can0_tx" />
+        <param name="subscriber_topic" value="/fmCSP/can0_rx" />
+        <param name="enc_publisher_topic" value="/fmSensors/encoder_angle" />
+        <param name="invert_output" value="false"/>
+        <param name="use_current_position_as_offset" value="false"></param>
+    </node>
+    <node pkg="fmSensors" name="ll_encoder_left" type="ll_encoder_node">
+        <param name="encoder_id" value="11"/>
+        <param name="publish_rate" value="50"/>
+        <param name="poll_interval_ms" value="20"/>
+        <param name="publisher_topic" value="/fmCSP/can0_tx" />
+        <param name="subscriber_topic" value="/fmCSP/can0_rx" />
+        <param name="enc_publisher_topic" value="/fmSensors/encoder_left" />
+        <param name="invert_output" value="true"/>
+        <param name="use_current_position_as_offset" value="true"></param>
+    </node>
+    <node pkg="fmSensors" name="ll_encoder_right" type="ll_encoder_node">
+        <param name="encoder_id" value="22"/>
+        <param name="publish_rate" value="50"/>
+        <param name="poll_interval_ms" value="20"/>
+        <param name="publisher_topic" value="/fmCSP/can0_tx" />
+        <param name="subscriber_topic" value="/fmCSP/can0_rx" />
+        <param name="enc_publisher_topic" value="/fmSensors/encoder_right" />
+        <param name="invert_output" value="false"/>
+        <param name="use_current_position_as_offset" value="true"></param>
+    </node>
+    
+    <node pkg="fmSensors" name="GPGGA_PARSER" type="gps_node" output="screen"> 
+	    <param name="subscribe_topic_id" value="/fmCSP/S0_rx" />
+		<param name="publish_topic_id" value="/fmSensors/gpgga" />
+	</node>
+</group>
+
+</launch>
