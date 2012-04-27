@@ -1,0 +1,16 @@
+<launch>
+
+<node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="-1 -2 0 0 0 0 odom_combined rabbit 100"/>
+<node pkg="tf" type="static_transform_publisher" name="wheel_link_broadcaster" args="1 2 0.0 -1.5708 0 0 odom_combined base_footprint  100"/>
+
+<node pkg="fmControllers" name="rabbit_follower" type="rabbit_follower_node">
+	<param name="rabbit_frame_id" value="/rabbit"></param>
+	<param name="vehicle_frame_id" value="/base_footprint"></param>
+	<param name="cmd_vel_topic_id" value="/fmControllers/cmd_vel"></param>
+	<param name="field_of_view_rad" value="1.5708"></param>
+	<param name="max_angular_vel" value="1.0"></param>
+	<param name="max_linear_vel" value="1.0"></param>
+	<param name="oscilation_bounds" value="0.05"></param>
+</node>
+
+</launch>
