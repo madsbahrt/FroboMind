@@ -13,6 +13,7 @@
 #include "geometry_msgs/Pose.h"
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <tf/tf.h>
 
 typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 
@@ -80,6 +81,8 @@ private:
 				{
 					imu_msg.header.stamp = ros::Time::now();
 					imu_msg.header.frame_id = frame_id;
+
+					// NED orientation
 					imu_msg.orientation.x = boost::lexical_cast<float>(*tok_iter++);
 					imu_msg.orientation.y = boost::lexical_cast<float>(*tok_iter++);
 					imu_msg.orientation.z = boost::lexical_cast<float>(*tok_iter++);
