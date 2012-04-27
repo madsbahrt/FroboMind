@@ -22,8 +22,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_gensrv()
 
 
-rosbuild_add_executable(lidar_row_detector src/lidar_feature_extractors/lidar_row_detect_opencv/maize_detection_node.cpp)
-rosbuild_add_executable(lidar_row_detector src/lidar_feature_extractors/lidar_row_detect_opencv/maize_detection.cpp)
+#rosbuild_add_executable(lidar_row_detector src/lidar_feature_extractors/lidar_row_detect_opencv/maize_detection_node.cpp)
+#rosbuild_add_executable(lidar_row_detector src/lidar_feature_extractors/lidar_row_detect_opencv/maize_detection.cpp)
 
 rosbuild_add_executable(gps_state src/global_pose_extractors/gps_state_node.cpp)
 rosbuild_add_executable(utm_to_odom src/global_pose_extractors/utm_to_odom.cpp)
@@ -34,6 +34,7 @@ rosbuild_add_executable(encoder_ackerman_to_pose src/local_pose_extractors/Encod
 rosbuild_add_executable(encoder_ackerman_to_pose src/local_pose_extractors/EncoderAckerman/PoseExtractorEncoderAckermanWithAngleFWE.cpp)
 
 rosbuild_add_executable(simple_odom src/local_pose_extractors/simple_odom.cpp)
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)

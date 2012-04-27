@@ -19,8 +19,6 @@
   <depend package="laser_geometry"/>
   <depend package="laser_filters"/>
   <depend package="pcl"/>
-  <depend package="opencv2"/>
-  <depend package="cv_bridge"/>
   <depend package="visualization_msgs"/>
 
 </package>
