@@ -33,8 +33,7 @@ void gps_parser(tokenizer& tokens)
 	try
 	{
 		nmea.assign(tokens.begin(), tokens.end());
-
-		if (nmea.at(0) == "GPGGA" && nmea.size() == 14)
+		if (nmea.at(0) == "GPGGA" && (nmea.size() == 14 || nmea.size() == 15))
 		{
 			// !!! we need to check the checksum of the NMEA string here !!!
 			// save current time
