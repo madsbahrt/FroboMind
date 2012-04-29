@@ -1,9 +1,11 @@
 <launch>
 
+<!-- Include sensors currently mounted on the ASuBot -->
 <include file="$(find fmCore)/launch/ASuBot-sensors-only.launch"/>
+<!-- Include the current mounting position -->
 <include file="$(find fmCore)/launch/ASuBot-tf.launch"/>
 
 <include file="$(find fmCore)/launch/odometry-fusion.launch"/>
-<include file="$(find fmCore)/launch/rabbit-follow.launch"></include>
+<include file="$(find fmCore)/launch/rabbit-follow.launch"/>
 
 </launch>
