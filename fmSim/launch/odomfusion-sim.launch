@@ -67,4 +67,8 @@
 <node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 base_footprint base_link 100"/>
 <node pkg="tf" type="static_transform_publisher" name="wheel_link_broadcaster" args="0.0 0 0.0 0 0 0 base_footprint wheel_link 100"/>
 
+<!-- Create a transform which moves base footprint back where rviz can see it due to utm coordinates  -->
+<node pkg="tf" type="static_transform_publisher" name="utm_link_broadcaster" args="-588797 -6137255 0 0 0 0 map odom_combined 100"/>
+
+
 </launch>

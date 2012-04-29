@@ -1,0 +1,16 @@
+<launch>
+
+<param name="use_sim_time" value="true"/>
+
+
+<include file="$(find fmSim)/launch/odomfusion-sim.launch"></include>
+
+<group ns="fmExecutors">
+
+	<node pkg="fmExecutors" name="rabbitPlanner" type="rabbitPlanner">
+		<param name="pathfile_location" value="$(find fmExecutors)/conf/waypoints.yaml"></param>
+	</node>
+
+</group>
+
+</launch>
