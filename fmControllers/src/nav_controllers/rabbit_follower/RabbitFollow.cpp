@@ -61,9 +61,13 @@ void RabbitFollow::driveToTheRabbit()
 	//TODO: do some fancy scaling  of the cmd_vel
 
 
-	if(current_rabbit_heading > 0.01 || current_rabbit_heading < -0.01)
+	if(current_rabbit_heading > 0.01) // 0.5 deg tolerance
 	{
 		cmd_vel.twist.angular.z = max_ang_vel;
+	}
+	else if  (current_rabbit_heading < -0.01)
+	{
+		cmd_vel.twist.angular.z = -max_ang_vel;
 	}
 	else
 	{
