@@ -60,19 +60,28 @@ void RabbitFollow::driveToTheRabbit()
 
 	//TODO: do some fancy scaling  of the cmd_vel
 
-
-	if(current_rabbit_heading > 0.01) // 0.5 deg tolerance
+	if(distance > target_acquired_tolerance)
 	{
-		cmd_vel.twist.angular.z = max_ang_vel;
-	}
-	else if  (current_rabbit_heading < -0.01)
-	{
-		cmd_vel.twist.angular.z = -max_ang_vel;
+		// do not move
+		cmd_vel.twist.linear.x = 0;
+		cmd_vel.twist.angular.z = 0;
 	}
 	else
 	{
-		cmd_vel.twist.angular.z = 0;
+		if(current_rabbit_heading > 0.01) // 0.5 deg tolerance
+		{
+			cmd_vel.twist.angular.z = max_ang_vel;
+		}
+		else if  (current_rabbit_heading < -0.01)
+		{
+			cmd_vel.twist.angular.z = -max_ang_vel;
+		}
+		else
+		{
+			cmd_vel.twist.angular.z = 0;
+		}
 	}
+
 	cmd_vel.header.stamp = ros::Time::now();
 
 	cmd_vel.twist.linear.x = max_lin_vel;

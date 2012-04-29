@@ -23,6 +23,7 @@ public:
 	double max_ang_vel;
 	double max_lin_vel;
 	double oscilation_bound;
+	double target_acquired_tolerance;
 
 
 private:
