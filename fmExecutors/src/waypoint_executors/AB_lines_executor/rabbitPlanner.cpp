@@ -45,7 +45,7 @@ bool rabbitPlanner::initRabbit(){
 		tf::Vector3 posevec;
 		path->at(i).pose.position >> posevec;
 
-		if(posevec.distance(base)<min_distance){
+		if(posevec.distance(base)<min_distance && fabs(posevec.distance(base)) > 0){
 			min_distance = posevec.distance(base);
 			current_waypoint = i;
 		}

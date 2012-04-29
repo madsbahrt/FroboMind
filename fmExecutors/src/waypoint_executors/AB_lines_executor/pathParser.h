@@ -19,7 +19,7 @@
 class pathParser{
 public:
 	std::vector<geometry_msgs::PoseStamped> * path;
-	pathParser();
+	pathParser(std::string filepath);
 };
 
 

@@ -13,11 +13,11 @@ void operator >> (const YAML::Node& node, geometry_msgs::PoseStamped &pose) {
 	node["position"][2] >> pose.pose.position.z;
 }
 
-pathParser::pathParser(){
+pathParser::pathParser(std::string filepath){
 
 	path = new std::vector<geometry_msgs::PoseStamped>;
 
-	std::ifstream fin("waypoints.yaml");
+	std::ifstream fin(filepath.c_str());
 	YAML::Parser parser(fin);
 	YAML::Node doc;
 	parser.GetNextDocument(doc);

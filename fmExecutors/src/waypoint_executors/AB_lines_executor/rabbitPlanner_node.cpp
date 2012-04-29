@@ -17,7 +17,11 @@ int main(int argc, char **argv)
 	ros::NodeHandle nh("~");
 	ros::NodeHandle n;
 
-	pathPlan = new pathParser;
+	std::string filepath;
+
+	nh.param<std::string>("pathfile_location",filepath,"waypoints.yaml");
+
+	pathPlan = new pathParser(filepath);
 	rabbit = new rabbitPlanner(pathPlan->path, 2);
 
 	rabbit->initRabbit();
