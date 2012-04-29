@@ -23,6 +23,11 @@ int main(int argc, char **argv)
 
 	pathPlan = new pathParser(filepath);
 
+	if(!pathPlan->path->size()){
+		ROS_ERROR("pathParser: no path loaded at %s",filepath.c_str());
+		return 0;
+	}
+
 	rabbit = new rabbitPlanner(pathPlan->path);
 
 	//base_projected_to_A_B / deltaRabbit = rabbit

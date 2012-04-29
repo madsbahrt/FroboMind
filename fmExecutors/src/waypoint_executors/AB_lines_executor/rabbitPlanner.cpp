@@ -124,7 +124,7 @@ void rabbitPlanner::planRabbit(){
 
 		rabbitScale = (Abase[0]*AB[0] + Abase[1]*AB[1])/ABSquared;
 
-		if (rabbitScale < 0){
+		if (rabbitScale <= 0){
 			rabbit = B;
 			current_waypoint = (current_waypoint+1)%path->size();
 		} else {
