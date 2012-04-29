@@ -21,7 +21,6 @@ class OdometryKalmanNode
 public:
 	OdometryKalmanNode()
 	{
-		is_imu_initialised = false;
 		is_odom_initialised = false;
 		current_heading = 0;
 
@@ -30,24 +29,7 @@ public:
 
 		filter = new PositionEstimator(10000,0.01);
 
-		Kalman::KVector<double,1,1> prior(3);
-		Kalman::KMatrix<double,1,1> prior_cov(3,3);
 
-		for(unsigned int i=1;i <= prior_cov.nrow();i++)
-		{
-			for(unsigned int j = 1; j<=prior_cov.ncol();j++)
-			{
-				if(i==j)
-					prior_cov(i,j) = 1;
-				else
-					prior_cov(i,j) = 0;
-			}
-		}
-
-		prior(1) = prior(2) = prior(3) = 0;
-		prior(3) = -M_PI/2;
-
-		filter->init(prior,prior_cov);
 
 	}
 
@@ -79,16 +61,23 @@ public:
 		Kalman::KVector<double,1,1> u(2);
 		Kalman::KVector<double,1,1> state(3);
 
+		if(is_odom_initialised)
+		{
+			u(1) = odom_msg->twist.twist.linear.x;
+			u(2) = current_heading;
+			//ROS_ERROR("Control: %.4f %.4f",u(1),u(2));
+			state = filter->getX();
+			//ROS_ERROR("State before time update: %.4f %.4f %.4f",state(1),state(2),state(3));
+			filter->timeUpdateStep(u);
+			state = filter->getX();
+			//ROS_ERROR("State after time update: %.4f %.4f %.4f",state(1),state(2),state(3));
+			publishEstimate();
+		}
+		else
+		{
+			ROS_INFO_THROTTLE(1,"Waiting for GPS fix...");
+		}
 
-		u(1) = odom_msg->twist.twist.linear.x;
-		u(2) = current_heading;
-		//ROS_ERROR("Control: %.4f %.4f",u(1),u(2));
-		state = filter->getX();
-		//ROS_ERROR("State before time update: %.4f %.4f %.4f",state(1),state(2),state(3));
-		filter->timeUpdateStep(u);
-		state = filter->getX();
-		//ROS_ERROR("State after time update: %.4f %.4f %.4f",state(1),state(2),state(3));
-		publishEstimate();
 	}
 
 
@@ -98,14 +87,47 @@ public:
 
 		Kalman::KVector<double,1,1> z(2);
 
-		z(1) = odom_msg->pose.pose.position.x;
-		z(2) = odom_msg->pose.pose.position.y;
-		//ROS_ERROR("Measurement: %.4f %.4f",z(1),z(2));
-		state = filter->getX();
-		//ROS_ERROR("State before measurement update: %.4f %.4f %.4f",state(1),state(2),state(3));
-		filter->measureUpdateStep(z);
-		state = filter->getX();
-		//ROS_ERROR("State after measurement update: %.4f %.4f %.4f",state(1),state(2),state(3));
+		if(is_odom_initialised)
+		{
+			z(1) = odom_msg->pose.pose.position.x;
+			z(2) = odom_msg->pose.pose.position.y;
+			//ROS_ERROR("Measurement: %.4f %.4f",z(1),z(2));
+			state = filter->getX();
+			//ROS_ERROR("State before measurement update: %.4f %.4f %.4f",state(1),state(2),state(3));
+			filter->measureUpdateStep(z);
+			state = filter->getX();
+			//ROS_ERROR("State after measurement update: %.4f %.4f %.4f",state(1),state(2),state(3));
+		}
+		else
+		{
+			// set inital pose and covarinace based on the first gps message
+			Kalman::KVector<double,1,1> prior(3);
+			Kalman::KMatrix<double,1,1> prior_cov(3,3);
+			for(unsigned int i=1;i <= prior_cov.nrow();i++)
+			{
+				for(unsigned int j = 1; j<=prior_cov.ncol();j++)
+				{
+					if(i==j)
+						prior_cov(i,j) = 1;
+					else
+						prior_cov(i,j) = 0;
+				}
+			}
+
+			prior(1) =  odom_msg->pose.pose.position.x;
+			prior(2) =  odom_msg->pose.pose.position.y;
+			prior(3) = current_heading;
+
+			ROS_INFO("Initialising filter with x: %.4f y: %.4f theta: %.4f",prior(1),prior(2),prior(3));
+
+			filter->init(prior,prior_cov);
+
+			is_odom_initialised = true;
+		}
+
+
+
+
 
 
 	}
@@ -160,6 +182,9 @@ private:
 	nav_msgs::Odometry pub_odom_msg;
 
 	tf::TransformListener listener;
+
+
+
 };
 
 
