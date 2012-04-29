@@ -16,22 +16,20 @@
 class rabbitPlanner{
 public:
 
-	tf::TransformBroadcaster tf_broadcaster;
-	tf::TransformListener tf_listener;
-
-
 	int current_waypoint;
 
-	rabbitPlanner(std::vector<geometry_msgs::PoseStamped>* path, double dRabbit);
+	double deltaRabbit,deltaWaypoint;
+	std::string odom_frame, vehicle_frame,rabbit_frame,rabbit_type;
+	rabbitPlanner(std::vector<geometry_msgs::PoseStamped>* path);
 	bool initRabbit();
 	void planRabbit();
 
 private:
 
-
-
 	std::vector<geometry_msgs::PoseStamped>* path;
-	double dRabbit;
+
+	tf::TransformBroadcaster tf_broadcaster;
+	tf::TransformListener tf_listener;
 
 	tf::Vector3 rabbit;
 	tf::Vector3 base;

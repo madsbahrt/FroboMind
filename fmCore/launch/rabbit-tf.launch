@@ -1,0 +1,13 @@
+<launch>
+<group ns="fmExecutors">
+    <node pkg="fmExecutors" name="rabbitPlanner" type="rabbitPlanner" output="screen">
+        <param name="deltaRabbit" value="2" />
+        <param name="deltaWaypoint" value="2" />
+        <param name="rabbit_type" value="float" />
+        <param name="odometry_frame" value="odom_combined" />
+        <param name="vehicle_frame" value="base_footprint" />
+        <param name="rabbit_frame" value="rabbit" />
+    </node>
+</group>
+<node pkg="tf" type="static_transform_publisher" name="odom_broadcaster" args="2.5 0 0 0 0 0 odom_combined base_footprint 10"/>
+</launch>
