@@ -39,19 +39,25 @@ void RabbitFollow::spin(const ros::TimerEvent& e)
 
 void RabbitFollow::findTheRabbit()
 {
-	if(tf_listen.canTransform(vehicle_frame,rabbit_frame,ros::Time::now()))
+	try
 	{
 		tf::StampedTransform transformer;
-		tf_listen.lookupTransform(vehicle_frame,rabbit_frame,ros::Time::now(),transformer);
+		tf_listen.waitForTransform("base_footprint","rabbit",ros::Time::now(),ros::Duration(2));
+		tf_listen.lookupTransform("base_footprint","rabbit",ros::Time(0), transformer);
 
 		tf::Vector3 xyz = transformer.getOrigin();
 
-		previous_rabbit_heading = current_rabbit_heading;
-		current_rabbit_heading =atan2(xyz[1],xyz[0]);
-		distance = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
+				previous_rabbit_heading = current_rabbit_heading;
+				current_rabbit_heading =atan2(xyz[1],xyz[0]);
+				distance = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 
 
-		ROS_DEBUG("Found rabbit %.4f %.4f %.4f distance %.4f",xyz[0],xyz[1],current_rabbit_heading,distance);
+				ROS_INFO_THROTTLE(1,"Found rabbit %.4f %.4f %.4f distance %.4f",xyz[0],xyz[1],current_rabbit_heading,distance);
+
+	}
+	catch (tf::TransformException ex){
+		ROS_WARN("follower: FAILED!");
+		ROS_WARN("%s",ex.what());
 	}
 }
 
@@ -60,27 +66,18 @@ void RabbitFollow::driveToTheRabbit()
 
 	//TODO: do some fancy scaling  of the cmd_vel
 
-	if(distance > target_acquired_tolerance)
-	{
-		// do not move
-		cmd_vel.twist.linear.x = 0;
-		cmd_vel.twist.angular.z = 0;
-	}
-	else
-	{
 		if(current_rabbit_heading > 0.01) // 0.5 deg tolerance
 		{
-			cmd_vel.twist.angular.z = max_ang_vel;
+			cmd_vel.twist.angular.z = -max_ang_vel;
 		}
 		else if  (current_rabbit_heading < -0.01)
 		{
-			cmd_vel.twist.angular.z = -max_ang_vel;
+			cmd_vel.twist.angular.z = max_ang_vel;
 		}
 		else
 		{
 			cmd_vel.twist.angular.z = 0;
 		}
-	}
 
 	cmd_vel.header.stamp = ros::Time::now();
 
