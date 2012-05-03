@@ -7,7 +7,7 @@ Gps_odom.Angle\ Tolerance=0.1
 Gps_odom.ColorR=0
 Gps_odom.ColorG=1
 Gps_odom.ColorB=0.0627451
-Gps_odom.Enabled=0
+Gps_odom.Enabled=1
 Gps_odom.Keep=5000
 Gps_odom.Position\ Tolerance=0.1
 Gps_odom.Topic=/fmExtractors/gps_odom
@@ -28,6 +28,7 @@ Grid.Plane\ Cell\ Count=1000
 Grid.Reference\ Frame=<Fixed Frame>
 IMU.Enabled=1
 IMU.Marker\ Topic=/fmTools/imu_marker
+IMU.imu_maker=1
 Laser\ Scan.Alpha=1
 Laser\ Scan.Billboard\ Size=0.01
 Laser\ Scan.Color\ Transformer=Axis
@@ -83,8 +84,8 @@ Wheel_odom.Topic=/fmExtractors/wheel_odom
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::FixedOrientationOrthoViewController
-Camera\ Config=182.293 0.298331 121.593 0.175225 -0.50764 0.492242 0.492242 0.50764
-Property\ Grid\ State=selection=.Global StatusTopStatus;expanded=.Global Options,TF./base_footprint/base_footprint,TF./gps_link/gps_link,TF./map/map,TF./odom_combined/odom_combined,TF./wheel_link/wheel_link,TF./imu_link/imu_link,TF./laser_link/laser_link,TF./base_link/base_link,TF.Enabled.TF.Tree,TF./base_footprintTree/base_footprint,TF./gps_linkTree/gps_link,TF./wheel_linkTree/wheel_link,TF./imu_linkTree/imu_link,TF./laser_linkTree/laser_link,TF./base_linkTree/base_link,TF./mapTree/map,TF./odom_combinedTree/odom_combined,IMU.Enabled,IMU.Enabled.IMU.Namespaces,Laser Scan.Enabled,Laser Scan.Enabled.Laser Scan.StatusTopStatus,Grid.Enabled,Odometry.Enabled;scrollpos=0,0;splitterpos=224,448;ispageselected=1
+Camera\ Config=43.5586 -14.1204 121.593 -22.0456 -0.502692 0.497293 0.497293 0.502692
+Property\ Grid\ State=selection=Gps_odom.Enabled;expanded=.Global Options,TF./base_footprint/base_footprint,TF./base_link/base_link,TF./gps_link/gps_link,TF./imu_link/imu_link,TF./laser_link/laser_link,TF./map/map,TF./odom_combined/odom_combined,TF.Enabled.TF.Tree,TF./mapTree/map,TF./odom_combinedTree/odom_combined,TF./base_footprintTree/base_footprint,TF./base_linkTree/base_link,TF./gps_linkTree/gps_link,TF./imu_linkTree/imu_link,TF./laser_linkTree/laser_link,IMU.Enabled,IMU.Enabled.IMU.Namespaces,Laser Scan.Enabled,Laser Scan.Enabled.Laser Scan.StatusTopStatus,Grid.Enabled,Odometry.Enabled;scrollpos=0,0;splitterpos=133,266;ispageselected=1
 [Display0]
 Name=TF
 Package=rviz
@@ -121,4 +122,3 @@ imu_linkEnabled=1
 laser_linkEnabled=1
 mapEnabled=1
 odom_combinedEnabled=1
-wheel_linkEnabled=1
