@@ -12,7 +12,9 @@
 #include <tf/transform_listener.h>
 
 #include "PositionEstimator.h"
+#include "HeadingEstimator.h"
 #include <kalman/ekfilter.hpp>
+
 
 
 
@@ -27,7 +29,8 @@ public:
 		base_frame = "base_footprint";
 
 
-		filter = new PositionEstimator(10000,0.01);
+		filter = new PositionEstimator();
+
 
 
 
@@ -40,20 +43,34 @@ public:
 
 	void processIMU(const sensor_msgs::Imu::ConstPtr& imu_msg)
 	{
+
+
+
 		double heading = tf::getYaw(imu_msg->orientation);
 
 		heading = -(heading- M_PI/2);
 
-		if(heading > M_PI)
+		heading += north_correct;
+
+		correct_angle(heading);
+
+		if(is_imu_initialised)
 		{
-			heading -= 2*M_PI;
+			//ROS_INFO("before prediction: %.4f %.4f",current_heading,current_imu_cov);
+			heading_estimator.predict(heading-previous_heading,0.001);
+
+			heading_estimator.get_result(current_heading,current_imu_cov);
+			//ROS_INFO("After prediction: %.4f %.4f",current_heading,current_imu_cov);
 		}
-		else if(heading < -M_PI)
+		else
 		{
-			heading += 2*M_PI;
+			current_heading = heading;
+			heading_estimator.init(current_heading,0.01);
+			is_imu_initialised = true;
 		}
 
-		current_heading = heading;
+		previous_heading = heading;
+
 	}
 
 	void processOdomControl(const nav_msgs::Odometry::ConstPtr& odom_msg)
@@ -72,6 +89,7 @@ public:
 			state = filter->getX();
 			//ROS_ERROR("State after time update: %.4f %.4f %.4f",state(1),state(2),state(3));
 			publishEstimate();
+
 		}
 		else
 		{
@@ -89,13 +107,35 @@ public:
 
 		if(is_odom_initialised)
 		{
-			z(1) = odom_msg->pose.pose.position.x;
-			z(2) = odom_msg->pose.pose.position.y;
+
+			double ds =sqrt( pow((odom_msg->pose.pose.position.x - prev_gps_msg.pose.pose.position.x),2) + pow(odom_msg->pose.pose.position.y - prev_gps_msg.pose.pose.position.y,2));
+			double dtheta_gps = tf::getYaw(odom_msg->pose.pose.orientation) - tf::getYaw(prev_gps_msg.pose.pose.orientation);
+
+			correct_angle(dtheta_gps);
+
+			double cov_gps_heading = ks/ds + fabs(dtheta_gps)*ktheta;
+			ROS_INFO("Before correction: %.4f %.4f",current_heading,current_imu_cov);
+			if(ds > 0.5)
+			{
+				heading_estimator.correct(tf::getYaw(odom_msg->pose.pose.orientation),cov_gps_heading);
+			}
+
+
+			heading_estimator.get_result(current_heading,current_imu_cov);
+			ROS_INFO("After correction: %.4f %.4f",current_heading,current_imu_cov);
+
+			double diff_x = cos(current_heading)*1.4;
+			double diff_y = sin(current_heading)*1.4;
+
+			z(1) = odom_msg->pose.pose.position.x - diff_x;
+			z(2) = odom_msg->pose.pose.position.y - diff_y;
+			//z(3) = tf::getYaw(odom_msg->pose.pose.orientation);
 			//ROS_ERROR("Measurement: %.4f %.4f",z(1),z(2));
 			state = filter->getX();
 			//ROS_ERROR("State before measurement update: %.4f %.4f %.4f",state(1),state(2),state(3));
 			filter->measureUpdateStep(z);
 			state = filter->getX();
+
 			//ROS_ERROR("State after measurement update: %.4f %.4f %.4f",state(1),state(2),state(3));
 		}
 		else
@@ -114,17 +154,33 @@ public:
 				}
 			}
 
-			prior(1) =  odom_msg->pose.pose.position.x;
-			prior(2) =  odom_msg->pose.pose.position.y;
+			if(sqrt( pow((odom_msg->pose.pose.position.x - prev_gps_msg.pose.pose.position.x),2) + pow(odom_msg->pose.pose.position.y - prev_gps_msg.pose.pose.position.y,2)) > 1.5 )
+			{
+				ROS_INFO("Before correction: %.4f %.4f",current_heading,current_imu_cov);
+				heading_estimator.correct(tf::getYaw(odom_msg->pose.pose.orientation),10);
+			}
+
+			heading_estimator.get_result(current_heading,current_imu_cov);
+			ROS_INFO("After correction: %.4f %.4f",current_heading,current_imu_cov);
+
+			double diff_x = cos(current_heading)*1.4;
+			double diff_y = sin(current_heading)*1.4;
+
+			prior(1) =  odom_msg->pose.pose.position.x - diff_x;
+			prior(2) =  odom_msg->pose.pose.position.y - diff_y;
 			prior(3) = current_heading;
 
-			ROS_INFO("Initialising filter with x: %.4f y: %.4f theta: %.4f",prior(1),prior(2),prior(3));
 
+			ROS_INFO("Initialising filter with x: %.4f y: %.4f theta: %.4f",prior(1),prior(2),prior(3));
+			filter->setCovariance(gps_cov,imu_cov,odom_cov);
 			filter->init(prior,prior_cov);
+
+
 
 			is_odom_initialised = true;
 		}
 
+		prev_gps_msg = *odom_msg;
 
 
 
@@ -165,23 +221,49 @@ public:
 	tf::TransformBroadcaster odom_broadcaster;
 	geometry_msgs::TransformStamped odom_trans;
 
+	double gps_cov,imu_cov,odom_cov;
+	double ktheta,ks;
+	double north_correct;
+
 private:
+
+	void correct_angle(double& angle)
+	{
+		while(angle > M_PI)
+		{
+			angle -= 2*M_PI;
+		}
+
+		while(angle < -M_PI)
+		{
+			angle += 2*M_PI;
+		}
+	}
 
 	bool is_imu_initialised;
 	bool is_odom_initialised;
 
 	nav_msgs::Odometry prev_odom_msg;
+	nav_msgs::Odometry prev_gps_msg;
 	sensor_msgs::Imu prev_imu_msg;
+
+	tf::TransformListener listen;
+	tf::Transform transform;
 
 	std::string base_frame;
 
 	PositionEstimator* filter;
 
 	double current_heading;
+	double current_imu_cov;
+
+
+	double previous_heading;
+
+
 
 	nav_msgs::Odometry pub_odom_msg;
-
-	tf::TransformListener listener;
+	HeadingEstimator heading_estimator;
 
 
 
@@ -205,6 +287,7 @@ int main(int argc, char **argv)
 	std::string odom_est_pub_top;
 	std::string  gps_odom_sub_top;
 
+
 	ros::Subscriber imu_sub;
 	ros::Subscriber odom_sub;
 	ros::Subscriber gps_sub;
@@ -216,6 +299,12 @@ int main(int argc, char **argv)
 	nh.param<std::string>("odom_subscriber_topic", odom_sub_top, "/fmExtractors/wheel_odom");
 	nh.param<std::string>("gps_odom_subscriber_topic", gps_odom_sub_top,"/fmExtractors/gps_odom");
 	nh.param<std::string>("odom_estimate_publisher_topic", odom_est_pub_top,"/fmProcessors/odom_estimate");
+	nh.param<double>("gps_covariance",node.gps_cov,10);
+	nh.param<double>("imu_covariance",node.imu_cov,0.01);
+	nh.param<double>("odom_covariance",node.odom_cov,0.05);
+	nh.param<double>("ks",node.ks,0.1);
+	nh.param<double>("ktheta",node.ktheta,10);
+	nh.param<double>("magnetic_north_correction",node.north_correct,0.30);
 
 	imu_sub = nh.subscribe<sensor_msgs::Imu>(imu_sub_top.c_str(),10,&OdometryKalmanNode::processIMU,&node);
 	odom_sub = nh.subscribe<nav_msgs::Odometry>(odom_sub_top.c_str(),10,&OdometryKalmanNode::processOdomControl,&node);

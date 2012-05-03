@@ -13,8 +13,10 @@
 class PositionEstimator : public Kalman::EKFilter<double,1,false,false,true>
 {
 public:
-	PositionEstimator(double,double);
+	PositionEstimator();
 	virtual ~PositionEstimator();
+
+	void setCovariance(double gps_cov,double imu_cov, double odom_cov);
 protected:
 	void makeA();
 	void makeV();
@@ -26,7 +28,7 @@ protected:
 	void makeProcess();
 	void makeMeasure();
 private:
-	double gps_var,imu_var;
+	double gps_var,imu_var,odom_var;
 };
 
 #endif /* POSITIONESTIMATOR_H_ */

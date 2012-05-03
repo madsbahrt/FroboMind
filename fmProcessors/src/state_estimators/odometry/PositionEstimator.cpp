@@ -9,7 +9,7 @@
 #include <math.h>
 #include <ros/console.h>
 
-PositionEstimator::PositionEstimator(double gps_cov,double imu_cov)
+PositionEstimator::PositionEstimator()
 {
 
 	// state size
@@ -18,9 +18,6 @@ PositionEstimator::PositionEstimator(double gps_cov,double imu_cov)
 	// measurement size
 	// measurement noise
 	setDim(3,2,3,2,2);
-
-	gps_var = gps_cov;
-	imu_var = imu_cov;
 
 
 
@@ -48,35 +45,55 @@ void PositionEstimator::makeA()
 
 void PositionEstimator::makeV()
 {
-	V(1,1) = V(2,2) = 1;
-	V(1,2) = V(2,1) = 0;
+	V(1,1) = 1;
+	V(1,2) = 0;
+	//V(1,3) = 0;
+	V(2,1) = 0;
+	V(2,2) = 1;
+//	V(2,3) = 0;
+//	V(3,1) = 0;
+//	V(3,2) = 0;
+//	V(3,3) = 1;
 }
 
 void PositionEstimator::makeQ()
 {
-	Q(1,1) = 0.001;
+	Q(1,1) = odom_var;
 	Q(1,2) = 0;
 	Q(1,3) = 0;
 	Q(1,2) = 0;
-	Q(2,2) = 0.001;
+	Q(2,2) = odom_var;
 	Q(2,3) = 0;
 	Q(3,1) = 0;
 	Q(3,2) = 0;
-	Q(3,3) = 0.0001;
+	Q(3,3) = imu_var;
 }
 
 void PositionEstimator::makeR()
 {
 	R(1,1) = gps_var;
 	R(1,2) = 0;
+	//R(1,3) = 0;
 	R(2,1) = 0;
 	R(2,2) = gps_var;
-
-
+//	R(2,3) = 0;
+//	R(3,1) = 0;
+//	R(3,2) = 0;
+//	R(3,3) = 999999;
 }
 
 void PositionEstimator::makeH()
 {
+//	H(1,1) = 1;
+//	H(1,2) = 0;
+//	H(1,3) = 0;
+//	H(2,1) = 0;
+//	H(2,2) = 1;
+//	H(2,3) = 0;
+//	H(3,1) = 0;
+//	H(3,2) = 0;
+//	H(3,3) = 1;
+
 	H(1,1) = 1;
 	H(1,2) = 0;
 	H(1,3) = 0;
@@ -122,11 +139,22 @@ void PositionEstimator::makeProcess()
 	x.swap(x_new);
 }
 
+void PositionEstimator::setCovariance(double gps_cov, double imu_cov,
+		double odom_cov)
+{
+
+	gps_var = gps_cov;
+	imu_var = imu_cov;
+	odom_var = odom_cov;
+
+}
+
 void PositionEstimator::makeMeasure()
 {
 	Vector z_est(z.size());
 	z_est(1) = x(1);
 	z_est(2) = x(2);
+	//z_est(3) = x(3);
 	//ROS_ERROR("Make Measure: %.4f %.4f",z_est(1),z_est(2));
 	z.swap(z_est);
 
