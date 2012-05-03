@@ -60,7 +60,14 @@ void utmCallback(const fmMsgs::gps_state::ConstPtr& msg)
 
 		odom.pose.pose.position.z = 0;
 
-		odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(0.0);
+		double yaw,dx,dy;
+
+		dx = msg->utm_e - prev_msg.utm_e;
+		dy = msg->utm_n - prev_msg.utm_n;
+
+		yaw = atan2(dy,dx);
+
+		odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
 
 		odom.pose.covariance[0] = msg->hdop * msg->hdop * 0.01;
 
