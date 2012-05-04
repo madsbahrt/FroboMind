@@ -26,15 +26,12 @@
 </group>
 
 <group ns="fmProcessors">
- <!-- <node pkg="fmProcessors" type="odom_estimation_bfl" name="Odometry_Estimation" output="screen" >
+ <node pkg="fmProcessors" type="odom_estimation" name="Odometry_Estimation" output="screen" >
 	<param name="imu_subscriber_topic" value="/fmSensors/IMU"></param>
 	<param name="odom_subscriber_topic"     value="/fmExtractors/wheel_odom"></param>
 	<param name="gps_odom_subscriber_topic" value="/fmExtractors/gps_odom"></param>
 	<param name="odom_estimate_publisher_topic" value="/fmProcessors/odom_estimate"></param>
-	<param name="gps_covariance" value="10"></param>
-	<param name="imu_covariance" value="0.01"></param>
-	<param name="odom_covariance" value="0.1"></param>
-  </node>  -->
+  </node> 
 </group>
 
 

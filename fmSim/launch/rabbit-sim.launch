@@ -9,9 +9,9 @@
 
     <node pkg="fmExecutors" name="rabbitPlanner" type="rabbitPlanner" output="screen">
 	<param name="pathfile_location" value="$(find fmSim)/conf/waypoints.yaml" />
-        <param name="deltaRabbit" value="5" />
+        <param name="deltaRabbit" value="2" />
         <param name="deltaWaypoint" value="2" />
-        <param name="rabbit_type" value="float" />
+        <param name="rabbit_type" value="auto" />
         <param name="odometry_frame" value="odom_combined" />
         <param name="vehicle_frame" value="base_footprint" />
         <param name="rabbit_frame" value="rabbit" />
