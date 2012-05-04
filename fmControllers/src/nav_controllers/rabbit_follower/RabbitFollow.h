@@ -35,6 +35,11 @@ private:
 	double previous_rabbit_heading;
 	double distance;
 
+	double P,I,D;
+	double Pg,Ig,Dg;
+	double error;
+	double I_max;
+
 	std::string rabbit_frame;
 	std::string odom_frame;
 	std::string vehicle_frame;

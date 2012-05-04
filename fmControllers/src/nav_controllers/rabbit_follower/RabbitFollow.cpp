@@ -13,6 +13,11 @@ RabbitFollow::RabbitFollow(std::string rabbit,std::string alice)
 	// TODO Auto-generated constructor stub
 	vehicle_frame = alice;
 	rabbit_frame = rabbit;
+
+	I = P = 0;
+	Ig = 0.001;
+	Pg = 1;
+	I_max = 100;
 }
 
 RabbitFollow::~RabbitFollow()
@@ -55,7 +60,7 @@ void RabbitFollow::findTheRabbit()
 				ROS_INFO_THROTTLE(1,"Found rabbit %.4f %.4f %.4f distance %.4f",xyz[0],xyz[1],current_rabbit_heading,distance);
 
 	}
-	catch (tf::TransformException ex){
+	catch (tf::TransformException& ex){
 		ROS_WARN("follower: FAILED!");
 		ROS_WARN("%s",ex.what());
 	}
@@ -65,19 +70,22 @@ void RabbitFollow::driveToTheRabbit()
 {
 
 	//TODO: do some fancy scaling  of the cmd_vel
+	// PID controller
 
-		if(current_rabbit_heading > 0.01) // 0.5 deg tolerance
-		{
-			cmd_vel.twist.angular.z = -max_ang_vel;
-		}
-		else if  (current_rabbit_heading < -0.01)
-		{
-			cmd_vel.twist.angular.z = max_ang_vel;
-		}
-		else
-		{
-			cmd_vel.twist.angular.z = 0;
-		}
+	I += current_rabbit_heading*0.1;
+	if(I > I_max)
+	{
+		I = I_max;
+	}
+	else if(I < -I_max)
+	{
+		I = -I_max;
+	}
+
+	P = current_rabbit_heading * Pg;
+
+	cmd_vel.twist.angular.z = (P + I*Ig)*-1;
+
 
 	cmd_vel.header.stamp = ros::Time::now();
 

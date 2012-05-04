@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 	RabbitFollow alice(r_frame,o_frame);
 
 	nh.param<double>("field_of_view_rad",alice.fov,2*M_PI);
-	nh.param<double>("max_angular_vel",alice.max_ang_vel,1.0);
+	nh.param<double>("max_angular_vel",alice.max_ang_vel,1.5);
 	nh.param<double>("max_linear_vel",alice.max_lin_vel,1.0);
 	nh.param<double>("oscilation_bounds",alice.oscilation_bound,0.05);
 	nh.param<double>("target_acquired_tolerance",alice.target_acquired_tolerance,0.1);
