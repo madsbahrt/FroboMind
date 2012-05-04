@@ -23,6 +23,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_executable(row_cam_marker src/cam_row_marker.cpp)
 rosbuild_add_executable(imu_marker src/imu_marker.cpp)
+rosbuild_add_executable(rabbit_planner_marker src/rabbitplannermarker.cpp)
+rosbuild_add_executable(teleop src/teleop_from_pr2.cpp)
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
