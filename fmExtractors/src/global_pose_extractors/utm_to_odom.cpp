@@ -17,6 +17,7 @@ fmMsgs::gps_state prev_msg;
 
 nav_msgs::Odometry odom;
 
+double gps_variance;
 
 geometry_msgs::TransformStamped odom_trans;
 std::string frame_id,tf_child_frame_id,tf_frame_id;
@@ -25,6 +26,7 @@ std::string frame_id,tf_child_frame_id,tf_frame_id;
 bool publish_relative = false;
 bool utm_settled=false;
 int utm_settled_count = 0;
+int utm_settled_count_top = 0;
 
 void utmCallback(const fmMsgs::gps_state::ConstPtr& msg)
 {
@@ -33,7 +35,7 @@ void utmCallback(const fmMsgs::gps_state::ConstPtr& msg)
 	if(msg->hdop < 2 && utm_settled == false)
 	{
 		utm_settled_count++;
-		if(utm_settled_count > 30)
+		if(utm_settled_count >= utm_settled_count_top)
 		{
 			utm_settled = true;
 			ref_fix = *msg;
@@ -69,15 +71,15 @@ void utmCallback(const fmMsgs::gps_state::ConstPtr& msg)
 
 		odom.pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
 
-		odom.pose.covariance[0] = msg->hdop * msg->hdop * 0.01;
+		odom.pose.covariance[0] = msg->hdop * gps_variance;
 
-		odom.pose.covariance[7] = msg->hdop * msg->hdop* 0.01;
+		odom.pose.covariance[7] = msg->hdop * gps_variance;
 
 		odom.pose.covariance[14] = 999999;
 
 		odom.pose.covariance[21] = 999999;
 		odom.pose.covariance[28] = 999999;
-		odom.pose.covariance[35] = 999999;
+		odom.pose.covariance[35] = msg->hdop * gps_variance;
 
 		odom_pub.publish(odom);
 
@@ -101,6 +103,8 @@ int main(int argc, char **argv)
 			"/fmExtractors/gps_odom");
 	n.param<std::string>("odom_frame_id",frame_id,"base_footprint");
 	n.param<bool>("publish_relative_coordinates",publish_relative,false);
+	n.param<int>("receive_n_before_publish",utm_settled_count_top,3);
+	n.param<double>("gps_variance",gps_variance,1);
 
 	ros::Subscriber sub = n.subscribe(subscribe_topic_id, 10, utmCallback);
 	odom_pub = n.advertise<nav_msgs::Odometry>(publish_topic_id, 1);
