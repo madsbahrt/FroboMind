@@ -75,6 +75,7 @@ void rabbitPlanner::planRabbit(){
 		path->at(current_waypoint).pose.position >> B;
 
 		if(B.distance(base) < deltaWaypoint){
+			ROS_INFO("Switching waypoint to: %.4f",B.distance(base));
 			current_waypoint = (current_waypoint+1)%path->size();
 			path->at(current_waypoint).pose.position >> B;
 		}
@@ -126,6 +127,7 @@ void rabbitPlanner::planRabbit(){
 
 		if (rabbitScale <= 0){
 			rabbit = B;
+			ROS_INFO("Switching waypoint to: %.4f due to rabbitScale",rabbitScale);
 			current_waypoint = (current_waypoint+1)%path->size();
 		} else {
 			rabbit = ((B-(rabbitScale * AB)));
@@ -134,6 +136,15 @@ void rabbitPlanner::planRabbit(){
 				rabbit = rabbit + (deltaRabbit)*AB/ABSquared;
 			}else if(rabbit_type == "float"){
 				rabbit = (B-rabbit)/deltaRabbit+rabbit;
+			}else if(rabbit_type == "auto")
+			{
+				double auto_factor = deltaRabbit * rabbit.distance(base);
+				if(auto_factor < 1)
+				{
+					auto_factor = 1;
+				}
+				//ROS_INFO("Rabbit distance ABase is %.4f",rabbit.distance(base));
+				rabbit = (B-rabbit)/(auto_factor)+rabbit;
 			}else{
 				ROS_ERROR("RABBIT WENT BACK TO ITS HOLE! WRONG 'rabbit_type' ");
 			}
@@ -152,9 +163,6 @@ void rabbitPlanner::planRabbit(){
 		tf_rabbit.transform.rotation.w = 1;
 
 		tf_broadcaster.sendTransform(tf_rabbit);
-
-
-		std::cout << "rabbit:"<< rabbit[0] << " " << rabbit[1] << std::endl;
 
     }
     catch (tf::TransformException ex){
