@@ -35,10 +35,11 @@ int main(int argc, char **argv) {
 	nh.param<double>("max_linear_vel",alice.max_lin_vel,1.0);
 	nh.param<double>("oscilation_bounds",alice.oscilation_bound,0.05);
 	nh.param<double>("target_acquired_tolerance",alice.target_acquired_tolerance,0.1);
+	alice.nh = &nh;
 
-	ros::Timer t = nh.createTimer(ros::Duration(0.1),&RabbitFollow::spin,&alice);
+	ros::Timer t = nh.createTimer(ros::Duration(0.05),&RabbitFollow::spin,&alice);
 
-	alice.cmd_vel_pub = nh.advertise<geometry_msgs::TwistStamped>(topic_id.c_str(),10);
+	alice.cmd_vel_pub = nh.advertise<geometry_msgs::Twist>(topic_id.c_str(),10);
 
 	t.start();
 	//Handle callbacks

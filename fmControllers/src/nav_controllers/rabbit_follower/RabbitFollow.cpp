@@ -16,8 +16,8 @@ RabbitFollow::RabbitFollow(std::string rabbit,std::string alice)
 
 	I = P = 0;
 	Ig = 0.001;
-	Pg = 1;
-	I_max = 100;
+	Pg = 0.2;
+	I_max = 0;
 }
 
 RabbitFollow::~RabbitFollow()
@@ -39,6 +39,11 @@ void RabbitFollow::spin(const ros::TimerEvent& e)
 		current_rabbit_heading = previous_rabbit_heading;
 	}
 
+	// update PI parameters before running loop
+	nh->getParamCached("P_gain",Pg);
+	nh->getParamCached("I_gain",Ig);
+	nh->getParamCached("I_max",I_max);
+
 	driveToTheRabbit();
 }
 
@@ -47,8 +52,8 @@ void RabbitFollow::findTheRabbit()
 	try
 	{
 		tf::StampedTransform transformer;
-		tf_listen.waitForTransform("base_footprint","rabbit",ros::Time::now(),ros::Duration(2));
-		tf_listen.lookupTransform("base_footprint","rabbit",ros::Time(0), transformer);
+		tf_listen.waitForTransform(vehicle_frame,rabbit_frame,ros::Time::now(),ros::Duration(2));
+		tf_listen.lookupTransform(vehicle_frame,rabbit_frame,ros::Time(0), transformer);
 
 		tf::Vector3 xyz = transformer.getOrigin();
 
@@ -57,7 +62,7 @@ void RabbitFollow::findTheRabbit()
 				distance = sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]);
 
 
-				ROS_INFO_THROTTLE(1,"Found rabbit %.4f %.4f %.4f distance %.4f",xyz[0],xyz[1],current_rabbit_heading,distance);
+				ROS_DEBUG_THROTTLE(1,"Found rabbit %.4f %.4f %.4f distance %.4f",xyz[0],xyz[1],current_rabbit_heading,distance);
 
 	}
 	catch (tf::TransformException& ex){
@@ -70,7 +75,7 @@ void RabbitFollow::driveToTheRabbit()
 {
 
 	//TODO: do some fancy scaling  of the cmd_vel
-	// PID controller
+	// PI controller
 
 	I += current_rabbit_heading*0.1;
 	if(I > I_max)
@@ -84,12 +89,23 @@ void RabbitFollow::driveToTheRabbit()
 
 	P = current_rabbit_heading * Pg;
 
-	cmd_vel.twist.angular.z = (P + I*Ig)*-1;
+	cmd_vel.angular.z = (P + I*Ig);
 
+	cmd_vel.linear.x = max_lin_vel;
 
-	cmd_vel.header.stamp = ros::Time::now();
+	if(current_rabbit_heading > fov/2 || current_rabbit_heading < -fov/2)
+	{
+		// turn in place
+		cmd_vel.linear.x = 0;
+	}
 
-	cmd_vel.twist.linear.x = max_lin_vel;
+	if(distance < 0.1)
+	{
+		ROS_INFO("target_reached");
+		cmd_vel.angular.z = 0;
+		cmd_vel.linear.x = 0;
+	}
+
 
 	cmd_vel_pub.publish(cmd_vel);
 

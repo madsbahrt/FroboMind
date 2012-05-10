@@ -9,6 +9,7 @@
 #define RABBITFOLLOW_H_
 
 #include <tf/transform_listener.h>
+#include <geometry_msgs/Twist.h>
 
 class RabbitFollow
 {
@@ -25,6 +26,7 @@ public:
 	double oscilation_bound;
 	double target_acquired_tolerance;
 
+	ros::NodeHandle* nh;
 
 private:
 	void findTheRabbit();
@@ -46,7 +48,9 @@ private:
 
 	tf::TransformListener tf_listen;
 
-	geometry_msgs::TwistStamped cmd_vel;
+	geometry_msgs::Twist cmd_vel;
+
+
 };
 
 #endif /* RABBITFOLLOW_H_ */
