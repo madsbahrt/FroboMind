@@ -9,7 +9,16 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/fmDecisionMaking</url>
   <depend package="roscpp"/>
+  <depend package="rospy"/>
   <depend package="joy"/>
+  <depend package="fmMsgs"/>
+  <depend package="fmExecutors"/>
+  <depend package="tf"/>
+  <depend package="nav_msgs"/>
+  <depend package="geometry_msgs"/>
+  <depend package="actionlib"/>
+  <depend package="smach"/>
+  <depend package="smach_ros"/>
 </package>
 
 

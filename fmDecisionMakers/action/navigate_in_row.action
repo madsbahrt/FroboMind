@@ -1,0 +1,7 @@
+#goal_definition
+---
+#result definition
+bool done
+---
+#feedback
+float64 error
