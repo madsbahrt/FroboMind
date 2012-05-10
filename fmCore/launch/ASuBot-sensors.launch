@@ -1,8 +1,5 @@
 <launch>
 
-<include file="$(find fmCore)/launch/ASuBot-laser.launch"/>
-<include file="$(find fmCore)/launch/ASuBot-rowcam.launch"/>
-
 <group ns="fmCSP">
     <node pkg="fmCSP" name="CAN0" type="can_can4linux">
         <param name="device" value="/dev/can0" />
@@ -10,9 +7,15 @@
         <param name="subscriber_topic" value="/fmCSP/can0_tx" />
     </node>
     
+    <node pkg="fmCSP" name="CAN1" type="can_can4linux">
+        <param name="device" value="/dev/can1" />
+        <param name="publisher_topic" value="/fmCSP/can1_rx" />
+        <param name="subscriber_topic" value="/fmCSP/can1_tx" />
+    </node>
+    
     <node pkg="fmCSP" name="USB1" type="serial_string" output="screen" >
-        <param name="publisher_topic" value="S0_rx" />	 
-        <param name="subscriber_topic" value="S0_tx" />
+        <param name="publisher_topic" value="com1_rx" />	 
+        <param name="subscriber_topic" value="com1_tx" />
 		<param name="device" value="/dev/ttyACM0" />	
 		<param name="baudrate" value="115200" />
 	</node>
@@ -26,6 +29,7 @@
 </group>
 
 <group ns="fmSensors">
+
     <node pkg="fmSensors" name="ll_encoder_angle" type="ll_encoder_node">
         <param name="encoder_id" value="33"/>
         <param name="publish_rate" value="50"/>
@@ -36,6 +40,7 @@
         <param name="invert_output" value="false"/>
         <param name="use_current_position_as_offset" value="false"></param>
     </node>
+    
     <node pkg="fmSensors" name="ll_encoder_left" type="ll_encoder_node">
         <param name="encoder_id" value="11"/>
         <param name="publish_rate" value="50"/>
@@ -46,6 +51,7 @@
         <param name="invert_output" value="true"/>
         <param name="use_current_position_as_offset" value="true"></param>
     </node>
+    
     <node pkg="fmSensors" name="ll_encoder_right" type="ll_encoder_node">
         <param name="encoder_id" value="22"/>
         <param name="publish_rate" value="50"/>
@@ -58,17 +64,42 @@
     </node>
     
     <node pkg="fmSensors" name="gpgga_parser" type="gps_node" output="screen"> 
-	    <param name="subscribe_topic_id" value="/fmCSP/S0_rx" />
+	    <param name="subscribe_topic_id" value="/fmCSP/com1_rx" />
 		<param name="publish_topic_id" value="/fmSensors/gpgga" />
 	</node>
 	
 	<node pkg="fmSensors" name="IMU" type="vectornav_imu_node" output="screen"> 
 	    <param name="subscribe_topic_id" value="/fmCSP/com0_rx" />
 		<param name="publish_topic_id" value="/fmSensors/IMU" />
-		<param name="frame_id" value="imu_link" />
+		<param name="frame_id" value="ASuBot/imu_link" />
 		<param name="cov_x" value="0.001"/>
 		<param name="cov_y" value="0.001"/>
 		<param name="cov_z" value="0.001"/>
+	</node>
+	
+	<node pkg="fmSensors" name="laser_range" type="lms111_node">
+        <param name="host" value="192.168.0.10"/>
+        <param name="topic_id" value="/fmSensors/laser_msg"/>
+        <param name="frame_id" value="ASuBot/laser_link"/>
+        <param name="invert_output" value="true" />
+    </node>
+    
+    <node pkg="fmSensors" name="row_cam_0" type="eye_drive">
+		<param name="Can_rx_subscriber_topic" value="/fmCSP/can1_rx"/>
+		<param name="Can_tx_publisher_topic" value="/fmCSP/can1_tx"/>
+		<param name="row_publisher_topic" value="row"/>
+		<param name="frame_id" value="ASuBot/row_cam_link"/>
+		<param name="publish_rate" value="10.0"/>
+		<param name="cam_program" value="0x03"/>
+		<param name="cam_height" value="80"/>
+		<param name="cam_angle" value="45"/>
+		<param name="cam_threshold" value="0x80"/>
+		<param name="cam_target_width" value="15"/>
+		<param name="cam_target_height" value="8"/>
+		<param name="cam_target_distance" value="75"/>
+		<param name="cam_minor_distance" value="0"/>
+		<param name="cam_number_of_rows" value="1"/>
+		<param name="cam_rows_between_wheels" value="0x03"/>
 	</node>
 </group>
 

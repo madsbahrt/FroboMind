@@ -1,30 +1,17 @@
 <launch>
 
 <!-- Include sensors currently mounted on the ASuBot -->
-<include file="$(find fmCore)/launch/ASuBot-sensors-only.launch"/>
+<include file="$(find fmCore)/launch/ASuBot-sensors.launch"/>
+
+<!-- Include actuators currently mounted on the ASuBot -->
+<include file="$(find fmCore)/launch/ASuBot-actuators.launch"/>
+
 <!-- Include the current mounting position -->
 <include file="$(find fmCore)/launch/ASuBot-tf.launch"/>
 
+<!-- High level functionality -->
 <include file="$(find fmCore)/launch/odometry-fusion.launch"/>
 <include file="$(find fmCore)/launch/rabbit-follow.launch"/>
 
-<node pkg="tf" type="static_transform_publisher" name="utm_link_broadcaster" args="-588797 -6137255 0 0 0 0 map odom_combined 100"/>
-
-<group ns="fmActuators">
-
-<node pkg="fmActuators" type="topcon" name="topconaes" output="screen">
-<param name="publisher_topic" value="/fmCSP/can1_tx"></param>
-<param name="subscriber_topic" value="/fmCSP/can1_rx"></param>
-<param name="steering_angle_cmd" value="/fmKinematics/steering_angle_cmd" />
-</node>
-</group>
-
-<group ns="fmKinematics">
-<node pkg="fmKinematics" name="cmd_vel_to_angle" type="asubot_twist_to_angle_cmd">
-<param name="steering_angle_publisher_topic" value="/fmKinematics/steering_angle_cmd"></param>
-<param name="twist_subscriber_topic" value="/fmControllers/cmd_vel"></param>
-</node>
-
-</group>
 
 </launch>

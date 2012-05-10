@@ -1,8 +1,0 @@
-<launch>
-    <node pkg="fmSensors" name="laser_range" type="lms111_node">
-        <param name="host" value="192.168.0.10"/>
-        <param name="topic_id" value="laser_msg"/>
-        <param name="frame_id" value="laser_link"/>
-        <param name="invert_output" value="true" />
-    </node>
-</launch>
