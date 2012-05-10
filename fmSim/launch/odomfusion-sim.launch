@@ -4,20 +4,6 @@
 
 <include file="$(find fmCore)/launch/odometry-fusion.launch"></include>
 <include file="$(find fmCore)/launch/ASuBot-tf.launch"></include>
-
-
-<group ns="viz">
-	 <node pkg="rviz" name="visualization" type="rviz" args="-d $(find fmSim)/conf/odom_viz.vcg"/>
-	 
-	 <node pkg="fmTools" name="imu_marker" type="imu_marker">
-	 	<param name="imu_subscriber_topic" value="/fmSensors/IMU"></param>
-	 	<param name="marker_publisher_topic" value="/fmTools/imu_marker"></param>
-	 	<param name="frame_id" value="base_footprint"></param>
-	 </node>
-</group>
-
-<!-- Create a transform which moves base footprint back where rviz can see it due to utm coordinates  -->
-<node pkg="tf" type="static_transform_publisher" name="utm_link_broadcaster" args="-588797 -6137255 0 0 0 0 map odom_combined 100"/>
-
+<include file="$(find fmCore)/launch/ASuBot-viz.launch"></include>
 
 </launch>
