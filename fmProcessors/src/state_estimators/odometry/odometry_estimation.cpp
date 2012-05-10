@@ -26,9 +26,6 @@ public:
 		is_odom_initialised = false;
 		current_heading = 0;
 
-		base_frame = "base_footprint";
-
-
 		filter = new PositionEstimator();
 
 	}
@@ -76,12 +73,16 @@ public:
 		{
 			u(1) = odom_msg->twist.twist.linear.x;
 			u(2) = current_heading;
+
 			ROS_DEBUG_NAMED("position_estimator","Control input: %.4f %.4f",u(1),u(2));
 			state = filter->getX();
 			ROS_DEBUG_NAMED("position_estimator","State before time update: %.4f %.4f %.4f",state(1),state(2),state(3));
+
 			filter->timeUpdateStep(u);
+
 			state = filter->getX();
 			ROS_DEBUG_NAMED("position_estimator","State after time update: %.4f %.4f %.4f",state(1),state(2),state(3));
+
 			publishEstimate();
 
 		}
@@ -126,7 +127,7 @@ public:
 
 			heading_estimator.get_result(current_heading,current_imu_cov);
 
-			listen.lookupTransform(base_frame,"/gps_link",ros::Time(0),transform);
+			listen.lookupTransform(base_frame,odom_msg->child_frame_id,ros::Time(0),transform);
 
 			tf::Point p;
 
@@ -140,7 +141,9 @@ public:
 
 			state = filter->getX();
 			ROS_DEBUG_NAMED("position_estimator","State before measurment update: %.4f %.4f %.4f",state(1),state(2),state(3));
+
 			filter->measureUpdateStep(z);
+
 			state = filter->getX();
 			ROS_DEBUG_NAMED("position_estimator","State after measurment update: %.4f %.4f %.4f",state(1),state(2),state(3));
 		}
@@ -170,7 +173,7 @@ public:
 			heading_estimator.get_result(current_heading,current_imu_cov);
 			ROS_DEBUG_NAMED("angle_estimator","After angle correction: %.4f %.4f",current_heading,current_imu_cov);
 
-			listen.lookupTransform(base_frame,"/gps_link",ros::Time(0),transform);
+			listen.lookupTransform(base_frame,odom_msg->child_frame_id,ros::Time(0),transform);
 
 			tf::Point p;
 
@@ -205,8 +208,8 @@ public:
 		geometry_msgs::Quaternion odom_quat = tf::createQuaternionMsgFromYaw(state(3));
 
 		this->odom_trans.header.stamp = ros::Time::now();
-		this->odom_trans.header.frame_id = "odom_combined";
-		this->odom_trans.child_frame_id = "base_footprint";
+		this->odom_trans.header.frame_id = odom_frame;
+		this->odom_trans.child_frame_id = base_frame;
 		this->odom_trans.transform.translation.x = state(1);
 		this->odom_trans.transform.translation.y = state(2);
 		this->odom_trans.transform.translation.z = 0.0;
@@ -216,7 +219,7 @@ public:
 
 		pub_odom_msg.header.stamp = ros::Time::now();
 
-		pub_odom_msg.header.frame_id = "odom_combined";
+		pub_odom_msg.header.frame_id = odom_frame;
 		pub_odom_msg.pose.pose.position.x = state(1);
 		pub_odom_msg.pose.pose.position.y = state(2);
 
@@ -250,6 +253,8 @@ public:
 	double ktheta,ks;
 	//@}
 	double north_correct;
+
+	std::string base_frame,gps_frame,odom_frame;
 
 private:
 
@@ -285,7 +290,7 @@ private:
 	tf::TransformListener listen;
 	tf::StampedTransform transform;
 
-	std::string base_frame;
+
 
 	PositionEstimator* filter;
 
@@ -328,6 +333,10 @@ int main(int argc, char **argv)
 	nh.param<std::string>("odom_subscriber_topic", odom_sub_top, "/fmExtractors/wheel_odom");
 	nh.param<std::string>("gps_odom_subscriber_topic", gps_odom_sub_top,"/fmExtractors/gps_odom");
 	nh.param<std::string>("odom_estimate_publisher_topic", odom_est_pub_top,"/fmProcessors/odom_estimate");
+
+	nh.param<std::string>("vehicle_frame",node.base_frame,"base_footprint");
+	nh.param<std::string>("gps_frame",node.gps_frame,"gps_link");
+	nh.param<std::string>("odom_estimate_frame",node.odom_frame,"odom_combined");
 
 	nh.param<double>("gps_covariance",node.gps_cov,10);
 	nh.param<double>("imu_covariance",node.imu_cov,0.01);
