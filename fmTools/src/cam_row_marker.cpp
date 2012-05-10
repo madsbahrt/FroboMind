@@ -27,7 +27,7 @@ void processRowEvent(const fmMsgs::claas_row_cam::ConstPtr& msg)
 	marker.points.push_back(line_start);
 	marker.points.push_back(line_end);
 
-	marker.color.a = 1.0;
+	marker.color.a = 0.7;
 	marker.color.r = 1 - msg->quality/255.0;
 	marker.color.g = msg->quality/255.0;
 

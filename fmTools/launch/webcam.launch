@@ -6,7 +6,8 @@
 		<param name="width" value="320"></param>
 		<param name="height" value="240"></param>
 		<param name="frame_id" value="cam_link"></param>
-		<param name="fps" value="5"></param>
+		<param name="fps" value="1"></param>
+		<param name="skip_frames" value="3"/>
 	</node>
   </group>
 </launch>
