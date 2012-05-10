@@ -168,9 +168,11 @@ public:
 				quality = heading = offset = 0;
 			}
 			cam_tx_msg.header.stamp = ros::Time::now();
+			cam_tx_msg.header.frame_id = frame_id;
 			cam_tx_msg.quality = quality;
 			cam_tx_msg.heading = heading;
 			cam_tx_msg.offset = offset;
+
 
 			cam_row_pub.publish(cam_tx_msg);
 		}
@@ -182,13 +184,13 @@ public:
 	ros::Subscriber can_rx_sub;
 	ros::Publisher cam_row_pub;
 
+	std::string frame_id;
 private:
 
 	void transmitInitMsg(uint8_t buf[8])
 	{
 		can_tx_msg.header.stamp = ros::Time::now();
 		can_tx_msg.flags = 0x04; // EFF is indicated in flags (atleast when using can4linux)
-		can_tx_msg.flags |= (1 << 0); // try RTR also
 		can_tx_msg.id = 0x1424003C;
 		can_tx_msg.length = 8;
 		for(int i=0;i<8;i++)
@@ -226,7 +228,7 @@ int main(int argc, char **argv)
 	ros::NodeHandle nh;
 	ros::NodeHandle n("~");
 
-	std::string can_rx_topic,can_tx_topic,row_topic;
+	std::string can_rx_topic,can_tx_topic,row_topic,frame_id;
 	double publish_rate;
 
 	ros::Timer t;
@@ -249,10 +251,12 @@ int main(int argc, char **argv)
 	n.param<int>("cam_rows_between_wheels",conf.rows_between_wheels,0x03);
 
 	n.param<double>("publish_rate",publish_rate,25.0);
+	n.param<std::string>("frame_id",frame_id,"rowcam_link");
 
 
 	EyeDrive camera(conf);
 
+	camera.frame_id = frame_id;
 	camera.can_rx_sub  = nh.subscribe<fmMsgs::can> (can_rx_topic.c_str(),10,&EyeDrive::processCanRxEvent,&camera);
 	camera.can_tx_pub  = nh.advertise<fmMsgs::can> (can_tx_topic.c_str(),10);
 	camera.cam_row_pub = nh.advertise<fmMsgs::claas_row_cam> (row_topic.c_str(),1);
