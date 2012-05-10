@@ -20,7 +20,7 @@ nav_msgs::Odometry odom;
 double gps_variance;
 
 geometry_msgs::TransformStamped odom_trans;
-std::string frame_id,tf_child_frame_id,tf_frame_id;
+std::string frame_id,child_frame_id,tf_child_frame_id,tf_frame_id;
 
 
 bool publish_relative = false;
@@ -48,6 +48,7 @@ void utmCallback(const fmMsgs::gps_state::ConstPtr& msg)
 
 		odom.header.stamp = ros::Time::now();
 		odom.header.frame_id =frame_id;
+		odom.child_frame_id = child_frame_id;
 
 		if(publish_relative){
 			odom.pose.pose.position.x = -(ref_fix.utm_e - msg->utm_e);
@@ -101,7 +102,8 @@ int main(int argc, char **argv)
 			"/fmExtractors/utm");
 	n.param<std::string>("publish_topic_id", publish_topic_id,
 			"/fmExtractors/gps_odom");
-	n.param<std::string>("odom_frame_id",frame_id,"base_footprint");
+	n.param<std::string>("odom_frame_id",frame_id,"odom_combined");
+	n.param<std::string>("child_odom_frame_id",child_frame_id,"gps_link");
 	n.param<bool>("publish_relative_coordinates",publish_relative,false);
 	n.param<int>("receive_n_before_publish",utm_settled_count_top,3);
 	n.param<double>("gps_variance",gps_variance,1);
