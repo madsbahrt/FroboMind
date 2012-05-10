@@ -5,13 +5,13 @@
  *      Author: soeni05
  */
 
-//#include "pathParser.h"
 #include "rabbitPlanner.h"
 #include <geometry_msgs/PoseStamped.h>
+#include <fmExecutors/follow_pathAction.h>
 
 
-//pathParser * pathPlan;
-rabbitPlanner * rabbit;
+rabbitPlanner * rabbit = NULL;
+
 
 int main(int argc, char **argv)
 {
@@ -19,10 +19,8 @@ int main(int argc, char **argv)
 	ros::NodeHandle nh("~");
 	ros::NodeHandle n;
 
-	std::string filepath;
-
-	nh.param<std::string>("pathfile_location",filepath,"waypoints.yaml");
-
+	std::string filepath,path_pub_topic;
+/*
 	std::vector<geometry_msgs::PoseStamped> * path;
 	path = new std::vector<geometry_msgs::PoseStamped> ;
 	geometry_msgs::PoseStamped pose;
@@ -43,7 +41,7 @@ int main(int argc, char **argv)
 	pose.pose.position.y =6137288.18503 -2;
 	pose.pose.position.x =588613.910558;
 	path->push_back(pose);
-
+*/
 /*
     pose.pose.position.x = 588813.821135;
     pose.pose.position.y = 6137242.22287;
@@ -58,16 +56,9 @@ int main(int argc, char **argv)
 
 */
 
+	rabbit = new rabbitPlanner("follow_path");
 
-//	pathPlan = new pathParser(filepath);
-
-//	if(!pathPlan->path->size()){
-//		ROS_ERROR("pathParser: no path loaded at %s",filepath.c_str());
-//		return 0;
-//	}
-
-	rabbit = new rabbitPlanner(path);
-
+	nh.param<std::string>("path_publisher_topic",path_pub_topic,"/fmExecutors/path");
 	//base_projected_to_A_B / deltaRabbit = rabbit
 	nh.param<double>("deltaRabbit", rabbit->deltaRabbit, 2);
 	//Waypoint threshold (0 = change waypoint when rabbit > B has been passed ; 1 = change waypoint when rabbit >= B-1 has been passed)
@@ -79,15 +70,10 @@ int main(int argc, char **argv)
 	nh.param<std::string>("vehicle_frame", rabbit->vehicle_frame, "base_link");
 	nh.param<std::string>("rabbit_frame", rabbit->rabbit_frame, "rabbit");
 
-	rabbit->initRabbit();
+	// latched topic so new subscriber get the most recent path
+	rabbit->path_publisher = nh.advertise<nav_msgs::Path>(path_pub_topic.c_str(),5,true);
 
-	ros::Rate r(50);
-
-	while(ros::ok()){
-		rabbit->planRabbit();
-		ros::spinOnce();
-		r.sleep();
-	}
+	ros::spin();
 
 	return 0;
 

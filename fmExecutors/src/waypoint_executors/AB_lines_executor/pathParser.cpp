@@ -7,6 +7,7 @@
 
 #include "pathParser.h"
 
+
 void operator >> (const YAML::Node& node, geometry_msgs::PoseStamped &pose) {
 	node["position"][0] >> pose.pose.position.x;
 	node["position"][1] >> pose.pose.position.y;

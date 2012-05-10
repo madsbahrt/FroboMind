@@ -9,7 +9,7 @@
   <review status="unreviewed" notes=""/>
   <url></url>
   <depend package="roscpp"/>
-  <depend package="common_rosdeps" />
+
   
   <depend package="tf"/>
   <depend package="visualization_msgs"/>

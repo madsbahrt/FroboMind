@@ -10,7 +10,7 @@
 
 
 #include <ros/ros.h>
-#include <yaml-cpp/yaml.h>
+#include <yaml.h>
 #include <geometry_msgs/PoseStamped.h>
 
 #include <iostream>

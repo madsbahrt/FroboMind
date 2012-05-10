@@ -10,8 +10,11 @@
 
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <nav_msgs/Path.h>
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
+#include <actionlib/server/simple_action_server.h>
+#include <fmExecutors/follow_pathAction.h>
 
 class rabbitPlanner{
 public:
@@ -20,11 +23,23 @@ public:
 
 	double deltaRabbit,deltaWaypoint;
 	std::string odom_frame, vehicle_frame,rabbit_frame,rabbit_type;
-	rabbitPlanner(std::vector<geometry_msgs::PoseStamped>* path);
-	bool initRabbit();
-	void planRabbit();
+	rabbitPlanner(std::string name);
+
+	void publishPath();
+	void publishFeedback();
+	void publishResult();
+	bool planRabbit();
+
+
+
+	void actionExecute(const fmExecutors::follow_pathGoalConstPtr& goal);
+
+	ros::Publisher path_publisher;
+
 
 private:
+
+	void place_safe_rabbit();
 
 	std::vector<geometry_msgs::PoseStamped>* path;
 
@@ -36,9 +51,21 @@ private:
 	tf::Vector3 A;
 	tf::Vector3 B;
 
+	ros::NodeHandle nh;
+
+	tf::StampedTransform transform;
+
 	geometry_msgs::TransformStamped tf_rabbit;
 	geometry_msgs::TransformStamped tf_A;
 	geometry_msgs::TransformStamped tf_B;
+
+	actionlib::SimpleActionServer<fmExecutors::follow_pathAction> action_server;
+	std::string action_name;
+	fmExecutors::follow_pathFeedback feedback_msg;
+	fmExecutors::follow_pathResult   result_msg;
+
+	bool success;
+
 
 
 
