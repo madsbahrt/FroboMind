@@ -5,6 +5,7 @@
  *      Author: morl
  */
 #include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
 #include <fmMsgs/gyroscope.h>
 #include <fmMsgs/claas_row_cam.h>
 
@@ -30,6 +31,8 @@ public:
 
 		gyro_variance = pow(2,2)*M_PI/180;
 		quality_to_variance = 1.75;
+
+		imu_initialised = false;
 	}
 
 	virtual ~RowFilter()
@@ -37,25 +40,33 @@ public:
 
 	}
 
-	void processGyroSystemUpdate(const fmMsgs::gyroscopeConstPtr& gyro_msg)
+	void processIMUSystemUpdate(const sensor_msgs::ImuConstPtr& imu_msg)
 	{
-		// for now a fixed dt of 0.01 is used and fixed variance
-		double ang = gyro_msg->z * 0.01;
-		ROS_DEBUG("performing system update with: %.4f and %.4f",ang,gyro_variance);
-		system_update(ang,gyro_variance);
-		ROS_DEBUG("Estimate after system update: %.4f %.4f",estimated_angle,estimated_variance);
+		if(!imu_initialised)
+		{
+			imu_initialised = true;
+		}
+		else
+		{
+			double ang = tf::getYaw(imu_msg->orientation) - tf::getYaw(prev_imu_msg.orientation);
+			ROS_DEBUG_NAMED("kalman_estimate","performing system update with: %.4f and %.4f",ang,gyro_variance);
+			system_update(ang,gyro_variance);
+			ROS_DEBUG_NAMED("kalman_estimate","Estimate after system update: %.4f %.4f",estimated_angle,estimated_variance);
+		}
+		prev_imu_msg = *imu_msg;
+
 	}
 
 	void processRowMeasurementUpdate(const fmMsgs::claas_row_camConstPtr& row_msg)
 	{
-		double variance = (255 - row_msg->quality)*quality_to_variance;
+		double variance = (256 - row_msg->quality)*quality_to_variance;
 		double angle_rad = row_msg->heading * M_PI/180.0;
 
 		row_offset = row_msg->offset;
 
-		ROS_DEBUG("performing measurement update with: %.4f and %.4f",angle_rad,variance);
+		ROS_DEBUG_NAMED("kalman_estimate","performing measurement update with: %.4f and %.4f",angle_rad,variance);
 		measurement_update(angle_rad,variance);
-		ROS_DEBUG("Estimate after measurement: %.4f %.4f",estimated_angle,estimated_variance);
+		ROS_DEBUG_NAMED("kalman_estimate","Estimate after measurement: %.4f %.4f",estimated_angle,estimated_variance);
 
 	}
 
@@ -135,6 +146,9 @@ private:
 	 * */
 	double row_offset; // saved from row message
 	fmMsgs::claas_row_cam msg;
+	sensor_msgs::Imu prev_imu_msg;
+
+	bool imu_initialised;
 
 
 
@@ -158,13 +172,13 @@ int main(int argc, char **argv)
 
 	RowFilter filter;
 
-	nh.param<std::string>("gyro_subscriber_topic", gyro_sub_top, "/fmSensors/Gyroscope");
+	nh.param<std::string>("imu_subscriber_topic", gyro_sub_top, "/fmSensors/IMU");
 	nh.param<std::string>("row_subscriber_topic", row_sub_top, "/fmSensors/row");
 	nh.param<std::string>("row_estimate_publisher_topic", row_est_pub_top,"/fmProcessors/row_estimate");
-	nh.param<double>("gyro_variance",filter.gyro_variance,pow(2,2)*M_PI/180);
+	nh.param<double>("imu_variance",filter.gyro_variance,pow(2,2)*M_PI/180);
 	nh.param<double>("row_quality_to_variance",filter.quality_to_variance,1.75);
 
-	imu_sub = nh.subscribe<fmMsgs::gyroscope>(gyro_sub_top.c_str(),1, &RowFilter::processGyroSystemUpdate,&filter);
+	imu_sub = nh.subscribe<sensor_msgs::Imu>(gyro_sub_top.c_str(),1, &RowFilter::processIMUSystemUpdate,&filter);
 	row_sub = nh.subscribe<fmMsgs::claas_row_cam>(row_sub_top.c_str(),1, &RowFilter::processRowMeasurementUpdate,&filter);
 
 	filter.row_est_pub = nh.advertise<fmMsgs::claas_row_cam>(row_est_pub_top.c_str(),1);

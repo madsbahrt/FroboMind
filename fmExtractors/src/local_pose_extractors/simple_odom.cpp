@@ -84,6 +84,7 @@ public:
 
 			// calculate distance vector
 			double dx = (delta_l + delta_r)/2;
+			ROS_INFO("dx is %f",dx);
 
 			// calculate change in orientation based on distance between wheels
 			double dtheta = (-delta_l / (2*v_l)) + (delta_r/(2 * v_l));

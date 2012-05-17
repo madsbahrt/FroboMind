@@ -1,0 +1,68 @@
+<launch>
+
+<group ns="fmCSP">
+
+	<node pkg="fmCSP" name="S0" type="serial_string2">
+        <param name="publisher_topic" value="/fmCSP/S0_rx" />	 
+        <param name="subscriber_topic" value="/fmCSP/S0_tx" />	
+        <param name="device" value="/dev/ttyS0" />	
+        <param name="baudrate" value="115200" />
+        <param name="termination_character" value="13"/>
+	</node>
+	
+	<node pkg="fmCSP" name="S1" type="serial_string2">
+        <param name="publisher_topic" value="/fmCSP/S1_rx" />	 
+        <param name="subscriber_topic" value="/fmCSP/S1_tx" />	
+        <param name="device" value="/dev/ttyS1" />	
+        <param name="baudrate" value="115200" />
+        <param name="termination_character" value="13"/>
+	</node>
+	
+</group>
+
+<group ns="fmActuators">
+	<node pkg="fmActuators" type="roboteq_controller" name="robotteq_l" output="screen" >
+		<param name="cmd_vel_topic" value="/fmKinematics/cmd_vel_left"/>
+		<param name="serial_rx_topic" value="/fmCSP/S0_rx"/>
+		<param name="serial_tx_topic" value="/fmCSP/S0_tx"/>
+		<param name="deadman_joy_topic" value="/fmHMI/joy"/>
+		<param name="encoder_topic" value="/fmSensors/encoder_left"/>
+		<param name="status_topic" value="/fmActuators/status_left"/>
+		<param name="max_time_diff" value="1"/>
+		<param name="deadman_joy_button_index" value="3"/>
+		<param name="deadman_joy_max_missing" value="30"/>
+	</node>
+	
+	<node pkg="fmActuators" type="roboteq_controller" name="robotteq_r" output="screen" >
+		<param name="cmd_vel_topic" value="/fmKinematics/cmd_vel_right"/>
+		<param name="serial_rx_topic" value="/fmCSP/S1_rx"/>
+		<param name="serial_tx_topic" value="/fmCSP/S1_tx"/>
+		<param name="deadman_joy_topic" value="/fmHMI/joy"/>
+		<param name="encoder_topic" value="/fmSensors/encoder_right"/>
+		<param name="status_topic" value="/fmActuators/status_right"/>
+		<param name="max_time_diff" value="1"/>
+		<param name="deadman_joy_button_index" value="3"/>
+		<param name="deadman_joy_max_missing" value="30"/>
+	</node>
+</group>
+
+<group ns="fmKinematics">
+	<node pkg="fmKinematics" name="cmd_vel_to_tracks" type="armadillo_ifk">
+			<param name="hl_subscriber_topic" value="/fmTools/cmd_vel"></param>
+			<param name="ll_publisher_topic_left" value="/fmKinematics/cmd_vel_left"></param>
+			<param name="ll_publisher_topic_right" value="/fmKinematics/cmd_vel_right"></param>
+			<param name="deadmanbutton_topic" value="/fmHMI/joy"></param>
+	</node>
+</group>
+
+<group ns="fmTools">
+		<node pkg="fmTools" name="cmd_vel_mux" type="topic_mux">
+			<param name="topic_1_timeout" value="1"/>
+			<param name="topic_2_timeout" value="1"/>
+			<param name="topic_1_id" value="/fmHMI/wii_cmd_vel"/>
+			<param name="topic_2_id" value="/fmControllers/cmd_vel_auto"/>
+			<param name="cmd_vel_out_id" value="/fmTools/cmd_vel"/>
+		</node>
+</group>
+
+</launch>

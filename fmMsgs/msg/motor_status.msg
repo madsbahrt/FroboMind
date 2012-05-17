@@ -1,0 +1,5 @@
+Header header
+float64 motor_amps
+float64 motor_voltage_in
+float64 motor_voltage_out
+string motor_status

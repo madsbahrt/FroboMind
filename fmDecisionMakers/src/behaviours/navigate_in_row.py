@@ -40,21 +40,23 @@ class NavigateInRow():
         self.__listen = TransformListener()
         
         self._action_name = name
-        self._server = actionlib.SimpleActionServer(self._action_name,navigate_in_rowAction,goal_callback=goal_cb,preempt_cb=preempt_cb)
+        self._server = actionlib.SimpleActionServer(self._action_name,navigate_in_rowAction,auto_start=False)
+        self._server.register_goal_callback(self.goal_cb)
+        self._server.register_preempt_callback(self.preempt_cb);
         
-        self._online = False
         self._subscriber = rospy.Subscriber(rowtopic, claas_row_cam, callback=NavigateInRow.row_msg_callback,callback_args=self)
         self._action_client = actionlib.SimpleActionClient("/rabbitplanner/follow_path",follow_pathAction)
         self._last_row_msg = None
         self._server.start()
         
     def preempt_cb(self):
+        rospy.loginfo("preempt received")
         self._server.set_preempted()
         pass
     
     def goal_cb(self):
-        self._online = True
-        #fore replan
+        #Reset signals
+        rospy.loginfo("goal received")
         self._last_row_msg = None
         
         self._server.accept_new_goal()
@@ -63,7 +65,7 @@ class NavigateInRow():
         """
             new row callback function
         """
-        if self._online:
+        if self._server.is_active():
             if msg.quality > 150:
                 if self._last_row_msg:
                     if self.__should_replan(msg, self._last_row_msg):
@@ -77,7 +79,6 @@ class NavigateInRow():
             else:
                 # we have lost track
                 self._server.set_aborted(None, "quality too low")
-                self._online = False
             
         
     def __should_replan(self,row,last_row):
@@ -150,7 +151,7 @@ class NavigateInRow():
 
 if __name__ == "__main__":
     
-    rospy.init_node("navigate_in_rows")
+    rospy.init_node("navigate_in_row")
     
     NavigateInRow(rospy.get_name(), "/fmSensors/row", 0.1, 0.1, 0.6,3)
     

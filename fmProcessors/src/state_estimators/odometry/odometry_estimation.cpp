@@ -163,12 +163,12 @@ public:
 						prior_cov(i,j) = 0;
 				}
 			}
-
-			if(sqrt( pow((odom_msg->pose.pose.position.x - prev_gps_msg.pose.pose.position.x),2) + pow(odom_msg->pose.pose.position.y - prev_gps_msg.pose.pose.position.y,2)) > 1.5 )
-			{
-				ROS_DEBUG_NAMED("angle_estimator","Before angle correction: %.4f %.4f",current_heading,current_imu_cov);
-				heading_estimator.correct(tf::getYaw(odom_msg->pose.pose.orientation),10);
-			}
+			// do not update angle estimate with gps angle because we only have one message
+			//if(sqrt( pow((odom_msg->pose.pose.position.x - prev_gps_msg.pose.pose.position.x),2) + pow(odom_msg->pose.pose.position.y - prev_gps_msg.pose.pose.position.y,2)) > 1.5 )
+			//{
+			//	ROS_DEBUG_NAMED("angle_estimator","Before angle correction: %.4f %.4f",current_heading,current_imu_cov);
+			//	heading_estimator.correct(tf::getYaw(odom_msg->pose.pose.orientation),10);
+			//}
 
 			heading_estimator.get_result(current_heading,current_imu_cov);
 			ROS_DEBUG_NAMED("angle_estimator","After angle correction: %.4f %.4f",current_heading,current_imu_cov);

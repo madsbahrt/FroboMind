@@ -38,7 +38,7 @@
 
 #include "ros/ros.h"
 //#include "joy/Joy.h"
-#include "sensor_msgs/Joy.h"
+#include "joy/Joy.h"
 #include "geometry_msgs/TwistStamped.h"
 #include "math.h"
 #include "boost/circular_buffer.hpp"
@@ -78,7 +78,7 @@ private:
   double scale_linear_velocity_x, scale_angular_velocity_z, scale_slow_velocity;
 
   //  Callback method
-  void joyCallback(const sensor_msgs::Joy::ConstPtr& joy);
+  void joyCallback(const joy::Joy::ConstPtr& joy);
 };
 
 WiiToTwist::WiiToTwist()
@@ -136,11 +136,11 @@ WiiToTwist::WiiToTwist()
   for (int i=0; i<z_buffer.capacity(); i++) z_buffer.push_back(0.0);
 
   //  Subscriber and publisher
-  joy_sub = global_n.subscribe<sensor_msgs::Joy> (subscriber_topic, 10, &WiiToTwist::joyCallback, this);
+  joy_sub = global_n.subscribe<joy::Joy> (subscriber_topic, 10, &WiiToTwist::joyCallback, this);
   twist_pub = global_n.advertise<geometry_msgs::TwistStamped> (publisher_topic, 1);
 }
 
-void WiiToTwist::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
+void WiiToTwist::joyCallback(const joy::Joy::ConstPtr& joy)
 {
   //  Get values from wiimote axes
   x_buffer.push_back((double)joy -> axes[x_axis]);
@@ -171,7 +171,7 @@ void WiiToTwist::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
   if(joy->buttons[3])
   {
     twist_msg.twist.linear.x = pitch * max_linear_velocity * scale_linear_velocity_x;
-    twist_msg.twist.angular.z = roll * max_angular_velocity * scale_angular_velocity_z;
+    twist_msg.twist.angular.z = -roll * max_angular_velocity * scale_angular_velocity_z;
   }
   else
   {

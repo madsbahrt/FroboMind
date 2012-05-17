@@ -1,0 +1,47 @@
+<launch>
+<group ns="fmExtractors">
+	<node pkg="fmExtractors" name="UTM_TO_ODOM" type="utm_to_odom" output="screen"> 
+	    <param name="subscribe_topic_id" value="/fmExtractors/utm" />
+		<param name="publish_topic_id" value="/fmExtractors/gps_odom" />
+		<param name="odom_frame_id" value="odom_combined" />
+		<param name="child_odom_frame_id" value="gps_link" />
+		<param name="receive_n_before_publish" value="10"/>
+		<param name="gps_variance" value="1.3"/>
+	</node>
+	
+	<node pkg="fmExtractors" name="GPGGA_TO_UTM" type="gps_state" output="screen"> 
+	    <param name="subscribe_topic_id" value="/fmSensors/gpgga" />
+		<param name="publish_topic_id" value="/fmExtractors/utm" />
+	</node>
+	
+	<node pkg="fmExtractors" name="wheel_odometry" type="simple_odom">
+        <param name="conv_ticks_to_meter_left" value="0.001873049"/> <!-- Calculated by one complete belt cycle which gives 961 hall counts -->
+        <param name="conv_ticks_to_meter_right" value="0.001873049"/> 
+        <param name="distance_between_wheels_in_meter" value="2.5"></param>
+        <param name="max_time_diff" value="1"></param>      
+        <param name="publisher_topic"        value="/fmExtractors/wheel_odom" />
+        <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_right" />
+        <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_left" />
+    </node>
+</group>
+
+<group ns="fmProcessors">
+ <node pkg="fmProcessors" type="odom_estimation" name="Odometry_Estimation" output="screen" >
+	<param name="imu_subscriber_topic" value="/fmSensors/IMU"></param>
+	<param name="odom_subscriber_topic"     value="/fmExtractors/wheel_odom"></param>
+	<param name="gps_odom_subscriber_topic" value="/fmExtractors/gps_odom"></param>
+	<param name="odom_estimate_publisher_topic" value="/fmProcessors/odom_estimate"></param>
+	<param name="vehicle_frame" value="base_footprint"/>
+	<param name="gps_frame" value="gps_link"/>
+	<param name="odom_estimate_frame" value="odom_combined"/>
+	<param name="gps_covariance" value="10"/>
+	<param name="imu_covariance" value="0.01"/>
+	<param name="odom_covariance" value="0.05"/>
+	<param name="ks" value="0.1"/>
+	<param name="ktheta" value="10"/>
+	<param name="magnetic_north_correction" value="0.3"/>
+  </node> 
+</group>
+
+
+</launch>

@@ -23,6 +23,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_boost_directories()
 
+rosbuild_add_executable(serial_string2 src/Serial_Port/serial_string/serial_string2.cpp)
+rosbuild_add_executable(serial_string2 src/Serial_Port/serial_string/serialInterface.cpp)
 
 rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serial_string.cpp)
 rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serialInterface.cpp)

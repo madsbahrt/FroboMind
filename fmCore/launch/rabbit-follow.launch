@@ -6,17 +6,17 @@
         <param name="deltaRabbit" value="6" />
         <param name="deltaWaypoint" value="2" />
         <param name="rabbit_type" value="auto" />
-        <param name="odometry_frame" value="ASuBot/odom_combined" />
-        <param name="vehicle_frame" value="ASuBot/base_footprint" />
-        <param name="rabbit_frame" value="ASuBot/rabbit" />
+        <param name="odometry_frame" value="odom_combined" />
+        <param name="vehicle_frame" value="base_footprint" />
+        <param name="rabbit_frame" value="rabbit" />
     </node>
 </group>
 
 <group ns="fmControllers">
 	<node pkg="fmControllers" name="rabbit_follower" type="rabbit_follower_node">
-		<param name="cmd_vel_topic_id" value="/fmControllers/cmd_vel"/>
-		<param name="rabbit_frame_id" value="ASuBot/rabbit"/>
-		<param name="vehicle_frame_id" value="ASuBot/base_footprint"/>
+		<param name="cmd_vel_topic_id" value="/fmControllers/cmd_vel_auto"/>
+		<param name="rabbit_frame_id" value="rabbit"/>
+		<param name="vehicle_frame_id" value="base_footprint"/>
 
 		<param name="field_of_view_rad" value="6.28"/>
 		<param name="max_angular_vel" value="1.5"/>

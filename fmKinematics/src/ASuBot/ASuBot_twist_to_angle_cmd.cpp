@@ -62,8 +62,8 @@ int main(int argc, char **argv) {
 
 	std::string ASubot_wheel_publisher_topic;
 
-	nh.param<std::string> ("steering_angle_publisher_topic", ASubot_wheel_publisher_topic,"/ASuBot_wheel_angle");
-	nh.param<std::string> ("twist_subscriber_topic", twist_subscriber_topic,"/cmd_vel");
+	nh.param<std::string> ("steering_angle_publisher_topic", ASubot_wheel_publisher_topic,"/fmActuators/steering_angle_cmd");
+	nh.param<std::string> ("twist_subscriber_topic", twist_subscriber_topic,"/fmControllers/cmd_vel");
 
 	wheel_pub = nh.advertise<fmMsgs::steering_angle_cmd> (ASubot_wheel_publisher_topic.c_str(),1,1);
 	ros::Subscriber twist_sub = nh.subscribe<geometry_msgs::TwistStamped> (twist_subscriber_topic.c_str(), 1, &twistmsgCallbackHandler);

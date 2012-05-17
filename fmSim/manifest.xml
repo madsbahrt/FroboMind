@@ -9,8 +9,10 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/fmSim</url>
   <depend package="roscpp"/>
+  <depend package="rospy"/>
   <depend package="fmMsgs"/>
-
+  <depend package="tf"/>
+  <depend package="visualization_msgs"/>
 </package>
 
 

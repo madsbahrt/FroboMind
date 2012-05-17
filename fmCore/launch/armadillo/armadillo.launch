@@ -1,0 +1,12 @@
+<launch>
+<include file="$(find fmCore)/launch/armadillo/armadillo-sensors.launch"/>
+<include file="$(find fmCore)/launch/armadillo/armadillo-actuators.launch"/>
+<include file="$(find fmCore)/launch/armadillo/armadillo-tf.launch"/>
+<include file="$(find fmCore)/launch/armadillo/armadillo-pose-estimation.launch"/>
+<include file="$(find fmCore)/launch/armadillo/armadillo-rabbit-follow.launch"/>
+<include file="$(find fmCore)/launch/armadillo/armadillo-hmi.launch"/>
+
+
+
+
+</launch>

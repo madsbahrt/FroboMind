@@ -39,6 +39,10 @@ public:
 
 private:
 
+	bool locateVehicle();
+	void publishWPAB();
+	bool calculateRabbit();
+	void publishRabbit();
 	void place_safe_rabbit();
 
 	std::vector<geometry_msgs::PoseStamped>* path;
@@ -65,6 +69,7 @@ private:
 	fmExecutors::follow_pathResult   result_msg;
 
 	bool success;
+	bool once;
 
 
 

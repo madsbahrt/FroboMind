@@ -19,12 +19,15 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
-#rosbuild_gensrv()
+rosbuild_gensrv()
 
 rosbuild_add_executable(row_cam_marker src/cam_row_marker.cpp)
 rosbuild_add_executable(imu_marker src/imu_marker.cpp)
 rosbuild_add_executable(rabbit_planner_marker src/rabbitplannermarker.cpp)
 rosbuild_add_executable(teleop src/teleop_from_pr2.cpp)
+
+rosbuild_add_executable(topic_mux src/cmd_vel_topic_mux_service.cpp)
+rosbuild_add_executable(topic_mux_sim src/cmd_vel_topic_mux_service_sim.cpp)
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)

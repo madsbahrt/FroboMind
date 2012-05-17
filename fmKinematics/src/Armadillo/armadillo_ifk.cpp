@@ -10,8 +10,8 @@
 #include "geometry_msgs/TwistStamped.h"
 
 // published data
-fmMsgs::rtq_command rtq_command_msg_left;
-fmMsgs::rtq_command rtq_command_msg_right;
+geometry_msgs::TwistStamped rtq_command_msg_left;
+geometry_msgs::TwistStamped rtq_command_msg_right;
 
 //vic_msgs::Odometry //some kind of message type for odometry data
 
@@ -53,19 +53,19 @@ void callbackHandlerHlSubscriber(const geometry_msgs::TwistStamped::ConstPtr& tw
 
   // Forward Kinematics
   double W = 0.755; //length from center to meter
-  double vel_right = twi->twist.linear.x - ( W * twi->twist.angular.z );
-  double vel_left = - (twi->twist.linear.x + ( W * twi->twist.angular.z ));
+  double vel_right = twi->twist.linear.x + ( W * twi->twist.angular.z );
+  double vel_left = (twi->twist.linear.x - ( W * twi->twist.angular.z ));
 
 
   // Inverse Kinematics
   //double V = (vel_left + vel_right) / 2.0;
   //double omega = (vel_right/W) - (vel_left/W);
 
-  rtq_command_msg_left.TrackSpeed = vel_left;
+  rtq_command_msg_left.twist.linear.x = vel_left;
   rtq_command_msg_left.header.stamp = ros::Time::now();
   ll_publisher_left.publish(rtq_command_msg_left);
 
-  rtq_command_msg_right.TrackSpeed = vel_right;
+  rtq_command_msg_right.twist.linear.x = vel_right;
   rtq_command_msg_right.header.stamp = ros::Time::now();
   ll_publisher_right.publish(rtq_command_msg_right);
 
@@ -107,8 +107,8 @@ int main(int argc, char **argv){
   hl_subscriber = nh.subscribe<geometry_msgs::TwistStamped> (hl_subscriber_topic.c_str(), 1, &callbackHandlerHlSubscriber); //seneste msg ligger klar i topic'en til fremtidige sucscribers
   //hl_publisher = nh.advertise<geometry_msgs::TwistStamped> (hl_publisher_topic.c_str(), 1);
   //ll_subscriber = nh.subscribe<vic_msgs::rtq> (ll_subscriber_topic.c_str(), 1, &callbackHandlerLlSubscriber);
-  ll_publisher_left = nh.advertise<fmMsgs::rtq_command> (ll_publisher_topic_left.c_str(), 1);
-  ll_publisher_right = nh.advertise<fmMsgs::rtq_command> (ll_publisher_topic_right.c_str(), 1);
+  ll_publisher_left = nh.advertise<geometry_msgs::TwistStamped> (ll_publisher_topic_left.c_str(), 1);
+  ll_publisher_right = nh.advertise<geometry_msgs::TwistStamped> (ll_publisher_topic_right.c_str(), 1);
   //deadmanbutton_subscriber = nh.subscribe<joy::Joy> (deadmanbutton_topic.c_str(), 1, &callbackHandlerDeadManBtn); //from rtq_testnode
 
   //callback_timer = nh.createTimer(ros::Duration(0.33), timerCallback);

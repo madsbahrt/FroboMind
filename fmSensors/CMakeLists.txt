@@ -36,6 +36,8 @@ rosbuild_add_executable(eye_drive src/local_sensors/eye_drive.cpp)
 rosbuild_add_executable(ll_encoder_node src/odometry_feedback/LeineLindeEncoder.cpp)
 rosbuild_add_executable(ll_encoder_node src/odometry_feedback/ll_encoder_node.cpp)
 
+rosbuild_add_executable(roboteq_encoder_node src/odometry_feedback/roboteq_encoder_node.cpp)
+
 include_directories(/usr/include/)
 link_directories(/usr/lib/)
 
