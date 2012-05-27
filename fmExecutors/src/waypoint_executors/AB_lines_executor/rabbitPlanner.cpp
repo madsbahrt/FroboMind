@@ -6,7 +6,7 @@
  */
 
 #include "rabbitPlanner.h"
-
+#include <math.h>
 void operator >> (geometry_msgs::Point point, tf::Vector3& vec){
 	vec[0] = point.x;
 	vec[1] = point.y;
@@ -108,6 +108,8 @@ bool rabbitPlanner::planRabbit()
 				}
 				//ROS_INFO("Rabbit distance ABase is %.4f",rabbit.distance(base));
 				rabbit = (B-rabbit)/(auto_factor)+rabbit;
+			}else if(rabbit_type == "infront"){
+				rabbit += 1 * AB/sqrt(ABSquared);
 			}else{
 				ROS_ERROR("RABBIT WENT BACK TO ITS HOLE! WRONG 'rabbit_type' ");
 			}
