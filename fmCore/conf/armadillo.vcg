@@ -43,7 +43,7 @@ Path.ColorB=0
 Path.Enabled=0
 Path.Topic=/fmExecutors/path
 Rabbit\ plan\ marker.Enabled=1
-Rabbit\ plan\ marker.Marker\ Topic=/fmTools/rabbit_markers
+Rabbit\ plan\ marker.Marker\ Topic=/fmTools/rabbit_marker
 TF.All\ Enabled=0
 TF.Enabled=1
 TF.Frame\ Timeout=15
@@ -55,8 +55,8 @@ TF.Update\ Interval=0.05
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::FixedOrientationOrthoViewController
-Camera\ Config=45.3866 -36.0067 121.593 190.766 -0.446433 0.548359 0.548359 0.446433
-Property\ Grid\ State=selection=;expanded=.Global Options,TF./base_footprint/base_footprint,TF./base_link/base_link,TF./gps_link/gps_link,TF./imu_link/imu_link,TF./map/map,TF./odom_combined/odom_combined,TF./mapTree/map,TF./odom_combinedTree/odom_combined,TF./base_footprintTree/base_footprint,TF./base_linkTree/base_link,TF./gps_linkTree/gps_link,TF./imu_linkTree/imu_link,IMU.Enabled.IMU.Namespaces,Rabbit plan marker.Enabled.Rabbit plan marker.Namespaces;scrollpos=0,0;splitterpos=248,496;ispageselected=1
+Camera\ Config=6.7744 19.1571 121.593 -7.67396 -0.446433 0.548359 0.548359 0.446433
+Property\ Grid\ State=selection=Rabbit plan marker.Enabled.Rabbit plan marker.Marker Topic;expanded=.Global Options,TF./base_footprint/base_footprint,TF./base_link/base_link,TF./gps_link/gps_link,TF./imu_link/imu_link,TF./map/map,TF./odom_combined/odom_combined,TF.Enabled.TF.Tree,TF./base_footprintTree/base_footprint,TF./base_linkTree/base_link,TF./gps_linkTree/gps_link,TF./imu_linkTree/imu_link,TF./mapTree/map,TF./odom_combinedTree/odom_combined,IMU.Enabled.IMU.Namespaces,Rabbit plan marker.Enabled,Rabbit plan marker.Enabled.Rabbit plan marker.StatusTopStatus,Rabbit plan marker.Enabled.Rabbit plan marker.Namespaces;scrollpos=0,0;splitterpos=248,496;ispageselected=1
 [Display0]
 Name=TF
 Package=rviz

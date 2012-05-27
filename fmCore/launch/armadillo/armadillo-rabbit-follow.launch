@@ -1,9 +1,9 @@
 <launch>
 <group ns="fmExecutors">
     <node pkg="fmExecutors" name="rabbitPlanner" type="rabbitPlanner" output="screen">
-        <param name="deltaRabbit" value="6" />
+        <param name="deltaRabbit" value="12" />
         <param name="deltaWaypoint" value="2" />
-        <param name="rabbit_type" value="auto" />
+        <param name="rabbit_type" value="infront" />
         <param name="odometry_frame" value="odom_combined" />
         <param name="vehicle_frame" value="base_footprint" />
         <param name="rabbit_frame" value="rabbit" />
@@ -15,7 +15,7 @@
 		<param name="cmd_vel_topic_id" value="/fmControllers/cmd_vel_auto"/>
 		<param name="rabbit_frame_id" value="rabbit"/>
 		<param name="vehicle_frame_id" value="base_footprint"/>
-
+		<param name="P_gain" value="8"/>
 		<param name="field_of_view_rad" value="6.28"/>
 		<param name="max_angular_vel" value="0.5"/>
 		<param name="max_linear_vel" value="0.5"/>

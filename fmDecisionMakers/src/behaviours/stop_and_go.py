@@ -43,7 +43,7 @@ class StopAndGO(State):
         #Reset signals
         done = False
         self.__path_msg.poses = []
-        self.goal = userdata.AB_path
+        #self.goal = userdata.AB_path
         outcome = "aborted"
         
         rospy.set_param(self.cmd_vel_node, self.desired_vel)
@@ -52,7 +52,7 @@ class StopAndGO(State):
             done = True
             outcome = "aborted"
         else:
-            if self.__calculate_new_plan():
+            if self.__calculate_new_plan_no_AB():
                 goal = follow_pathGoal()
                 goal.path = self.__path_msg
                 self._action_client.send_goal(goal)
@@ -81,7 +81,35 @@ class StopAndGO(State):
                     self.r.sleep()
             
         return outcome
-    
+    def __calculate_new_plan_no_AB(self):
+        
+        ret = False
+        
+        try:
+            trans,rot = self.__listen.lookupTransform(self.odom_frame,self.vehicle_frame,rospy.Time(0))
+            
+            Ap = PoseStamped()
+            Ap.pose.position.x = trans[0]
+            Ap.pose.position.y = trans[1]
+           
+            
+            poseB = PoseStamped()
+            poseB.header.frame_id = "base_footprint"
+            poseB.pose.position.x = 40
+            poseB.pose.position.y = 0
+            Bp = self.__listen.transformPose(self.odom_frame, poseB)
+            
+            self.__path_msg.poses.append(Ap)
+            self.__path_msg.poses.append(Bp)
+            ret = True
+            print "PoseA x: %f y: %f" % (Ap.pose.position.x,Ap.pose.position.y)
+            print "PoseB x: %f y: %f" % (Bp.pose.position.x,Bp.pose.position.y)
+            
+        except (LookupException, ConnectivityException),err:
+              rospy.logerr("Could not transform relative pose into odometry frame")
+              rospy.logerr(str(err))
+        
+        return ret
     
     def __calculate_new_plan(self):
         """
