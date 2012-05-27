@@ -70,7 +70,6 @@ class PlanFollow(State):
                     print status
                     self.done = True
                 else:
-                    rospy.core
                     self.r.sleep()
                     
         
