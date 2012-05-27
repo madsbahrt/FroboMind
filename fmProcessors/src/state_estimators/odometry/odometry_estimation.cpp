@@ -116,7 +116,7 @@ public:
 			double cov_gps_heading = ks/ds + fabs(dtheta_gps)*ktheta;
 
 
-			if(ds > 0.5)
+			if(ds > distance_threshold)
 			{
 				ROS_DEBUG_NAMED("angle_estimator","Before Angle correction: %.4f %.4f",current_heading,current_imu_cov);
 				heading_estimator.correct(tf::getYaw(odom_msg->pose.pose.orientation),cov_gps_heading);
@@ -254,6 +254,8 @@ public:
 	//@}
 	double north_correct;
 
+	double distance_threshold;
+
 	std::string base_frame,gps_frame,odom_frame;
 
 private:
@@ -344,6 +346,7 @@ int main(int argc, char **argv)
 	nh.param<double>("ks",node.ks,0.1); // how much to factor in positional movement into the gps angle covariance
 	nh.param<double>("ktheta",node.ktheta,10); // how much to factor in gps heading change into the gps angle covariance
 	nh.param<double>("magnetic_north_correction",node.north_correct,0.30); // offset between IMU magnetic north and gps north.
+	nh.param<double>("angle_update_distance_threshold",node.distance_threshold,0.2);
 
 	imu_sub = nh.subscribe<sensor_msgs::Imu>(imu_sub_top.c_str(),10,&OdometryKalmanNode::processIMU,&node);
 	odom_sub = nh.subscribe<nav_msgs::Odometry>(odom_sub_top.c_str(),10,&OdometryKalmanNode::processOdomControl,&node);
