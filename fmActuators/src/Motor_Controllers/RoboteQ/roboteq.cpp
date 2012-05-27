@@ -15,10 +15,12 @@
 
 struct motor_data
 {
-	float motor_amps;
+	float motor_amps_in;
+	float motor_amps_out;
 
-	float motor_voltage;
-	float battery_voltage;
+	float motor_voltage_in;
+	float motor_voltage_out;
+
 	float aux_voltage;
 
 	unsigned int motor_status;
@@ -104,9 +106,10 @@ private:
 	void publish_status()
 	{
 		motor_out.header.stamp = ros::Time::now();
-		motor_out.motor_amps = m.motor_amps / 10.0;
-		motor_out.motor_voltage_in = m.battery_voltage / 10.0;
-		motor_out.motor_voltage_out = m.motor_voltage / 10.0;
+		motor_out.motor_amps_in = m.motor_amps_in / 10.0;
+		motor_out.motor_amps_out = m.motor_amps_out / 10.0;
+		motor_out.motor_voltage_in = m.motor_voltage_in / 10.0;
+		motor_out.motor_voltage_out = m.motor_voltage_out / 10.0;
 		motor_out.motor_status = motor_status_to_string(m.motor_status);
 
 		status_publisher.publish(motor_out);
@@ -141,10 +144,12 @@ public:
 		last_serial_msg = ros::Time::now();
 
 		m.aux_voltage = 0;
-		m.battery_voltage = 0;
-		m.motor_amps = 0;
+		m.motor_voltage_in = 0;
+		m.motor_voltage_out = 0;
+		m.motor_amps_in = 0;
+		m.motor_amps_out = 0;
 		m.motor_status = 0;
-		m.motor_voltage = 0;
+
 
 	}
 
@@ -192,11 +197,15 @@ public:
 		{
 			cbr_total += cbr_rel;
 		}
-		else if(sscanf(msg->data.c_str(),"V=%f:%f:%f",&m.motor_voltage,&m.battery_voltage,&m.aux_voltage))
+		else if(sscanf(msg->data.c_str(),"V=%f:%f:%f",&m.motor_voltage_out,&m.motor_voltage_in,&m.aux_voltage))
 		{
 
 		}
-		else if(sscanf(msg->data.c_str(),"A=%f",&m.motor_amps))
+		else if(sscanf(msg->data.c_str(),"A=%f",&m.motor_amps_out))
+		{
+
+		}
+		else if(sscanf(msg->data.c_str(),"BA=%f",&m.motor_amps_in))
 		{
 
 		}
@@ -312,10 +321,13 @@ public:
 				ss << "?A\r";
 				break;
 			case 3:
-				ss << "?FS\r";
+				ss << "?BA\r";
 				break;
 			case 4:
 				ss << "?V\r";
+				break;
+			case 5:
+				ss << "?FS\r";
 				break;
 			default:
 				ss << "!G 0\r";
@@ -327,7 +339,7 @@ public:
 			serial_publisher.publish(serial_out);
 
 			cycle_counter++;
-			if(cycle_counter > 4)
+			if(cycle_counter > 5)
 			{
 				publish_encoder();
 				cycle_counter = 0;
