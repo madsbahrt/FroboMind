@@ -33,7 +33,12 @@ void gps_parser(tokenizer& tokens)
 	try
 	{
 		nmea.assign(tokens.begin(), tokens.end());
-		if (nmea.at(0) == "GPGGA" && (nmea.size() == 14 || nmea.size() == 15))
+		if(nmea.at(0) == "GPGGA")
+		{
+			ROS_DEBUG("Recevied GPGGA string");
+			ROS_DEBUG("Size: %d",nmea.size());
+		}
+		if (nmea.at(0) == "GPGGA" && (nmea.size() == 14 || nmea.size() == 15 || nmea.size() == 16))
 		{
 			// !!! we need to check the checksum of the NMEA string here !!!
 			// save current time

@@ -26,6 +26,8 @@ rosbuild_add_executable(imu_marker src/imu_marker.cpp)
 rosbuild_add_executable(rabbit_planner_marker src/rabbitplannermarker.cpp)
 rosbuild_add_executable(teleop src/teleop_from_pr2.cpp)
 
+rosbuild_add_executable(gps_conf src/ubloxconf.cpp)
+
 rosbuild_add_executable(topic_mux src/cmd_vel_topic_mux_service.cpp)
 rosbuild_add_executable(topic_mux_sim src/cmd_vel_topic_mux_service_sim.cpp)
 

@@ -77,7 +77,6 @@ def load_path(filename):
     path = Path()
     
     with open(filename) as file:
-        file.readline()
             
         for line in file:
             p = PoseStamped()
@@ -107,13 +106,14 @@ class SpeedToggle():
         
 
 if __name__ == "__main__":
-    
+    # 
+    #
     rospy.init_node("MissionMaster")
     
 
     infile = rospy.get_param("~field_path_filename", "path.txt")
     
-    #p_home = load_path(infile)
+    p_home = load_path(infile)
     
     #
     # Manuel statemachine
@@ -129,8 +129,11 @@ if __name__ == "__main__":
     with manuel_mode:
         smach.StateMachine.add("SET_MANUEL_MODE", 
                                smach_ros.ServiceState("/fmTools/cmd_vel_mux/cmd_vel_mux", switch_mux, request=manuel_req), 
-                               transitions={'succeeded':'MONITOR_BTN_A'} 
+                               transitions={'succeeded':'WAIT'} 
                                )
+        smach.StateMachine.add("WAIT",
+                               behaviours.wait_state.WaitState(rospy.Duration(0.5)),
+                               transitions={"succeeded":"MONITOR_BTN_A"})
         smach.StateMachine.add("MONITOR_BTN_A",
                                smach_ros.MonitorState("/fmHMI/joy", Joy, btn_3_pressed, max_checks=-1),
                                transitions={'invalid':'SET_AUTO_MODE','valid':'aborted'}
@@ -139,14 +142,13 @@ if __name__ == "__main__":
                                smach_ros.ServiceState("/fmTools/cmd_vel_mux/cmd_vel_mux", switch_mux, request=auto_req), 
                                transitions={'succeeded':'preempted'}
                                ) 
-                               
     
     #
     # Drive slow mode
     #
     drive_slow_mode = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
     
-    speed_toggle = SpeedToggle(0.5,0.8)
+    speed_toggle = SpeedToggle(0.3,0.8)
     with drive_slow_mode:
         smach.StateMachine.add("CHANGE_REQUESTED", 
                                smach_ros.MonitorState("/fmHMI/joy", Joy, btn_5_pressed, max_checks=-1),
@@ -157,59 +159,21 @@ if __name__ == "__main__":
         smach.StateMachine.add("WAIT",behaviours.wait_state.WaitState(rospy.Duration(0.5)),
                                transitions={'succeeded':'CHANGE_REQUESTED'})
     
-    #
-    # STOP and GO statemachine
-    #
-    stop_and_go = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
-    
-    with stop_and_go:
-        #smach.StateMachine.add("SEND_TRIGGER",
-        #                       smach.CBState(on_trigger, outcomes = ['succeeded','aborted']),
-        #                       transitions = {'succeeded':'WAIT'},
-        #                       )
-        #smach.StateMachine.add("WAIT",
-        #                       behaviours.wait_state.WaitState(rospy.Duration(1)),
-        #                       transitions={"succeeded":"DRIVE_FORWARD"}
-        #                       )
-        smach.StateMachine.add("DRIVE_FORWARD", 
-                               behaviours.stop_and_go.StopAndGO("/fmExecutors/follow_path",1,"odom_combined","base_footprint","/fmControllers/rabbit_follower/max_linear_vel",0.5),
-                               )
-                
-    #mode_stop_and_go = smach.Concurrence(outcomes=['succeeded','aborted','preempted'],
-    #                                     default_outcome='aborted',
-    #                                     outcome_map={'preempted':{'EXIT_STOP_AND_GO':'invalid'}},
-    #                                     child_termination_cb=should_preempt,
-    #                                     input_keys=['currentGlobalAB']
-    #                                     )
-    #with mode_stop_and_go:
-    #    smach.Concurrence.add("STOP_AND_GO", stop_and_go,remapping={'currentGlobalAB':'currentGlobalAB'})
-    #    smach.Concurrence.add("EXIT_STOP_AND_GO",smach_ros.MonitorState("/fmHMI/joy", Joy, btn_1_pressed,max_checks=-1))
-        
-    
-    
 
         
         
     #
     # Follow plan behaviour 
     #
-    #mode_follow_plan = smach.Concurrence(outcomes=['succeeded','aborted','preempted'], 
-    #                       default_outcome='aborted',
-    #                       outcome_map={"preempted":{'SHOULD_EXIT':'invalid'}, 
-    #                                    "succeeded":{'FOLLOW_PLAN':'succeeded'}},
-    #                       child_termination_cb=should_preempt,
-    #                       output_keys=['currentGlobalAB'])
-    #with mode_follow_plan:
-    #    smach.Concurrence.add('FOLLOW_PLAN',behaviours.PlanFollow(p_home,"/fmExecutors/follow_path"),remapping={"currentAB":"currentGlobalAB"})
-    #    smach.Concurrence.add("SHOULD_EXIT",smach_ros.MonitorState("/fmHMI/joy", Joy, btn_2_pressed,max_checks=-1))
-    #    smach.Concurrence.add("MODE_DRIVE_SLOW", drive_slow_mode)
-
-    # master state machine containing all substates
-    #auto_mode = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
-   # 
-    #with auto_mode:
-        #smach.StateMachine.add("MODE_FOLLOW_PLAN", mode_follow_plan, transitions={'preempted':'MODE_STOP_AND_GO'},remapping={"currentGlobalAB":"currentGlobalAB"})
-    #    smach.StateMachine.add("MODE_STOP_AND_GO",mode_stop_and_go, transitions={'preempted':'MODE_FOLLOW_PLAN'},remapping={"currentGlobalAB":"currentGlobalAB"})
+    mode_follow_plan = smach.Concurrence(outcomes=['succeeded','aborted','preempted'], 
+                           default_outcome='aborted',
+                           outcome_map={
+                                        "succeeded":{'FOLLOW_PLAN':'succeeded'}},
+                           child_termination_cb=should_preempt,
+                           output_keys=['currentGlobalAB'])
+    with mode_follow_plan:
+        smach.Concurrence.add('FOLLOW_PLAN',behaviours.PlanFollow(p_home,"/fmExecutors/follow_path"),remapping={"currentAB":"currentGlobalAB"})
+        smach.Concurrence.add("MODE_DRIVE_SLOW", drive_slow_mode)
 
     auto_mode_2 = smach.Concurrence(outcomes=['succeeded','aborted','preempted'], 
                            default_outcome='aborted',
@@ -219,7 +183,7 @@ if __name__ == "__main__":
 
     with auto_mode_2:
         smach.Concurrence.add("MONITOR_BTN_A",smach_ros.MonitorState("/fmHMI/joy", Joy, btn_3_pressed, max_checks=-1))
-        smach.Concurrence.add("AUTO_MODE",stop_and_go)
+        smach.Concurrence.add("AUTO_MODE",mode_follow_plan)
         
     master = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
     

@@ -12,7 +12,9 @@
 #include <geometry_msgs/TwistStamped.h>
 #include "joy/Joy.h"
 
-
+/*
+ * Convenience structure for stooring the measured data from the motor controller.
+ */
 struct motor_data
 {
 	float motor_amps_in;
@@ -28,16 +30,24 @@ struct motor_data
 };
 
 
+/*! @brief Main class containing the interface to the RoboTeq controller
+ *
+ * */
 class RoboTeq
 {
 private:
-	fmMsgs::serial serial_out;
 
+	// messages sent out are stored by the class to avoid reallocations.
+	fmMsgs::serial serial_out;
 	fmMsgs::encoder encoder_out;
 	fmMsgs::motor_status motor_out;
 
+
 	joy::Joy prev_joy;
 	geometry_msgs::TwistStamped prev_cmd_vel;
+	ros::Time last_serial_msg;
+
+	// struct for stooring the motor data read from the controller.
 	struct motor_data m;
 
 
@@ -45,10 +55,10 @@ private:
 	unsigned int deadman_counter;
 	bool initialised;
 
-	ros::Time last_serial_msg;
-
+	// the total number of hall ticks since the start of this node.
 	int cbr_total;
 
+	// counter used to schedule the commands sent to the roboteq controller.
 	unsigned int cycle_counter;
 
 	std::string motor_status_to_string(unsigned int status)
@@ -118,9 +128,16 @@ private:
 
 
 public:
-	unsigned int deadman_button_id,max_deadman;
 
+	//! holds the index of the deadman button in the buttons array of the joy message.
+	unsigned int deadman_button_id;
+
+	//! the maximum number of allowed accelerometer matches before declaring the wii controller has been lost.
+	unsigned int max_deadman;
+
+	//! factor for converting the cmd_vel into a motor command of +- 1000
 	double twist_to_motor_velocity;
+
 	double velocity;
 	ros::Time last_joy_received;
 

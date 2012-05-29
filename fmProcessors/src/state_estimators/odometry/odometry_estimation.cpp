@@ -16,8 +16,6 @@
 #include <kalman/ekfilter.hpp>
 
 
-
-
 class OdometryKalmanNode
 {
 public:
@@ -182,12 +180,9 @@ public:
 			double diff_x = cos(current_heading)*p.x() - sin(current_heading)*p.y();
 			double diff_y = sin(current_heading)*p.x() + cos(current_heading)*p.y();
 
-
-
 			prior(1) =  odom_msg->pose.pose.position.x - diff_x;
 			prior(2) =  odom_msg->pose.pose.position.y - diff_y;
 			prior(3) = current_heading;
-
 
 			ROS_DEBUG_NAMED("position_estimator","Initialising position filter with x: %.4f y: %.4f theta: %.4f",prior(1),prior(2),prior(3));
 			filter->setCovariance(gps_cov,imu_cov,odom_cov);

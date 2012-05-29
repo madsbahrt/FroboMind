@@ -6,7 +6,7 @@
 	<node pkg="fmCSP" name="USB1" type="serial_string" output="screen" >
         <param name="publisher_topic" value="/fmCSP/com1_rx" />	 
         <param name="subscriber_topic" value="/fmCSP/com1_tx" />
-		<param name="device" value="/dev/ttyUSB1" />	
+		<param name="device" value="/dev/ttyACM0" />	
 		<param name="baudrate" value="115200" />
 		<param name="termination_character" value="10"/>
 	</node>

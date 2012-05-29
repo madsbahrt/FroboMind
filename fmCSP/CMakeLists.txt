@@ -25,6 +25,7 @@ rosbuild_add_boost_directories()
 
 rosbuild_add_executable(serial_string2 src/Serial_Port/serial_string/serial_string2.cpp)
 rosbuild_add_executable(serial_string2 src/Serial_Port/serial_string/serialInterface.cpp)
+rosbuild_link_boost(serial_string2 system)
 
 rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serial_string.cpp)
 rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serialInterface.cpp)
@@ -37,6 +38,7 @@ rosbuild_link_boost(serial_binary system)
 
 IF(EXISTS /usr/include/can4linux.h)
 rosbuild_add_executable(can_can4linux src/CAN_bus/can_can4linux/can_can4linux.cpp)
+rosbuild_link_boost(can_can4linux system thread)
 ENDIF(EXISTS /usr/include/can4linux.h)
 
 rosbuild_add_executable(can_socketcan src/CAN_bus/can_socketcan/can_socketcan.cpp)

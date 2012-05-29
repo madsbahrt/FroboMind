@@ -172,6 +172,7 @@ void WiiToTwist::joyCallback(const joy::Joy::ConstPtr& joy)
   {
     twist_msg.twist.linear.x = pitch * max_linear_velocity * scale_linear_velocity_x;
     twist_msg.twist.angular.z = -roll * max_angular_velocity * scale_angular_velocity_z;
+
   }
   else
   {

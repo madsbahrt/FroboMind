@@ -46,6 +46,8 @@
 		</node>
 	</group>
 	
+	<node pkg="tf" type="static_transform_publisher" name="utm_link_broadcaster" args="-330507.076 -6172644.096 0 0 0 0 map  odom 100"/>
+	
 	<group ns="fmTools">
 		<node pkg="fmTools" name="joyconverter" type="sensor_msg_to_joy.py"/>
 		<node pkg="fmTools" name="cmd_vel_mux" type="topic_mux_sim">

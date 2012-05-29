@@ -30,7 +30,7 @@
 		 <!-- Create a transform which moves base footprint back where rviz can see it due to utm coordinates  -->
 		 <!-- -588797 -6137255 is at TEK NBA1 on the grass field -->
 		 <!--      x:  y: 6172630.85886 -->
-		<node pkg="tf" type="static_transform_publisher" name="utm_link_broadcaster" args="-330258.648478 -6172630.85886 0 0 0 0 map  odom_combined 100"/>
+		<node pkg="tf" type="static_transform_publisher" name="utm_link_broadcaster" args="-330507.076 -6172644.096 0 0 0 0 map  odom_combined 100"/>
 	
 	</group>
 </launch>
