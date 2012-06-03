@@ -307,6 +307,14 @@ public:
 					else
 					{
 						velocity = prev_cmd_vel.twist.linear.x;
+						if(velocity > 1000)
+						{
+							velocity = 1000;
+						}
+						else if(velocity < -1000)
+						{
+							velocity = -1000;
+						}
 					}
 				}
 			}
