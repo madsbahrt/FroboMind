@@ -109,7 +109,7 @@ bool rabbitPlanner::planRabbit()
 				//ROS_INFO("Rabbit distance ABase is %.4f",rabbit.distance(base));
 				rabbit = (B-rabbit)/(auto_factor)+rabbit;
 			}else if(rabbit_type == "infront"){
-				rabbit += 1 * AB/sqrt(ABSquared);
+				rabbit += deltaRabbit * AB/sqrt(ABSquared);
 			}else{
 				ROS_ERROR("RABBIT WENT BACK TO ITS HOLE! WRONG 'rabbit_type' ");
 			}
