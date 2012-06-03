@@ -19,11 +19,14 @@
 class OdometryKalmanNode
 {
 public:
+	bool first;
+
+
 	OdometryKalmanNode()
 	{
 		is_odom_initialised = false;
 		current_heading = 0;
-
+		first = false;
 		filter = new PositionEstimator();
 
 	}
@@ -46,7 +49,7 @@ public:
 		if(is_imu_initialised)
 		{
 			ROS_DEBUG_NAMED("angle_estimator","before angle prediction: %.4f %.4f",current_heading,current_imu_cov);
-			heading_estimator.predict(heading-previous_heading,0.001);
+			heading_estimator.predict(heading-previous_heading,0.000001);
 
 			heading_estimator.get_result(current_heading,current_imu_cov);
 			ROS_DEBUG_NAMED("angle_estimator","After angle prediction: %.4f %.4f",current_heading,current_imu_cov);
@@ -59,6 +62,11 @@ public:
 		}
 
 		previous_heading = heading;
+
+		if(is_odom_initialised)
+		{
+			publishEstimate();
+		}
 
 	}
 
@@ -81,7 +89,7 @@ public:
 			state = filter->getX();
 			ROS_DEBUG_NAMED("position_estimator","State after time update: %.4f %.4f %.4f",state(1),state(2),state(3));
 
-			publishEstimate();
+
 
 		}
 		else
@@ -98,32 +106,60 @@ public:
 
 		Kalman::KVector<double,1,1> z(2);
 
+
 		if(is_odom_initialised)
 		{
 
+
 			double ds,dtheta_gps;
-
-			calculate_delta_distance(ds,dtheta_gps,	odom_msg->pose.pose.position.x,
-													odom_msg->pose.pose.position.y,
-													prev_gps_msg.pose.pose.position.x,
-													prev_gps_msg.pose.pose.position.y,
-													tf::getYaw(odom_msg->pose.pose.orientation),
-													tf::getYaw(prev_gps_msg.pose.pose.orientation));
+			double yaw_gps,gps_yaw_diff,vehicle_heading,vehicle_heading_cov;
+			double cov_gps_heading;
 
 
-			double cov_gps_heading = ks/ds + fabs(dtheta_gps)*ktheta;
+			// get current heading from the angle estimator.
+			heading_estimator.get_result(vehicle_heading,vehicle_heading_cov);
+			// get current heading from gps
+			yaw_gps = tf::getYaw(odom_msg->pose.pose.orientation);
 
-
-			if(ds > distance_threshold)
+			if(first==false && odom_msg->pose.covariance[35] < 9000)
 			{
-				ROS_DEBUG_NAMED("angle_estimator","Before Angle correction: %.4f %.4f",current_heading,current_imu_cov);
-				heading_estimator.correct(tf::getYaw(odom_msg->pose.pose.orientation),cov_gps_heading);
-				ROS_DEBUG_NAMED("angle_estimator","After Angle correction: %.4f %.4f",current_heading,current_imu_cov);
+				first = true;
+				heading_estimator.correct(yaw_gps,0.0001);
+			}
+			else
+			{
+				cov_gps_heading = odom_msg->pose.covariance[35];
+				//handle forward reverse problematic
+				gps_yaw_diff = yaw_gps - vehicle_heading;
+
+				correct_angle(gps_yaw_diff);
+
+				ROS_DEBUG_NAMED("angle_estimator","Gps_forward_backwards correction: %.4f, %.4f %.4f",yaw_gps,vehicle_heading,gps_yaw_diff);
+				if(gps_yaw_diff > M_PI/2 )
+				{
+					yaw_gps -= M_PI;
+				}
+				if(gps_yaw_diff < -M_PI/2)
+				{
+					yaw_gps += M_PI;
+				}
+				ROS_DEBUG_NAMED("angle_estimator","Gps_forward_backwards correction stp2: %.4f, %.4f %.4f",yaw_gps,vehicle_heading,gps_yaw_diff);
+
+				correct_angle(yaw_gps);
+
+				heading_estimator.get_result(current_heading,current_imu_cov);
+				ROS_DEBUG_NAMED("angle_estimator","Before Angle correction: %.4f %.4f %.4f %.4f",current_heading,current_imu_cov,yaw_gps,cov_gps_heading);
+				if(cov_gps_heading < 999)
+				{
+					heading_estimator.correct(yaw_gps,cov_gps_heading);
+				}
 
 			}
 
 
+
 			heading_estimator.get_result(current_heading,current_imu_cov);
+			ROS_DEBUG_NAMED("angle_estimator","After Angle correction: %.4f %.4f",current_heading,current_imu_cov);
 
 			listen.lookupTransform(base_frame,odom_msg->child_frame_id,ros::Time(0),transform);
 
