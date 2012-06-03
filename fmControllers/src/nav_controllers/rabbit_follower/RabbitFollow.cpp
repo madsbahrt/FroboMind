@@ -112,6 +112,15 @@ void RabbitFollow::driveToTheRabbit()
 		cmd_vel.linear.x = 0;
 	}
 
+	if(cmd_vel.angular.z > max_ang_vel)
+	{
+		cmd_vel.angular.z = max_ang_vel;
+	}
+
+	if(cmd_vel.angular.z < -max_ang_vel)
+	{
+		cmd_vel.angular.z = - max_ang_vel;
+	}
 
 	cmd_vel_pub.publish(cmd_vel);
 
