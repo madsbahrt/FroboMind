@@ -45,7 +45,7 @@ public:
 	{
 		msg[0] = INIT1;
 		msg[1] = program;
-		msg[2] = NO_ENTRY;
+		msg[2] = height_cm >> 8;
 		msg[3] = height_cm;
 		msg[4] = angle_deg;
 		msg[5] = threshold;
@@ -54,9 +54,9 @@ public:
 
 		msg[8] 	= INIT2;
 		msg[9] 	= target_width_cm;
-		msg[10] = NO_ENTRY;
+		msg[10] = target_height_cm >> 8;
 		msg[11] = target_height_cm;
-		msg[12] = NO_ENTRY;
+		msg[12] = target_distance_cm >> 8;
 		msg[13] = target_distance_cm;
 		msg[14] = target_minor_distance_cm;
 		msg[15] = number_of_rows;
@@ -88,7 +88,7 @@ public:
 	{
 		this->config = config;
 		timeout = 1;
-		communication_timeout = 2;
+		communication_timeout = 5;
 		is_initialised = false;
 		quality = heading = offset = 0;
 		last_update = ros::Time::now();
@@ -140,6 +140,10 @@ public:
 			}
 
 			last_update = msg->header.stamp;
+		}
+		if(msg->id == 201326776)
+		{
+			ROS_DEBUG("Got heartbeat");
 		}
 	}
 
@@ -199,6 +203,7 @@ private:
 		}
 
 		can_tx_pub.publish(can_tx_msg);
+		sleep(1);
 	}
 
 	CameraConfig config;
