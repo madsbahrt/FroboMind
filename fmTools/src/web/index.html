@@ -1,0 +1,249 @@
+<!DOCTYPE html> 
+<html> 
+	<head> 
+	<title>Armadillo status page</title> 
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="css/jquery.mobile-1.1.0.min.css" />
+	<link rel="stylesheet" href="css/main.css" />
+	<script src="js/jquery-1.7.1.min.js"></script>
+	<script src="js/jquery.mobile-1.1.0.min.js"></script>
+	<script src="js/highcharts.js" type="text/javascript"></script>
+	<script type="text/javascript" src="js/ros.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function()
+		{
+		    var chart = new Highcharts.Chart({
+		         chart: {
+		            renderTo: 'chart1',
+		            type: 'line',
+		            animation: false
+		         },
+		         title: {
+		            text: 'Position'
+		         },
+		         yAxis:
+		         {
+		          max: 6172900,
+		          min: 6172600
+		         },
+		         xAxis:
+		         {
+		           max: 330420,
+		           min: 330340
+		         },
+		         series: [{
+            		name: 'Vehicle',
+            		data: []
+        			},
+        			{
+        			name: 'path',
+        			data: []
+        			}]
+      		});
+      		
+      		var batt_left = new Highcharts.Chart({
+		         chart: {
+		            renderTo: 'battleft',
+		            type: 'line',
+		            		            animation: false
+		         },
+		         title: {
+		            text: 'Battery'
+		         },
+		         series: [{
+            		name: 'Voltage',
+            		data: []
+        			},
+        			{
+        			     name: 'Current',
+            		     data: []
+        			}]
+      		});
+      		
+      		var batt_right = new Highcharts.Chart({
+		         chart: {
+		            renderTo: 'battright',
+		            type: 'line',
+		            		            animation: false
+		         },
+		         title: {
+		            text: 'Battery'
+		         },
+		         series: [{
+            		name: 'Voltage',
+            		data: []
+        			},
+        			{
+        			     name: 'Current',
+            		     data: []
+        			}]
+      		});
+      		
+		
+			var connection = new ros.Connection("ws://localhost:9090");
+	      	connection.setOnClose(function (e) 
+	      	{
+	      		$('#ros_stat').text('connection closed');
+	      	});
+	      	connection.setOnError(function (e) 
+	      	{
+	      		$('#ros_stat').text('error!');
+	      	});
+	      	connection.setOnOpen(function (e) 
+	      	{
+	      		$('#ros_stat').text('connected to ROS');
+	      		connection.addHandler('/fmActuators/status_left',function(msg)
+	      		{
+	        		$('#batt_voltl').text('Battery Voltage: ' + msg.motor_voltage_in.toString() +' V')
+	        		$('#batt_ampsl').text('Battery Amperes: ' + msg.motor_amps_in.toString() +' A')
+	        		clear = batt_left.series[0].data.length > 50;
+	      			batt_left.series[0].addPoint(msg.motor_voltage_in,true,clear);
+	      			batt_left.series[1].addPoint(msg.motor_amps_in,true,clear);
+	    		});
+	    		connection.callService('/rosjs/subscribe','["/fmActuators/status_left",250]',function(e) {});
+	    		
+	    		 connection.addHandler('/fmActuators/status_right',function(msg)
+	      		{
+	        		$('#batt_voltr').text('Battery Voltage: ' + msg.motor_voltage_in.toString() +' V')
+	        		$('#batt_ampsr').text('Battery Amperes: ' + msg.motor_amps_in.toString() +' A')
+	        		clear = batt_right.series[0].data.length > 50;
+	        		batt_right.series[0].addPoint(msg.motor_voltage_in,true,clear);
+	      			batt_right.series[1].addPoint(msg.motor_amps_in,true,clear);
+	    		});
+	    		connection.callService('/rosjs/subscribe','["/fmActuators/status_right",250]',function(e) {});
+	    		
+	    		connection.addHandler('/fmKinematics/cmd_vel_left',function(msg)
+	      		{
+	        		$('#cmd_vel_l').text('cmd_vel: ' + msg.twist.linear.x.toFixed(2) + 'm/s')
+	        		
+	    		});
+	    		connection.callService('/rosjs/subscribe','["/fmKinematics/cmd_vel_left",250]',function(e) {});
+	    		
+	    		connection.addHandler('/fmKinematics/cmd_vel_right',function(msg)
+	      		{
+	        		$('#cmd_vel_r').text('cmd_vel: ' + msg.twist.linear.x.toFixed(2) + 'm/s')
+	        		
+	    		});
+	    		connection.callService('/rosjs/subscribe','["/fmKinematics/cmd_vel_right",250]',function(e) {});
+	    		connection.addHandler('/fmHMI/joy',function(msg)
+	      		{
+	      			if(msg.buttons[3])
+	      			{
+	      				$('#deadman').text('Deadman Activated');
+	      			}
+	      			else
+	      			{
+	      				$('#deadman').text('Deadman De-Activated');
+	      			}
+	    		});
+	    		connection.callService('/rosjs/subscribe','["/fmHMI/joy",1000]',function(e) {});
+	    		connection.addHandler('/fmExtractors/utm',function(msg)
+	      		{
+	      			$('#gps_fix').text('Fix: ' + msg.fix.toString())
+	      			$('#gps_e').text('Easting: ' + msg.utm_e.toString())
+	      			$('#gps_n').text('Northing: ' + msg.utm_n.toString())
+	      			$('#gps_alt').text('Altitude: ' + msg.alt.toString())
+	      			$('#gps_zone').text('Zone: ' + msg.utm_zone_num.toString())
+	      			$('#gps_let').text('Zone: ' + msg.utm_zone_let.toString())
+	      			$('#gps_sat').text('N sat: ' + msg.sat.toString())
+	      			$('#gps_hdop').text('HDOP: ' + msg.hdop.toString())
+	      			$('#gps_lat').text('Latitude: ' + msg.lat.toString())
+	      			$('#gps_long').text('longitude: ' + msg.lon.toString())
+	      			
+	      			clear = chart.series[0].data.length > 20;
+	      			chart.series[0].addPoint([msg.utm_e,msg.utm_n],true,clear);
+	    		});
+	    		connection.callService('/rosjs/subscribe','["/fmExtractors/utm",1000]',function(e) {});
+	    		
+	    		connection.addHandler('/fmExecutors/path',function(msg)
+	    		{
+	    		var i = 0;
+	    		  chart.series[1].setData([[msg.poses[0].pose.position.x,msg.poses[0].pose.position.y]])
+	    		  for(i=1; i<msg.poses.length;i++)
+	    		  {
+	    		   clr = i < 1;
+	    		   chart.series[1].addPoint([msg.poses[i].pose.position.x,msg.poses[i].pose.position.y],true,clr);
+	    		  }
+	    		}
+	    		);
+	    		connection.callService('/rosjs/subscribe','["/fmExecutors/path",1000]',function(e) {});
+	      	});
+		});
+	</script>
+</head> 
+<body> 
+
+<div data-role="page">
+
+	<div data-role="header">
+		<h1>Armadillo status page</h1>
+	</div><!-- /header -->
+
+	<div data-role="content" data-theme="a">
+		<p id="ros_stat">N/A</p>
+		<div data-role="collapsible">
+			<h3>Map</h3>
+			<div id="chart1" style="width: 640px; height: 640px; margin: 0 auto"></div>	
+		</div>
+		
+		<div data-role="collapsible">
+			<h3>GPS status</h3>
+			<p id="gps_fix">N/A</p>
+			<p id="gps_e">N/A</p>
+			<p id="gps_n">N/A</p>
+			<p id="gps_zone"> </p>
+			<p id="gps_let"> </p>
+			<p id="gps_alt"> </p>
+			<p id="gps_sat"> </p>
+			<p id="gps_hdop">N/A</p>
+			<p id="gps_lat">N/A</p>
+			<p id="gps_long">N/A</p>
+			
+		</div>
+		
+		<div data-role="collapsible">
+   			<h3>Wii status</h3>
+   			<p id="deadman">N/A</p>
+		</div>
+		
+		<div class="content-primary">
+		<div data-role="collapsible" id="left">
+   			<h3>Motor status Left side</h3>
+   			<fieldset class="ui-grid-a">
+				<div class="ui-block-a">
+		   			<p id="batt_voltl">N/A</p>
+					<p id="batt_ampsl">N/A</p>
+					<p id="cmd_vel_l">N/A</p>
+				</div>
+				<div class="ui-block-b">
+					<div id="battleft" style="min-width: 400px; height: 200px; margin: 0 auto"></div>
+				</div>
+			</fieldset>
+		</div>
+		</div>
+		<div class="content-secondary">
+		<div data-role="collapsible" id="right">
+   			<h3>Motor status Right side</h3>
+   			<fieldset class="ui-grid-a">
+				<div class="ui-block-a">
+	   				<p id="batt_voltr">N/A</p>
+					<p id="batt_ampsr">N/A</p>
+					<p id="cmd_vel_r">N/A</p>			
+				</div>
+				<div class="ui-block-b">
+					<div id="battright" style="min-width: 400px; height: 200px; margin: 0 auto"></div>
+				</div>	   
+			</fieldset>
+		</div>
+		</div>
+
+
+		
+	</div><!-- /content -->
+	
+	
+
+</div><!-- /page -->
+
+</body>
+</html>	

@@ -1,0 +1,15 @@
+@media all and (min-width: 640px){
+	.content-primary {
+		width: 45%;
+		float: right;
+		margin-top: 0px;
+		margin-right: 1%;
+		padding-right: 1%;
+	}
+	.content-secondary {
+		text-align: left;
+		float: left;
+		width: 45%;
+		background: none;
+	}
+}

@@ -6,6 +6,11 @@
 		<node pkg="stage" name="stage_simulator" type="stageros" args="$(find fmSim)/conf/stage/simple.world"></node>
 	</group>
 	
+	<group ns="fmDecisionMakers">
+		<node pkg="fmDecisionMakers" type="make_turn.py" name="make_turn"></node>
+		<node pkg="fmDecisionMakers" type="navigate_in_row.py" name="navigate_in_row"></node>
+		<node pkg="fmDecisionMakers" type="find_row.py" name="find_row"></node>
+	</group>
 	
 	<group ns="fmExecutors" >
 	    <node pkg="fmExecutors" name="rabbitPlanner" type="rabbitPlanner" output="screen">

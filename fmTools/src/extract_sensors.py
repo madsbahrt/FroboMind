@@ -26,7 +26,9 @@ if __name__ == "__main__":
                "/fmSensors/encoder_right",
                "/fmSensors/encoder_angle",
                "/fmSensors/gpgga",
-               "/fmSensors/IMU"];
+               "/fmSensors/gpgga2",
+               "/fmSensors/IMU",
+               "/fmSensors/laser_msg"];
     
     with rosbag.Bag(in_bag) as input:
         print "Input bag opened"
