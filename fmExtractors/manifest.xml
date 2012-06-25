@@ -20,7 +20,7 @@
   <depend package="laser_filters"/>
   <depend package="pcl"/>
   <depend package="visualization_msgs"/>
-
+  <depend package="opencv2"/>
 </package>
 
 
