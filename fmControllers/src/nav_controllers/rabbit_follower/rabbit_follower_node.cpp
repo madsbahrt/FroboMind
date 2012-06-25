@@ -9,7 +9,14 @@
 #include <ros/ros.h>
 #include "RabbitFollow.h"
 
+#include <fmControllers/rabbit_follow_paramsConfig.h>
+#include <dynamic_reconfigure/server.h>
 
+void callback(fmControllers::rabbit_follow_paramsConfig &config, uint32_t level,RabbitFollow* r)
+{
+  ROS_INFO("Reconfigure Request: P %.4f I %.4f Imax %.4f",config.P_gain,config.I_gain,config.I_max);
+  r->setParams(config.P_gain,config.I_gain,config.I_max,config.max_angular_vel,config.max_linear_vel);
+}
 
 
 int main(int argc, char **argv) {
@@ -40,6 +47,14 @@ int main(int argc, char **argv) {
 	ros::Timer t = nh.createTimer(ros::Duration(0.05),&RabbitFollow::spin,&alice);
 
 	alice.cmd_vel_pub = nh.advertise<geometry_msgs::Twist>(topic_id.c_str(),10);
+
+	dynamic_reconfigure::Server<fmControllers::rabbit_follow_paramsConfig> server;
+
+	dynamic_reconfigure::Server<fmControllers::rabbit_follow_paramsConfig>::CallbackType cb;
+
+	cb = boost::bind(&callback, _1, _2,&alice);
+	server.setCallback(cb);
+
 
 	t.start();
 	//Handle callbacks

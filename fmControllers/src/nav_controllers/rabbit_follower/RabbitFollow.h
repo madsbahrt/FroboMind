@@ -10,12 +10,16 @@
 
 #include <tf/transform_listener.h>
 #include <geometry_msgs/Twist.h>
+#include <fmControllers/rabbit_follow_paramsConfig.h>
+#include <dynamic_reconfigure/server.h>
 
 class RabbitFollow
 {
 public:
 	RabbitFollow(std::string,std::string);
 	virtual ~RabbitFollow();
+
+	void setParams(double P,double I,double I_max,double max_ang,double max_lin);
 
 	void spin(const ros::TimerEvent& e);
 

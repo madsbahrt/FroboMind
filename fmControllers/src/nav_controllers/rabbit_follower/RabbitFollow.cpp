@@ -21,11 +21,21 @@ RabbitFollow::RabbitFollow(std::string rabbit,std::string alice)
 	I_max = 0;
 
 
+
 }
 
 RabbitFollow::~RabbitFollow()
 {
 	// TODO Auto-generated destructor stub
+}
+
+void RabbitFollow::setParams(double P,double I,double I_max,double max_ang,double max_lin)
+{
+	Ig = I;
+	Pg = P;
+	this->I_max = I_max;
+	max_ang_vel = max_ang;
+	max_lin_vel = max_lin;
 }
 
 void RabbitFollow::spin(const ros::TimerEvent& e)
@@ -42,11 +52,6 @@ void RabbitFollow::spin(const ros::TimerEvent& e)
 		current_rabbit_heading = previous_rabbit_heading;
 	}
 
-	// update PI parameters before running loop
-	nh->getParamCached("P_gain",Pg);
-	nh->getParamCached("I_gain",Ig);
-	nh->getParamCached("I_max",I_max);
-	nh->getParamCached("max_linear_vel",max_lin_vel);
 	ROS_DEBUG_THROTTLE(1,"running with max vel: %.4f",max_lin_vel);
 
 	driveToTheRabbit();
