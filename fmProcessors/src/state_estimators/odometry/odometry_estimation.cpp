@@ -160,8 +160,14 @@ public:
 
 			heading_estimator.get_result(current_heading,current_imu_cov);
 			ROS_DEBUG_NAMED("angle_estimator","After Angle correction: %.4f %.4f",current_heading,current_imu_cov);
-
-			listen.lookupTransform(base_frame,odom_msg->child_frame_id,ros::Time(0),transform);
+			try
+			{
+				listen.lookupTransform(base_frame,odom_msg->child_frame_id,ros::Time(0),transform);
+			}
+			catch(tf::TransformException& ex)
+			{
+				ROS_WARN_THROTTLE(1,"Could not transform gps measurements");
+			}
 
 			tf::Point p;
 
@@ -207,7 +213,14 @@ public:
 			heading_estimator.get_result(current_heading,current_imu_cov);
 			ROS_DEBUG_NAMED("angle_estimator","After angle correction: %.4f %.4f",current_heading,current_imu_cov);
 
-			listen.lookupTransform(base_frame,odom_msg->child_frame_id,ros::Time(0),transform);
+			try
+			{
+				listen.lookupTransform(base_frame,odom_msg->child_frame_id,ros::Time(0),transform);
+			}
+			catch(tf::TransformException& ex)
+			{
+				ROS_WARN_THROTTLE(1,"Could not transform gps measurement");
+			}
 
 			tf::Point p;
 
