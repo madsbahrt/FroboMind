@@ -10,8 +10,8 @@
 
 <group ns="fmKinematics">
 	<node pkg="fmKinematics" name="cmd_vel_to_angle" type="asubot_twist_to_angle_cmd">
-		<param name="steering_angle_publisher_topic" value="/fmKinematics/steering_angle_cmd"></param>
-		<param name="twist_subscriber_topic" value="/fmControllers/cmd_vel"></param>
+		<param name="steering_angle_publisher_topic" value="/fmKinematics/steering_angle_cmd2"></param>
+		<param name="twist_subscriber_topic" value="/fmControllers/cmd_vel_auto"></param>
 	</node>
 </group>
 

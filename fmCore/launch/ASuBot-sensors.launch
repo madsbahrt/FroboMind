@@ -77,29 +77,29 @@
 		<param name="cov_z" value="0.001"/>
 	</node>
 	
-	<node pkg="fmSensors" name="laser_range" type="lms111_node">
-        <param name="host" value="192.168.0.10"/>
+	<node pkg="fmSensors" name="laser_range" type="lms111_node"  respawn="true" >
+        <param name="host" value="192.168.0.11"/>
         <param name="topic_id" value="/fmSensors/laser_msg"/>
         <param name="frame_id" value="laser_link"/>
         <param name="invert_output" value="true" />
     </node>
     
-    <node pkg="fmSensors" name="row_cam_0" type="eye_drive">
+    <node pkg="fmSensors" name="row_cam_0" type="eye_drive" output="screen">
 		<param name="Can_rx_subscriber_topic" value="/fmCSP/can1_rx"/>
 		<param name="Can_tx_publisher_topic" value="/fmCSP/can1_tx"/>
 		<param name="row_publisher_topic" value="row"/>
 		<param name="frame_id" value="row_cam_link"/>
 		<param name="publish_rate" value="10.0"/>
-		<param name="cam_program" value="0x03"/>
-		<param name="cam_height" value="80"/>
-		<param name="cam_angle" value="45"/>
+		<param name="cam_program" value="12"/>
+		<param name="cam_height" value="160"/>
+		<param name="cam_angle" value="80"/>
 		<param name="cam_threshold" value="0x80"/>
-		<param name="cam_target_width" value="15"/>
-		<param name="cam_target_height" value="8"/>
-		<param name="cam_target_distance" value="75"/>
+		<param name="cam_target_width" value="0"/>
+		<param name="cam_target_height" value="0"/>
+		<param name="cam_target_distance" value="300"/>
 		<param name="cam_minor_distance" value="0"/>
-		<param name="cam_number_of_rows" value="1"/>
-		<param name="cam_rows_between_wheels" value="0x03"/>
+		<param name="cam_number_of_rows" value="0"/>
+		<param name="cam_rows_between_wheels" value="0x00"/>
 	</node>
 </group>
 

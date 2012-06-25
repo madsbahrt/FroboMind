@@ -13,5 +13,5 @@
 <include file="$(find fmCore)/launch/odometry-fusion.launch"/>
 <include file="$(find fmCore)/launch/rabbit-follow.launch"/>
 
-
+<node pkg="tf" type="static_transform_publisher" name="utm_link_broadcaster" args=" -591644.751471 -6130629.35863 0 0 0 0 map  odom_combined 100"/>
 </launch>
