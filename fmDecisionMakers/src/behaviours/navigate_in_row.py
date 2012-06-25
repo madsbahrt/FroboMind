@@ -5,155 +5,170 @@ import rospy
 
 import actionlib
 import math
-from tf import TransformListener
+import tf
+from tf import TransformListener, TransformBroadcaster
 
 from fmDecisionMakers.msg import *
 from fmExecutors.msg import *
-from fmMsgs.msg import claas_row_cam
 
-from geometry_msgs.msg import PoseStamped
+from fmMsgs.msg import row, steering_angle_cmd
+
+from geometry_msgs.msg import PoseStamped, PointStamped
 from nav_msgs.msg import Path
 
 
-class NavigateInRow():
+class NavigateInRowSimple():
     """
     Behaviour to navigate in a row given an estimate of the offset 
     and heading of the row from a sensor.
-    This behviour generates a plan and sends it to the rabbitplanner 
-    as two waypoints which corresponds to a straight line parallel 
-    to the detected row at the specified offset.
+    This Behaviour does not require that the robot knows where it is, i.e the planner is not used 
+    to drive in the row, instead a rabbit is produced locally to the robot.
     """
     __feedback_msg = navigate_in_rowFeedback()
-    __path_msg = Path()
     
-    def __init__(self,name,rowtopic,replan_heading_threshold,replan_offset_threshold,desired_offset,plan_ahead):
+    def __init__(self,name,rowtopic,plan_ahead,odom_frame):
         """
             initialises the behaviour.
             starts the action server, connects to the row_topic
-            connects to the plan service
         """
-        self.replan_heading_threshold = replan_heading_threshold
-        self.replan_offset_threshold = replan_offset_threshold
-        self.desired_offset = desired_offset
+        self.desired_offset = 1.5
+        
         self.planAhead = plan_ahead
+        self.odom_frame = odom_frame
+        
+        self.imax = 2
+        self.i = 0.0
+        self.igain = 0.0
+        self.pgain = 0.0
+        self.dgain = 0.0
+        self.error = 0.0
+        self.angle_contribution = 0.0
+        self.heading_error = 0.0
+        self.prev_error = 0.0
+        self.outofheadlandcount = 0
+        self.max_out_of_headland_count = 0
         
         self.__listen = TransformListener()
+        self.__broadcast = TransformBroadcaster()
+        self.cur_row = None
+        
+        self.steering_pub = rospy.Publisher("/fmKinematics/steering_angle_cmd",steering_angle_cmd)
         
         self._action_name = name
         self._server = actionlib.SimpleActionServer(self._action_name,navigate_in_rowAction,auto_start=False)
         self._server.register_goal_callback(self.goal_cb)
         self._server.register_preempt_callback(self.preempt_cb);
         
-        self._subscriber = rospy.Subscriber(rowtopic, claas_row_cam, callback=NavigateInRow.row_msg_callback,callback_args=self)
-        self._action_client = actionlib.SimpleActionClient("/rabbitplanner/follow_path",follow_pathAction)
+        self._subscriber = rospy.Subscriber(rowtopic, row, callback=self.row_msg_callback)
         self._last_row_msg = None
+        self.last_time = rospy.Time.now()
         self._server.start()
         
     def preempt_cb(self):
+        """
+            Called when the action client whishes to preempt us.
+        """
         rospy.loginfo("preempt received")
         self._server.set_preempted()
-        pass
+        
     
     def goal_cb(self):
-        #Reset signals
+        """
+            Called when we receive a new goal.
+            We could inspect the goal before accepting it,
+            however for start we only accept it.
+        """
         rospy.loginfo("goal received")
         self._last_row_msg = None
+        self.last_time = rospy.Time.now()
         
-        self._server.accept_new_goal()
+        g = self._server.accept_new_goal()
+        
+        self.desired_offset = g.desired_offset_from_row
+        self.max_out_of_headland_count = g.headland_timeout
+        
+        self.pgain = g.P
+        self.igain = g.I
+        self.dgain = g.D
+        self.imax = g.I_max
+        self.angle_contribution = g.angle_contribution
+        
+        
+        rospy.loginfo("running navigate in row with as: %f ds: %f desired_offset: %f" % (self.anglescale,self.distancescale,self.desired_offset))
         
     def row_msg_callback(self,msg):
         """
-            new row callback function
+            This function is called every time a new row message is
+            received. 
         """
+        self.cur_row = msg
+        if  (rospy.Time.now() - self.last_time) > rospy.Duration(0.05):
+            self.on_timer(None)  
+            self.last_time = rospy.Time.now()
+            
+    def on_timer(self,e):
         if self._server.is_active():
-            if msg.quality > 150:
-                if self._last_row_msg:
-                    if self.__should_replan(msg, self._last_row_msg):
-                        self.__calculate_new_plan(msg)
-                        self._last_row_msg = msg
-                else:
-                    self.__calculate_new_plan(msg)
-                    self._last_row_msg = msg
-                self.__feedback_msg.error = msg.quality
-                self._server.publish_feedback(self.__feedback_msg)
-            else:
-                # we have lost track
-                self._server.set_aborted(None, "quality too low")
-            
-        
-    def __should_replan(self,row,last_row):
-        replan = False
-        # calculate the change from last row to current row
-        offset_change = row.offset - last_row.offset 
-        heading_change = row.heading - last_row.heading
-        
-        if offset_change > self.replan_offset_threshold:
-            replan = True
-        if heading_change > self.replan_heading_threshold:
-            replan = True
-        
-        # if the current goal has been reached we should plan a new one
-        # furthermore if it has been aborted lost or preempted
-        if self._action_client.get_result() in [actionlib.GoalStatus.SUCCEEDED,
-                                                actionlib.GoalStatus.ABORTED,
-                                                actionlib.GoalStatus.LOST,
-                                                actionlib.GoalStatus.PREEMPTED]:
-            replan = True
-            
-        return replan
-    
-    def __calculate_new_plan(self,row):
-        """
-            The plan is calculated as two poses, one right in front of the vehicle and a second one
-            further away, the distance to the second point is a parameter planAhead. 
-            The two points are placed so the line formed is parallel to the detected row.
-            The distance between the planned line and the row is a desired_offset parameter.
-            The calculated points are transformed into the global navigation frame using tf.
-            The header.frame_id from the row message is used as source frame, and the target frame
-            is determined by parameter odom_frame.
-        """
-        A = None
-        B = None
-        
-        row_point_start = PoseStamped()
-        row_point_end   = PoseStamped()
-        
-        row_point_start.header.stamp = row_point_end.header.stamp = rospy.Time.now() 
-        
-        row_point_start.header.frame_id = row.header.frame_id
-        row_point_start.pose.position.y = -((row.offset-self.desired_offset)/100.0)
-        row_point_start.pose.position.x = 0
-        
-        row_point_end.header.frame_id = row.header.frame_id
-        row_point_end.pose.position.x = self.planAhead
-        row_point_end.pose.position.y = self.planAhead * math.tan(row.heading/360.0 * 2* math.pi) - ((row.offset-self.desired_offset)/100.0);
-        
-        
-        try:
-            A = self.__listen.transformPose(odom_frame,row_point_start)
-            B = self.__listen.transformPose(odom_frame,row_point_end)
-            self.__path.poses.clear()
-        
-            self.__path.poses.append(A)
-            self.__path.poses.append(B)
-            
-            g = follow_pathGoal()
-            g.path = self.__path;
-            
-            self._action_client.send_goal(g)
-            
-        except (tf.LookupException, tf.ConnectivityException),err:
-              rospy.logerr("Could not transform row cam message into odometry frame")
-              rospy.logerr(str(err))
-              
+            if self.cur_row:
+                if self.outofheadlandcount > self.max_out_of_headland_count:
+                    self.__perform_turn()
+                    rospy.loginfo("turning due to headland...")
+                elif self.cur_row.headland:
+                    self.outofheadlandcount += 1
+                    rospy.loginfo("Row out of sight %d" % (self.outofheadlandcount))
+                
+                if self.cur_row.headland == False:
+                    self.outofheadlandcount = 0
+                        
+                if self.cur_row.rightvalid and self.outofheadlandcount < self.max_out_of_headland_count:
+                    self.__calculate_steering_angle(self.cur_row)
 
+
+                        
+            
+            
+    def __perform_turn(self):
         
+        rospy.loginfo("performing turn")
+        # turn right
+        steering_angle = steering_angle_cmd()
+        steering_angle.steering_angle = -0.7;
+        steering_angle.header.stamp = rospy.Time.now()
+        
+        self.steering_pub.publish(steering_angle)
+        
+    
+    def __calculate_steering_angle(self,row):
+        """
+            Tries to regulate the vehicle so it follow the row.
+        """
+        self.heading_error =  -( row.rightdistance - self.desired_offset)
+        self.error = row.rightangle
+        
+        self.i += self.error
+        
+        if self.i > self.imax:
+            self.i = self.imax
+        elif self.i < -self.imax:
+            self.i = -self.imax
+        
+        steering_angle = steering_angle_cmd()
+        steering_angle.steering_angle = self.error*self.pgain + (self.error - self.prev_error)*self.dgain + self.igain*self.i + self.angle_contribution * self.heading_error
+        steering_angle.header.stamp = rospy.Time.now()    
+        
+        self.steering_pub.publish(steering_angle)
+        
+        self.__feedback_msg.error = self.error
+        self.__feedback_msg.integral = self.i
+        self.__feedback_msg.differential = (self.error - self.prev_error)
+        self._server.publish_feedback(self.__feedback_msg)
+        
+        self.prev_error = self.error
 
 if __name__ == "__main__":
     
     rospy.init_node("navigate_in_row")
     
-    NavigateInRow(rospy.get_name(), "/fmSensors/row", 0.1, 0.1, 0.6,3)
+    NavigateInRowSimple(rospy.get_name(),"/rows",3,"odom_combined")
     
     rospy.spin()
     

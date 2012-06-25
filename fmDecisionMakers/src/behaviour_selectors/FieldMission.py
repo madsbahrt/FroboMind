@@ -148,7 +148,7 @@ if __name__ == "__main__":
     #
     drive_slow_mode = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
     
-    speed_toggle = SpeedToggle(0.3,0.8)
+    speed_toggle = SpeedToggle(0.5,1.0)
     with drive_slow_mode:
         smach.StateMachine.add("CHANGE_REQUESTED", 
                                smach_ros.MonitorState("/fmHMI/joy", Joy, btn_5_pressed, max_checks=-1),
