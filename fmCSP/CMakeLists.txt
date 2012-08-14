@@ -35,6 +35,11 @@ rosbuild_add_executable(serial_binary src/Serial_Port/serial_binary/serial_binar
 rosbuild_add_executable(serial_binary src/Serial_Port/serial_binary/serial_binary_interface.cpp)
 rosbuild_link_boost(serial_binary system)
 
+rosbuild_add_executable(bluetooth_serial_string src/Serial_Bluetooth/serial_bluetooth.cpp)
+rosbuild_add_executable(bluetooth_serial_string src/Serial_Bluetooth/Bluetooth.cpp)
+rosbuild_link_boost(bluetooth_serial_string system)
+target_link_libraries(bluetooth_serial_string bluetooth)
+
 
 IF(EXISTS /usr/include/can4linux.h)
 rosbuild_add_executable(can_can4linux src/CAN_bus/can_can4linux/can_can4linux.cpp)
