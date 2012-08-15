@@ -1,5 +1,8 @@
-uint8 left
-float64 desired_radius
-float64 success_radius
+float64 amount
+float64 vel
 ---
+float64 end_yaw
 ---
+float64 start
+float64 current
+float64 target

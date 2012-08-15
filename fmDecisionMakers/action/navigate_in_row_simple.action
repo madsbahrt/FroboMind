@@ -1,0 +1,14 @@
+#goal_definition
+float64 desired_offset_from_row
+float64 P
+float64 distance_scale
+float64 forward_velcoity
+uint16  headland_timeout
+---
+#result definition
+bool done
+float64 distance_traveled
+---
+#feedback
+float64 error
+float64 velocity_z

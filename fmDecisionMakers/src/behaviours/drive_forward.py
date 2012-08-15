@@ -16,7 +16,7 @@ from fmExecutors.msg import *
 
 
 
-class TurnAction():
+class DriveForwardAction():
     """
         Performs a X degree turn either to the left or right 
         depending on the given goal.
@@ -31,7 +31,7 @@ class TurnAction():
         self._action_name = name
         self.__odom_frame = odom_frame
         self.__base_frame = base_frame
-        self.__server =  actionlib.SimpleActionServer(self._action_name,make_turnAction,auto_start=False)
+        self.__server =  actionlib.SimpleActionServer(self._action_name,drive_forwardAction,auto_start=False)
         self.__server.register_preempt_callback(self.preempt_cb)
         self.__server.register_goal_callback(self.goal_cb)
         
@@ -39,7 +39,7 @@ class TurnAction():
         self.__start_yaw = 0
         self.__cur_yaw = 0
         
-        self.__feedback = make_turnFeedback()
+        self.__feedback = drive_forwardFeedback()
         
         self.__listen = TransformListener()
         self.vel_pub = rospy.Publisher("/fmControllers/cmd_vel_auto",Twist)
@@ -64,12 +64,7 @@ class TurnAction():
         """
         g = self.__server.accept_new_goal()
         self.__desired_amount= g.amount
-        self.turn_vel = g.vel
-        
-        self.__cur_pos = None
-        self.__cur_yaw = 0
-        self.__start_yaw = 0
-        
+        self.vel = g.vel
         
         self.new_goal = True
     
@@ -94,71 +89,24 @@ class TurnAction():
                     self.__publish_cmd_vel(0)
                 else:
                     if self.__get_current_position():
-                        if self.__desired_amount > 0:
-                            if self.compare_yaw_left_turn(self.__start_yaw,self.__cur_yaw, self.__desired_amount):
-                                result = make_turnResult()
-                                result.end_yaw = self.__cur_yaw
-                                self.__server.set_succeeded(result, "turn completed")
-                                self.__publish_cmd_vel(0)
-                            else:
-                                self.__publish_cmd_vel(1)
-                                self.__feedback.start = self.__start_yaw
-                                self.__feedback.current = self.__cur_yaw
-                                self.__feedback.target= self.__start_yaw + self.__desired_amount
-                                self.__server.publish_feedback(self.__feedback)
+                        if self.__get_distance() >= math.fabs(self.__desired_amount):
+                            result = drive_forwardResult()
+                            result.end_dist = self.__get_distance()
+                            self.__server.set_succeeded(result, "distance covered")
+                            self.__publish_cmd_vel(0)
                         else:
-                             if self.compare_yaw_right_turn(self.__start_yaw,self.__cur_yaw,self.__desired_amount):
-                                result = make_turnResult()
-                                result.end_yaw = self.__cur_yaw
-                                self.__server.set_succeeded(result, "turn completed")
-                                self.__publish_cmd_vel(0)
-                                
-                             else:
-                                self.__publish_cmd_vel(1)
-                                self.__feedback.start = self.__start_yaw
-                                self.__feedback.current = self.__cur_yaw
-                                self.__feedback.target= self.__start_yaw + self.__desired_amount
-                                self.__server.publish_feedback(self.__feedback)
-                    else:
-                        self.__publish_cmd_vel(0)
-    
-    def compare_yaw_left_turn(self,start,end,amount):
-        target = start + amount
-        
-        diff = target - end
-        
-        if diff > math.pi:
-            diff -= 2*math.pi
-        elif diff < -math.pi:
-            diff += 2*math.pi
-
-        rospy.logerr("left " + str(diff))
-        if diff < 0:
-            return True
-        else:
-            return False
-            
-        
-    def compare_yaw_right_turn(self,start,end,amount):
-        target = start + amount
-        
-        diff = target - end
-        if diff > math.pi:
-            diff -= 2*math.pi
-        elif diff < -math.pi:
-            diff += 2*math.pi
-        
-        rospy.logerr("right " + str(diff))
-        if diff > 0:
-            return True
-        else:
-            return False
-            
+                            self.__publish_cmd_vel(1)
+                            self.__feedback.progress = self.__get_distance()
+                            self.__server.publish_feedback(self.__feedback)
+                            
+    def __get_distance(self):
+        return math.sqrt(math.pow(self.__cur_pos[0][0] - self.__start_pos[0][0],2) +
+                         math.pow(self.__cur_pos[0][1] - self.__start_pos[0][1],2))
     
     def __get_start_position(self):
         ret = False
         try:
-            self.__start_pos = self.__listen.lookupTransform(self.__base_frame,self.__odom_frame,rospy.Time(0))
+            self.__start_pos = self.__listen.lookupTransform(self.__odom_frame,self.__base_frame,rospy.Time(0))
             self.__start_yaw = tf.transformations.euler_from_quaternion(self.__start_pos[1])[2]
             ret = True
         except (tf.LookupException, tf.ConnectivityException),err:
@@ -169,7 +117,7 @@ class TurnAction():
     def __get_current_position(self):
         ret = False
         try:
-            self.__cur_pos = self.__listen.lookupTransform(self.__base_frame, self.__odom_frame,rospy.Time(0))
+            self.__cur_pos = self.__listen.lookupTransform(self.__odom_frame,self.__base_frame,rospy.Time(0))
             self.__cur_yaw = tf.transformations.euler_from_quaternion(self.__cur_pos[1])[2]
             ret = True
         except (tf.LookupException, tf.ConnectivityException),err:
@@ -182,24 +130,21 @@ class TurnAction():
             place the rabbit to either the right or left of a circle with desired radius.
         """
         vel = Twist()
-        vel.linear.x = 0
         if self.__desired_amount > 0:
-            vel.angular.z = self.turn_vel
-        else: 
-            vel.angular.z = -self.turn_vel
-            
-        if stop == 0:
-            vel.angular.z = 0
+            vel.linear.x = self.vel
+        else:
+            vel.linear.x = -self.vel
         
-        self.vel_pub.publish(vel)
-    
+        if stop == 0:
+            vel.linear.x = 0
             
+        self.vel_pub.publish(vel)
 
 if __name__ == "__main__":
     
-    rospy.init_node("make_turn")
+    rospy.init_node("drive_forward")
     
-    action_server = TurnAction("make_turn","odom_combined","base_footprint")
+    action_server = DriveForwardAction("drive_forward","odom_combined","base_footprint")
     
     t = rospy.Timer(rospy.Duration(0.05),action_server.on_timer)
     
