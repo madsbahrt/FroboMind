@@ -21,6 +21,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined services
 rosbuild_gensrv()
 
+rosbuild_add_executable(laser_filter src/laser_filter.cpp)
 rosbuild_add_executable(row_cam_marker src/cam_row_marker.cpp)
 rosbuild_add_executable(imu_marker src/imu_marker.cpp)
 rosbuild_add_executable(rabbit_planner_marker src/rabbitplannermarker.cpp)
