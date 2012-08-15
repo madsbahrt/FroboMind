@@ -21,6 +21,15 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
+rosbuild_find_ros_package(dynamic_reconfigure)
+include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
+gencfg()
+
+rosbuild_add_executable(lidar_row_extractor src/lidar_feature_extractors/lidar_row_extractor_ransac/ransac_row_node.cpp)
+rosbuild_add_executable(lidar_row_extractor src/lidar_feature_extractors/lidar_row_extractor_ransac/ransac_extractor.cpp)
+
+rosbuild_add_executable(lidar_safety_node src/lidar_feature_extractors/lidar_safety_zone/lidar_safety_node.cpp)
+rosbuild_add_executable(lidar_safety_node src/lidar_feature_extractors/lidar_safety_zone/safety_extractor.cpp)
 
 rosbuild_add_executable(lidar_row_detector src/lidar_feature_extractors/lidar_row_detection/orchard_detection_node.cpp)
 rosbuild_add_executable(lidar_row_detector src/lidar_feature_extractors/lidar_row_detection/orchard_detection.cpp)
@@ -34,6 +43,7 @@ rosbuild_add_executable(encoder_ackerman_to_pose src/local_pose_extractors/Encod
 rosbuild_add_executable(encoder_ackerman_to_pose src/local_pose_extractors/EncoderAckerman/PoseExtractorEncoderAckermanWithAngleFWE.cpp)
 
 rosbuild_add_executable(simple_odom src/local_pose_extractors/simple_odom.cpp)
+rosbuild_add_executable(simple_imu_odom src/local_pose_extractors/simple_imu_odom.cpp)
 
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)

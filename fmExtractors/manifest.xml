@@ -21,6 +21,7 @@
   <depend package="pcl"/>
   <depend package="visualization_msgs"/>
   <depend package="opencv2"/>
+  <depend package="dynamic_reconfigure"/>
 </package>
 
 
