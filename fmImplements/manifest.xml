@@ -1,0 +1,17 @@
+<package>
+  <description brief="fmImplements">
+
+     fmImplements
+
+  </description>
+  <author>morl</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/fmImplements</url>
+  <depend package="roscpp"/>
+  <depend package="fmMsgs"/>
+  <depend package="actionlib"/>
+
+</package>
+
+
