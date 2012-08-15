@@ -36,6 +36,13 @@
 		<param name="cov_y" value="0.001"/>
 		<param name="cov_z" value="0.001"/>
 	</node>
+	
+	<node pkg="fmSensors" name="laser_range" type="lms111_node"  respawn="true" >
+        <param name="host" value="192.168.0.10"/>
+        <param name="topic_id" value="/fmSensors/laser_msg"/>
+        <param name="frame_id" value="laser_link"/>
+        <param name="invert_output" value="true" />
+    </node>
 </group>
 
 </launch>

@@ -6,8 +6,11 @@
 
 
 
-<node pkg="fmDecisionMakers" name="navigate_in_row_simple" type="navigate_in_row_simple.py">
+  <node pkg="fmDecisionMakers" name="navigate_in_row_simple" type="navigate_in_row_simple.py">
+  </node>
+  
+<node pkg="fmExtractors" name="odom_imu" type="simple_imu_odom">
 </node>
-
+  
 
 </launch>

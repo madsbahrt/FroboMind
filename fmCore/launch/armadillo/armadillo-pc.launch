@@ -1,0 +1,34 @@
+<launch>
+
+<node pkg="fmExtractors" name="row_finder" type="lidar_row_extractor">
+	<param name="frame_id" value="laser_link"></param>
+	<param name="subscriber_topic" value="/scan_filtered"></param>
+</node>
+
+  <node pkg="fmTools" type="laser_filter" name="laser_filter">
+  	<param name="in" value="/fmSensors/laser_msg"></param>
+  </node>
+  
+  <node pkg="fmExtractors" name="safety" type="lidar_safety_node">
+  	<param name="frame_id" value="laser_link" />
+    <param name="subscriber_topic" value="/scan_filtered"/>
+  </node>
+  
+  <node pkg="rviz" name="viss" type="rviz">
+  
+  </node>
+  
+  <node pkg="fmDecisionMakers" name="FRE2012" type="FRE2012.py">
+  </node>
+  
+    <node pkg="fmDecisionMakers" name="make_turn" type="make_turn.py">
+  </node>
+
+  <node pkg="fmDecisionMakers" name="drive_forward" type="drive_forward.py">
+  </node>
+  
+  <node pkg="smach_viewer" name="SMVIZ" type="smach_viewer.py"></node>
+  
+  <node pkg="dynamic_reconfigure" name="dynconfig" type="reconfigure_gui"></node>
+
+</launch>
