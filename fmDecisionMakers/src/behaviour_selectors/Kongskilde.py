@@ -101,7 +101,7 @@ def build_sm():
                                )
         
         smach.StateMachine.add("NAVIGATE_IN_ROW", 
-                               smach_ros.SimpleActionState("/navigate_in_row_simple", navigate_in_row_simpleAction,row_goal),
+                               smach_ros.SimpleActionState("/fmDecisionMakers/navigate_in_row_simple", navigate_in_row_simpleAction,row_goal),
                                transitions={'succeeded':'aborted'}
                                )
     
@@ -152,7 +152,7 @@ def build_sm():
     
     with retreat_state:
         smach.StateMachine.add("BACK_UP",
-                               smach_ros.SimpleActionState("/drive_forward",drive_forwardAction,drive_forwardGoal(amount=-0.3,vel=0.3)),
+                               smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",drive_forwardAction,drive_forwardGoal(amount=-0.3,vel=0.3)),
                                transitions ={'succeeded':'MONITOR_RED','aborted':'aborted','preempted':'preempted'})
         smach.StateMachine.add("MONITOR_RED",
                                red_not_active,
@@ -172,7 +172,7 @@ def build_sm():
                                retreat_state,
                                transitions={'clear':'TURN_180','aborted':'aborted'})
         smach.StateMachine.add("TURN_180",
-                               smach_ros.SimpleActionState("/make_turn", make_turnAction, goal=make_turnGoal(amount=math.pi-0.01,vel=0.6)),
+                               smach_ros.SimpleActionState("/fmDecisionMakers/make_turn", make_turnAction, goal=make_turnGoal(amount=math.pi-0.01,vel=0.6)),
                                transitions={'succeeded':'DRIVE_IN_ROW'})
 
     m2 = behaviours.wii_states.wii_auto_manuel.create(master, "/fmHMI/joy", 3)        

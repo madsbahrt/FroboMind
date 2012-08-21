@@ -4,14 +4,17 @@ import smach_ros
 import behaviours
 from fmTools.srv import switch_muxRequest,switch_muxResponse,switch_mux
 
-from joy.msg import Joy
+from sensor_msgs.msg import Joy
 
 
 def should_preempt(arg):
     return True
 
 def btn_pressed(ud,msg):
-    return not msg.buttons[ud.btn_id]
+    if msg.buttons[0]:
+        return False
+    else:
+        return True 
 
 def create(auto_state,joy_topic,btn_index):
     """

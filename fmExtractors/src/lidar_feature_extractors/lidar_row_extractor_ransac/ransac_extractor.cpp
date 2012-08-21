@@ -31,6 +31,8 @@
 
 #include "ransac_extractor.h"
 #include "math.h"
+#include <pcl/point_types.h>
+#include <pcl/filters/passthrough.h>
 
 SafetyExtractor::SafetyExtractor(){
 
@@ -88,6 +90,8 @@ void SafetyExtractor::processLaserScan(const sensor_msgs::LaserScan::ConstPtr& l
 	tf::TransformListener listener_;
 	sensor_msgs::PointCloud cloud;
 	sensor_msgs::PointCloud cloud_filtered;
+	sensor_msgs::PointCloud cloud_l;
+	sensor_msgs::PointCloud cloud_r;
 
 
     try
@@ -108,13 +112,34 @@ void SafetyExtractor::processLaserScan(const sensor_msgs::LaserScan::ConstPtr& l
     		cloud_filtered.points.push_back(cloud.points[i]);
 		}
     }
+
     double in_r = 1;
     double in_l = 1;
     valid_l = valid_r = false;
+
     if(cloud_filtered.points.size() > 10){
-    	if(processPointCloudInRow(cloud_filtered)){
-    		in_r = processPointCloudRight(cloud_filtered);
-    		in_l = processPointCloudLeft(cloud_filtered);
+    	if(processPointCloudInRow(cloud_filtered))
+    	{
+
+    		for(int i=0; i < cloud_filtered.points.size(); i++)
+    		{
+    			if(cloud_filtered.points[i].y > 0.01)
+    			{
+    				cloud_l.points.push_back(cloud_filtered.points[i]);
+    			}
+    			else
+    			{
+    				cloud_r.points.push_back(cloud_filtered.points[i]);
+    			}
+    		}
+    		if(cloud_r.points.size() > 5)
+    		{
+    			in_r = processPointCloudRight(cloud_r);
+    		}
+    		if(cloud_l.points.size() > 5)
+    		{
+    			in_l = processPointCloudLeft(cloud_l);
+    		}
     		marker_rg.header.stamp = ros::Time::now();
     		marker_rg.color.g = 1;
     		marker_rg.color.r = 0;
@@ -158,6 +183,7 @@ void SafetyExtractor::processLaserScan(const sensor_msgs::LaserScan::ConstPtr& l
 	rows_.header.stamp = ros::Time::now();
 	rows_.header.frame_id = this->frame_id;
 	row_publisher.publish(rows_);
+
 	pc_publisher.publish(cloud_filtered);
 
 }

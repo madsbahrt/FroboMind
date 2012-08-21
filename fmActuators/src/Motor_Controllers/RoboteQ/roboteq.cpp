@@ -10,7 +10,7 @@
 #include <fmMsgs/encoder.h>
 #include <fmMsgs/motor_status.h>
 #include <geometry_msgs/TwistStamped.h>
-#include "joy/Joy.h"
+#include <sensor_msgs/Joy.h>
 
 /*
  * Convenience structure for stooring the measured data from the motor controller.
@@ -43,7 +43,7 @@ private:
 	fmMsgs::motor_status motor_out;
 
 
-	joy::Joy prev_joy;
+	sensor_msgs::Joy prev_joy;
 	geometry_msgs::TwistStamped prev_cmd_vel;
 	ros::Time last_serial_msg;
 
@@ -243,7 +243,7 @@ public:
 		cmd_vel_active = true;
 	}
 
-	void onJoy(const joy::Joy::ConstPtr& msg)
+	void onJoy(const sensor_msgs::Joy::ConstPtr& msg)
 	{
 		if(joy_init == false)
 		{
@@ -418,7 +418,7 @@ int main(int argc,char** argv)
 
 	s1 = nh.subscribe<fmMsgs::serial>(serial_rx_topic,10,&RoboTeq::onSerialMsgReceived,&controller);
 	s2 = nh.subscribe<geometry_msgs::TwistStamped>(cmd_vel_topic,10,&RoboTeq::onCmdVelReceived,&controller);
-	s3 = nh.subscribe<joy::Joy>(joy_topic,10,&RoboTeq::onJoy,&controller);
+	s3 = nh.subscribe<sensor_msgs::Joy>(joy_topic,10,&RoboTeq::onJoy,&controller);
 
 	ros::Rate r(5);
 	while(controller.serial_publisher.getNumSubscribers() != 0)
