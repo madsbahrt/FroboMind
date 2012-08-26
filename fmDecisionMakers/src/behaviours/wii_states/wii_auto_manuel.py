@@ -11,7 +11,7 @@ def should_preempt(arg):
     return True
 
 def btn_pressed(ud,msg):
-    if msg.buttons[0]:
+    if msg.buttons[2]:
         return False
     else:
         return True 

@@ -1,5 +1,10 @@
 <launch>
 
+<arg name="l_serial" value="/dev/ttyUSB2"/>
+<arg name="r_serial" value="/dev/ttyUSB3"/>
+<arg name="imu_serial" value="/dev/ttyUSB1"/>
+<arg name="implement_serial" value="/dev/ttyUSB0"/>
+
 <group ns="fmDecisionMakers"> 
 
 	<node pkg="fmDecisionMakers" name="navigate_in_row_simple" type="navigate_in_row_simple.py">
@@ -10,9 +15,9 @@
 	
 	<node pkg="fmDecisionMakers" name="drive_forward" type="drive_forward.py">
 	</node>
-	
+	<!--  
 	<node pkg="fmDecisionMakers" name="MISSION" type="Kongskilde.py" output="screen">
-	</node>
+	</node>-->
   
 </group>
 
@@ -73,8 +78,9 @@
 <group ns="fmImplements">
 
 	<node pkg="fmImplements" name="RowClean" type="kongskilde_row_cleaner_node">
-		<param name="serial_rx_sub" value="/fmCSP/com1_rx" />
-		<param name="serial_tx_pub" value="/fmCSP/com1_tx" />
+		<param name="serial_rx_sub" value="/fmCSP/com3_rx" />
+		<param name="serial_tx_pub" value="/fmCSP/com3_tx" />
+		<param name="invert_operation" value="true"/>
 	</node>
 	
 </group>
@@ -122,9 +128,11 @@
 		<param name="odom_estimate_frame" value="odom_combined"/>
 	</node>
 	
+	<node pkg="dynamic_reconfigure" name="param_load" type="dynparam" args="load /fmExtractors/row_finder $(find fmCore)/launch/rowconf.yaml"></node>
+	
 	<node pkg="fmExtractors" name="row_finder" type="lidar_row_extractor">
 		<param name="frame_id" value="laser_link"></param>
-		<param name="subscriber_topic" value="/scan_filtered"></param>
+		<param name="subscriber_topic" value="/fmSensors/laser_msg"></param>
 	</node>
 	
 </group>
@@ -132,7 +140,7 @@
 <group ns="fmSensors">
 	
 	<node pkg="fmSensors" name="IMU" type="vectornav_imu_node"> 
-	    <param name="subscribe_topic_id" value="/fmCSP/com0_rx" />
+	    <param name="subscribe_topic_id" value="/fmCSP/com4_rx" />
 		<param name="publish_topic_id" value="/fmSensors/IMU" />
 		<param name="frame_id" value="imu_link" />
 		<param name="cov_x" value="0.001"/>
@@ -140,8 +148,8 @@
 		<param name="cov_z" value="0.001"/>
 	</node>
 	
-	<node pkg="fmSensors" name="laser_range" type="lms111_node"  respawn="true" >
-        <param name="host" value="192.168.0.10"/>
+	<node pkg="fmSensors" name="laser_range" type="lms111_node" >
+        <param name="host" value="192.168.0.11"/>
         <param name="topic_id" value="/fmSensors/laser_msg"/>
         <param name="frame_id" value="laser_link"/>
         <param name="invert_output" value="true" />
@@ -150,34 +158,34 @@
 
 <group ns="fmCSP">
 
-	<node pkg="fmCSP" name="USB1" type="serial_string" output="screen" >
-        <param name="publisher_topic" value="/fmCSP/com1_rx" />	 
-        <param name="subscriber_topic" value="/fmCSP/com1_tx" />
-		<param name="device" value="/dev/ttyUSB1" />	
+	<node pkg="fmCSP" name="USB3" type="serial_string" output="screen" >
+        <param name="publisher_topic" value="/fmCSP/com3_rx" />	 
+        <param name="subscriber_topic" value="/fmCSP/com3_tx" />
+		<param name="device" value="$(arg implement_serial)" />	
 		<param name="baudrate" value="38400" />
 		<param name="termination_character" value="10"/>
 	</node>
 	
-	<node pkg="fmCSP" name="USB0" type="serial_string">
-        <param name="publisher_topic" value="/fmCSP/com0_rx" />	 
-        <param name="subscriber_topic" value="/fmCSP/com0_tx" />	
-        <param name="device" value="/dev/ttyUSB0" />
+	<node pkg="fmCSP" name="USB4" type="serial_string">
+        <param name="publisher_topic" value="/fmCSP/com4_rx" />	 
+        <param name="subscriber_topic" value="/fmCSP/com4_tx" />	
+        <param name="device" value="$(arg imu_serial)" />
         <param name="baudrate" value="115200" />
         <param name="termination_character" value="10"/>
 	</node>
 	
-	<node pkg="fmCSP" name="S0" type="serial_string2">
+	<node pkg="fmCSP" name="USB1" type="serial_string2">
         <param name="publisher_topic" value="/fmCSP/S0_rx" />	 
         <param name="subscriber_topic" value="/fmCSP/S0_tx" />	
-        <param name="device" value="/dev/ttyS0" />	
+        <param name="device" value="$(arg l_serial)" />	
         <param name="baudrate" value="115200" />
         <param name="termination_character" value="13"/>
 	</node>
 	
-	<node pkg="fmCSP" name="S1" type="serial_string2">
+	<node pkg="fmCSP" name="USB2" type="serial_string2">
         <param name="publisher_topic" value="/fmCSP/S1_rx" />	 
         <param name="subscriber_topic" value="/fmCSP/S1_tx" />	
-        <param name="device" value="/dev/ttyS1" />	
+        <param name="device" value="$(arg r_serial)" />	
         <param name="baudrate" value="115200" />
         <param name="termination_character" value="13"/>
 	</node>

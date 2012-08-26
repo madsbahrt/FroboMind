@@ -8,9 +8,10 @@
 #include "kongskilderowcleaner.h"
 
 
-kongskilde_rowcleaner::kongskilde_rowcleaner(ros::NodeHandle& nn,ros::Duration max_move_time) :
+kongskilde_rowcleaner::kongskilde_rowcleaner(ros::NodeHandle& nn,ros::Duration max_move_time,bool invert) :
 as(nn,"move_tool", boost::bind(&kongskilde_rowcleaner::on_action_goal, this, _1), false)
 {
+	this->invert = invert;
 	maximum_move_time = max_move_time;
 	as.start();
 	serial_detected = false;
@@ -89,7 +90,14 @@ void kongskilde_rowcleaner::on_action_goal(
 			}
 			else
 			{
-				transmitAction(goal->direction);
+				if((ros::Time::now() - started) > ros::Duration(0.2) && (ros::Time::now() - started) < ros::Duration(0.5))
+				{
+					transmitStop();
+				}
+				else
+				{
+					transmitAction(goal->direction);
+				}
 			}
 		}
 		r.sleep();
@@ -105,15 +113,30 @@ void kongskilde_rowcleaner::transmitStop()
 
 void kongskilde_rowcleaner::transmitAction(int action)
 {
+
 	if(action == fmImplements::move_tool_simpleGoal::UP)
 	{
-		// transmit enable and up
-		tx_msg.data = "u\ne\n";
+		if( this->invert)
+		{
+			tx_msg.data = "d\ne\n";
+		}
+		else
+		{
+			// transmit enable and up
+			tx_msg.data = "u\ne\n";
+		}
 		serial_pub.publish(tx_msg);
 	}
 	else if (action == fmImplements::move_tool_simpleGoal::DOWN)
 	{
-		tx_msg.data = "d\ne\n";
+		if(this->invert)
+		{
+			tx_msg.data = "u\ne\n";
+		}
+		else
+		{
+			tx_msg.data = "d\ne\n";
+		}
 		serial_pub.publish(tx_msg);
 	}
 }

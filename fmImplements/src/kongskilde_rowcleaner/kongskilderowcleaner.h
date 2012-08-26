@@ -16,7 +16,7 @@
 
 class kongskilde_rowcleaner {
 public:
-	kongskilde_rowcleaner(ros::NodeHandle& nn,ros::Duration max_move_time);
+	kongskilde_rowcleaner(ros::NodeHandle& nn,ros::Duration max_move_time,bool invert);
 	virtual ~kongskilde_rowcleaner();
 
 
@@ -30,6 +30,8 @@ private:
 	void on_action_goal(const fmImplements::move_tool_simpleGoalConstPtr& goal);
 	void transmitStop();
 	void transmitAction(int action);
+
+	bool invert;
 	actionlib::SimpleActionServer<fmImplements::move_tool_simpleAction> as;
 	fmMsgs::serial tx_msg;
 

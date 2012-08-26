@@ -10,7 +10,6 @@ import math
 import tf
 
 from sensor_msgs.msg import Joy
-#from joy.msg import Joy
 
 import smach
 import smach_ros
@@ -18,11 +17,10 @@ import smach_ros
 # behaviours used in this statemachine
 from fmDecisionMakers.msg import navigate_in_row_simpleAction, navigate_in_row_simpleGoal
 from fmDecisionMakers.msg import make_turnAction, make_turnGoal, drive_forwardAction, drive_forwardGoal
-from fmMsgs.msg import row, lidar_safety_zone
+from fmImplements.msg import move_tool_simpleAction, move_tool_simpleGoal
+from fmMsgs.msg import row
 import behaviours.wii_states.wii_auto_manuel
 
-
-from fmTools.srv import switch_muxRequest,switch_muxResponse,switch_mux
 
 def on_rows(ud,msg):
     if msg.leftvalid and msg.rightvalid:
@@ -30,58 +28,141 @@ def on_rows(ud,msg):
     else:
         return True
     
-def on_safety_yellow(ud,msg):
-    if msg.yellow_activated:
-        return False
-    else:
-        return True
-
-def on_safety_yellow_neg(ud,msg):
-    if msg.yellow_activated:
-        return True
-    else:
-        return False
-    
-def on_safety_red(ud,msg):
-    if msg.red_activated:
-        return False
-    else:
-        return True
-
-def on_safety_red_neg(ud,msg):
-    if msg.red_activated:
-        return True
-    else:
-        return False
-    
 def force_preempt(a):
     return True
+
+def up_pressed(ud,msg):
+    if msg.buttons[0]:
+        return False
+    else:
+        return True
+
+def down_pressed(ud,msg):
+    if msg.buttons[1]:
+        return False
+    else:
+        return True
+    
+def build_fish_tail(turn_vel,drive_vel):
+    fish_tail = smach.Sequence(outcomes=['succeeded','aborted','preempted'], connector_outcome='succeeded')
+    
+    with fish_tail:
+        smach.Sequence.add("TURN1", 
+                           smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                        make_turnAction,
+                                        goal=make_turnGoal(amount=0.5025,vel=turn_vel))
+                           )
+        smach.Sequence.add("DRIVE1",
+                           smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",
+                                        drive_forwardAction,
+                                        goal=drive_forwardGoal(amount=1,vel=drive_vel))
+                           )
+        smach.Sequence.add("TURN2", 
+                           smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                        make_turnAction,
+                                        goal=make_turnGoal(amount=1.05,vel=turn_vel))
+                           )
+        smach.Sequence.add("DRIVE_REV1",
+                           smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",
+                                        drive_forwardAction,
+                                        goal=drive_forwardGoal(amount=-1,vel=drive_vel))
+                           )
+        smach.Sequence.add("TURN_REV1", 
+                           smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                        make_turnAction,
+                                        goal=make_turnGoal(amount=1.05,vel=turn_vel))
+                           )
+        smach.Sequence.add("DRIVE_REV2",
+                           smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",
+                                        drive_forwardAction,
+                                        goal=drive_forwardGoal(amount=1,vel=drive_vel))
+                           )
+        smach.Sequence.add("TURN_REV2", 
+                           smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                        make_turnAction,
+                                        goal=make_turnGoal(amount=0.5025,vel=turn_vel))
+                           )
+        
+    return fish_tail
+
+def build_raise_lower_boom():
+    btn_monitors = smach.Concurrence(outcomes=['raise','lower','succeeded'],
+                                     default_outcome='succeeded',
+                           outcome_map={
+                                        "raise":{'MOVE_UP_BTN':'invalid','MOVE_DOWN_BTN':'preempted'}, 
+                                        "lower":{'MOVE_UP_BTN':'preempted','MOVE_DOWN_BTN':'invalid'}
+                                        },
+                           child_termination_cb=force_preempt)
+    
+    with btn_monitors:
+        smach.Concurrence.add("MOVE_UP_BTN", smach_ros.MonitorState("/fmHMI/joy", Joy, up_pressed, -1))
+        smach.Concurrence.add("MOVE_DOWN_BTN", smach_ros.MonitorState("/fmHMI/joy", Joy, down_pressed, -1))
+        
+    sm = smach.StateMachine(outcomes=["succeeded","aborted","preempted"])
+    
+    with sm:
+        smach.StateMachine.add("MONITOR_BUTTONS", 
+                               btn_monitors, 
+                               transitions={"raise":"MOVE_UP","lower":"MOVE_DOWN","succeeded":"MONITOR_BUTTONS"})
+        smach.StateMachine.add("MOVE_UP",
+                               smach_ros.SimpleActionState("/fmImplements/move_tool",move_tool_simpleAction,goal=move_tool_simpleGoal(direction=1,timeout=10)),
+                               transitions = {"succeeded":"MONITOR_BUTTONS","aborted":"aborted","preempted":"preempted"}
+                               )
+        smach.StateMachine.add("MOVE_DOWN",
+                               smach_ros.SimpleActionState("/fmImplements/move_tool",move_tool_simpleAction,goal=move_tool_simpleGoal(direction=0,timeout=10)),
+                               transitions = {"succeeded":"MONITOR_BUTTONS","aborted":"aborted","preempted":"preempted"}
+                               )
+        
+    return sm
+
+def build_turn_sm(forward_vel,turn_vel):
+    
+    turn_sm = smach.Sequence(outcomes=["succeeded","aborted","preempted"],connector_outcome='succeeded')
+    with turn_sm:
+        smach.Sequence.add(
+            "DRIVE_OUT_OF_ROW", 
+            smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",
+                                        drive_forwardAction,
+                                        goal=drive_forwardGoal(amount=2.5,vel=forward_vel))
+        )
+        smach.Sequence.add(
+            "TURN_LEFT", 
+            smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                        make_turnAction,
+                                        goal=make_turnGoal(amount=math.pi/2,vel=turn_vel))
+        )
+        smach.Sequence.add(
+            "DRIVE_TO_NEXT_ROW", 
+            smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",
+                                        drive_forwardAction,
+                                        goal=drive_forwardGoal(amount=3,vel=forward_vel))
+        )
+        smach.Sequence.add(
+            "TURN_LEFT_INTO_ROW", 
+            smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                        make_turnAction,
+                                        goal=make_turnGoal(amount=math.pi/2,vel=turn_vel)) 
+        )
+        smach.Sequence.add(
+            "DRIVE_INTO_ROW", 
+            smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",
+                                        drive_forwardAction,
+                                        goal=drive_forwardGoal(amount=2.4,vel=forward_vel))
+        )
+    return turn_sm
 
 def build_sm():
     """
         Construct the state machine executing the selected behaviours
     """
-    row_navigator = smach.StateMachine(outcomes=["succeeded","aborted","preempted"])
+    
     
     row_goal = navigate_in_row_simpleGoal()
-    
-    row_goal.desired_offset_from_row = 1.1
-    row_goal.distance_scale = -0.3
-    row_goal.forward_velcoity = 0.8
-    row_goal.headland_timeout = 0
-    row_goal.P = 1.2
-    
-    turn_goal = make_turnGoal()
-    turn_goal.amount = math.pi
-    turn_goal.vel = 0.6
-    
-    wiggle_goal = make_turnGoal()
-    wiggle_goal.amount = 0.1
-    wiggle_goal.vel = 0.5
-    
-    fw_goal = drive_forwardGoal()
-    fw_goal.amount = 2
-    fw_goal.vel = 0.6
+    row_goal.desired_offset_from_row = -0.2
+    row_goal.distance_scale = -0.8
+    row_goal.forward_velcoity = 0.5
+    row_goal.headland_timeout = 20
+    row_goal.P = 2
     
     find_row_timeout_sm = smach.Concurrence(outcomes=['succeeded','aborted','preempted'], 
                            default_outcome='aborted',
@@ -94,89 +175,39 @@ def build_sm():
         smach.Concurrence.add("FIND_ROW", smach_ros.MonitorState("/fmExtractors/rows", row, on_rows, -1))
         smach.Concurrence.add("TIMEOUT" , behaviours.WaitState(2))
         
+    row_navigator = smach.StateMachine(outcomes=["succeeded","aborted","preempted"])
+    
     with row_navigator:
         smach.StateMachine.add("FIND_ROW_WITH_TIMEOUT", 
                                find_row_timeout_sm,
-                               transitions={'succeeded':'NAVIGATE_IN_ROW','aborted':'NAVIGATE_IN_ROW'}
+                               transitions={'succeeded':'NAVIGATE_IN_ROW','aborted':'aborted','preempted':'preempted'}
                                )
         
         smach.StateMachine.add("NAVIGATE_IN_ROW", 
                                smach_ros.SimpleActionState("/fmDecisionMakers/navigate_in_row_simple", navigate_in_row_simpleAction,row_goal),
-                               transitions={'succeeded':'aborted'}
+                               transitions={'succeeded':'succeeded','aborted':'aborted','preempted':'preempted'}
                                )
     
-    laser_state = smach.Concurrence(outcomes=['yellow_active','red_active'], 
-                                    outcome_map={'yellow_active':{'WAIT_FOR_YELLOW':'invalid','WAIT_FOR_RED':'preempted'},
-                                                 'red_active'   :{'WAIT_FOR_RED':'invalid'}}
-                                    ,default_outcome='red_active',child_termination_cb=force_preempt)
-    
-    red_active = smach_ros.MonitorState("/fmExtractors/safety_zone",lidar_safety_zone,on_safety_red, max_checks=-1)
-    red_not_active = smach_ros.MonitorState("/fmExtractors/safety_zone",lidar_safety_zone,on_safety_red_neg, max_checks=-1)
-    
-    yellow_active = smach_ros.MonitorState("/fmExtractors/safety_zone",lidar_safety_zone,on_safety_yellow, max_checks=-1)
-    yellow_not_active = smach_ros.MonitorState("/fmExtractors/safety_zone",lidar_safety_zone,on_safety_yellow_neg, max_checks=-1)
-    with laser_state:
-        smach.Concurrence.add("WAIT_FOR_YELLOW",
-                               yellow_active
-                               )
-        smach.Concurrence.add("WAIT_FOR_RED",
-                              red_active
-                              )
-
-    
-    control_state = smach.Concurrence(outcomes=['stop','retract','aborted'],
-                                      outcome_map={'stop':{'MONITOR_LASER':'yellow_active'},
-                                                   'retract':{'MONITOR_LASER':'red_active'},
-                                                   'aborted':{'NAVIGATE_IN_ROW':'aborted'}}, 
-                                      default_outcome='stop',
-                                      child_termination_cb=force_preempt)
-
-    with control_state:
-        smach.Concurrence.add("MONITOR_LASER", laser_state)
-        smach.Concurrence.add("NAVIGATE_IN_ROW", row_navigator)
-       
-       
-        
-    stop_state = smach.Concurrence(outcomes=['continue','retreat'],
-                                      outcome_map={'continue':{'MONITOR_YELLOW':'invalid','MONITOR_RED':'preempted'},
-                                                   'retreat':{'MONITOR_RED':'invalid'}
-                                                   },
-                                      default_outcome='continue',
-                                      child_termination_cb=force_preempt)
-    with stop_state:
-        smach.Concurrence.add("MONITOR_RED", red_active)
-        smach.Concurrence.add("MONITOR_YELLOW",yellow_not_active)
-    
-    
-    retreat_state = smach.StateMachine(outcomes=['clear','aborted','preempted'])
-    
-    with retreat_state:
-        smach.StateMachine.add("BACK_UP",
-                               smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",drive_forwardAction,drive_forwardGoal(amount=-0.3,vel=0.3)),
-                               transitions ={'succeeded':'MONITOR_RED','aborted':'aborted','preempted':'preempted'})
-        smach.StateMachine.add("MONITOR_RED",
-                               red_not_active,
-                               transitions={'valid':'BACK_UP','invalid':'clear'})
-        
+    complete_row_turn = build_turn_sm(0.5,0.5)
     
     master = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
         
     with master:
         smach.StateMachine.add("DRIVE_IN_ROW",
-                               control_state,
-                               transitions={'stop':'STOP_STATE','retract':'RETREAT_STATE','aborted':'TURN_180'})
-        smach.StateMachine.add("STOP_STATE",
-                               stop_state,
-                               transitions={'continue':'DRIVE_IN_ROW','retreat':'RETREAT_STATE'})
-        smach.StateMachine.add("RETREAT_STATE",
-                               retreat_state,
-                               transitions={'clear':'TURN_180','aborted':'aborted'})
-        smach.StateMachine.add("TURN_180",
-                               smach_ros.SimpleActionState("/fmDecisionMakers/make_turn", make_turnAction, goal=make_turnGoal(amount=math.pi-0.01,vel=0.6)),
-                               transitions={'succeeded':'DRIVE_IN_ROW'})
+                               row_navigator,
+                               transitions={'succeeded':'succeeded','aborted':'aborted','preempted':'preempted'})
 
-    m2 = behaviours.wii_states.wii_auto_manuel.create(master, "/fmHMI/joy", 3)        
-    return m2
+    m2 = behaviours.wii_states.wii_auto_manuel.create(master, "/fmHMI/joy", 2)
+    
+    m3 = smach.Concurrence(outcomes=['succeeded','aborted','preempted'], 
+                           default_outcome='aborted',
+                           outcome_map={},
+                           child_termination_cb=force_preempt)
+    with m3:
+        smach.Concurrence.add("MASTER",m2)
+        smach.Concurrence.add("MOVE_IMPLEMENT",build_raise_lower_boom())
+    
+    return m3
     
     
     

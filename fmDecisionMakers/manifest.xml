@@ -14,6 +14,7 @@
   <depend package="sensor_msgs"/>
   <depend package="fmMsgs"/>
   <depend package="fmExecutors"/>
+  <depend package="fmImplements"/>
   <depend package="tf"/>
   <depend package="nav_msgs"/>
   <depend package="geometry_msgs"/>
