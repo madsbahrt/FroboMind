@@ -8,9 +8,15 @@
 #include "rabbitPlanner.h"
 #include <geometry_msgs/PoseStamped.h>
 #include <fmExecutors/follow_pathAction.h>
-
-
+#include <fmExecutors/rabbitPlannerConfig.h>
+#include <dynamic_reconfigure/server.h>
 rabbitPlanner * rabbit = NULL;
+
+void reconfig_callback(fmExecutors::rabbitPlannerConfig &config, uint32_t level)
+{
+	rabbit->setParams(config.Rabbit_type,config.Distance_scale,config.Angle_scale,config.Delta_rabbit,config.Delta_waypoint);
+
+}
 
 
 int main(int argc, char **argv)
@@ -20,41 +26,6 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 	std::string filepath,path_pub_topic;
-/*
-	std::vector<geometry_msgs::PoseStamped> * path;
-	path = new std::vector<geometry_msgs::PoseStamped> ;
-	geometry_msgs::PoseStamped pose;
-
-
-	pose.pose.position.y =6137265.86408 -2;
-	pose.pose.position.x =588783.625059;
-
-	path->push_back(pose);
-	pose.pose.position.y =6137272.3533 -2;
-	pose.pose.position.x =588728.99886;
-	path->push_back(pose);
-
-	pose.pose.position.y =6137281.24059 -2;
-	pose.pose.position.x =588660.727205;
-
-	path->push_back(pose);
-	pose.pose.position.y =6137288.18503 -2;
-	pose.pose.position.x =588613.910558;
-	path->push_back(pose);
-*/
-/*
-    pose.pose.position.x = 588813.821135;
-    pose.pose.position.y = 6137242.22287;
-    		path->push_back(pose);
-	  pose.pose.position.x = 588831.458665;
-	  pose.pose.position.y = 6137217.36418;
-				path->push_back(pose);
-	  pose.pose.position.x = 588845.501653;
-	  pose.pose.position.y = 6137271.32139;
-
-		path->push_back(pose);
-
-*/
 
 	rabbit = new rabbitPlanner("follow_path");
 
@@ -63,8 +34,10 @@ int main(int argc, char **argv)
 	nh.param<double>("deltaRabbit", rabbit->deltaRabbit, 2);
 	//Waypoint threshold (0 = change waypoint when rabbit > B has been passed ; 1 = change waypoint when rabbit >= B-1 has been passed)
 	nh.param<double>("deltaWaypoint", rabbit->deltaWaypoint, 0);
+	nh.param<double>("angle_scale", rabbit->angle_scale, 1);
+	nh.param<double>("distance_scale", rabbit->distance_scale, 1);
 
-	nh.param<std::string>("rabbit_type", rabbit->rabbit_type, "float");
+	nh.param<int>("rabbit_type", rabbit->rabbit_type, 0);
 
 	nh.param<std::string>("odometry_frame", rabbit->odom_frame, "odom");
 	nh.param<std::string>("vehicle_frame", rabbit->vehicle_frame, "base_link");
@@ -72,6 +45,13 @@ int main(int argc, char **argv)
 
 	// latched topic so new subscriber get the most recent path
 	rabbit->path_publisher = nh.advertise<nav_msgs::Path>(path_pub_topic.c_str(),5,true);
+
+	dynamic_reconfigure::Server<fmExecutors::rabbitPlannerConfig> server;
+
+	dynamic_reconfigure::Server<fmExecutors::rabbitPlannerConfig>::CallbackType cb;
+
+	cb = boost::bind(&reconfig_callback, _1, _2);
+	server.setCallback(cb);
 
 	ros::spin();
 

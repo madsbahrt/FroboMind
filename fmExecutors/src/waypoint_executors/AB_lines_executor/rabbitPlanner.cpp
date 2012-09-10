@@ -22,7 +22,14 @@ rabbitPlanner::rabbitPlanner(std::string name)
 
 }
 
-
+void rabbitPlanner::setParams(int rabbit_type,double distance_scale,double angle_scale,double delta_rabbit,double delta_waypoint)
+{
+	this->rabbit_type = rabbit_type;
+	this->deltaWaypoint = delta_waypoint;
+	this->deltaRabbit = delta_rabbit;
+	this->angle_scale = angle_scale;
+	this->distance_scale = distance_scale;
+}
 
 
 bool rabbitPlanner::planRabbit()
@@ -95,21 +102,26 @@ bool rabbitPlanner::planRabbit()
 			// place rabbit
 			rabbit = ((B-(rabbitScale * AB)));
 
-			if(rabbit_type == "fixed"){
+			if(rabbit_type == 1){
 				rabbit = rabbit + (deltaRabbit)*AB/ABSquared;
-			}else if(rabbit_type == "float"){
+			}else if(rabbit_type == 2){
 				rabbit = (B-rabbit)/deltaRabbit+rabbit;
-			}else if(rabbit_type == "auto")
+			}else if(rabbit_type == 0)
 			{
-				double auto_factor = deltaRabbit * rabbit.distance(base);
-				if(auto_factor < 1)
+
+				double distance_error = rabbit.distance(base);
+				if(distance_error < 0 )
 				{
-					auto_factor = 1;
+					distance_error *= -1;
 				}
-				//ROS_INFO("Rabbit distance ABase is %.4f",rabbit.distance(base));
-				rabbit = (B-rabbit)/(auto_factor)+rabbit;
-			}else if(rabbit_type == "infront"){
-				rabbit += deltaRabbit * AB/sqrt(ABSquared);
+				double angle_error = (B-rabbit).angle(A-base) - M_PI;
+				if(angle_error < 0)
+				{
+					angle_error *= -1;
+				}
+
+				ROS_INFO("Rabbit distance error is %.4f angle error is %.4f",distance_error,angle_error);
+				rabbit = (B-rabbit) / (angle_error/angle_scale + distance_error/distance_scale) + rabbit;
 			}else{
 				ROS_ERROR("RABBIT WENT BACK TO ITS HOLE! WRONG 'rabbit_type' ");
 			}
@@ -137,76 +149,6 @@ bool rabbitPlanner::planRabbit()
 
 	return ret;
 }
-/*
-bool rabbitPlanner::planRabbit()
-{
-	bool ret = false;
-
-	if(locateVehicle())
-	{
-		//load a and B from plan
-
-		if((current_waypoint == 1) && (path->size() == 1 ))
-		{
-			A=base;
-			path->at(current_waypoint-1).pose.position >> B;
-		}
-		else
-		{
-			path->at(current_waypoint-1).pose.position >> A;
-			path->at(current_waypoint).pose.position >> B;
-		}
-
-		// check if target reached
-		if(B.distance(base) < deltaWaypoint){
-			ROS_DEBUG("Switching waypoint because base is %.4f from B",B.distance(base));
-
-			current_waypoint++;
-
-			if(current_waypoint > path->size())
-			{
-				// we are done
-				place_safe_rabbit();
-				publishResult();
-				ret = true;
-			}
-			else
-			{
-				path->at(current_waypoint-1).pose.position >> A;
-				path->at(current_waypoint).pose.position >> B;
-				publishPath();
-				publishFeedback();
-			}
-
-		}
-
-		//publish the location of wpA and wpB
-		publishWPAB();
-
-		if(!ret)
-		{
-			// NOW ! Calculate zhe rabbit !
-			if(calculateRabbit())
-			{
-				ret = true;
-			}
-			else
-			{
-				publishRabbit();
-			}
-		}
-	}
-	else
-	{
-		ROS_INFO_THROTTLE(1,"Vehicle frame cannot be found, not planning");
-	}
-
-
-
-	return ret;
-}
-*/
-
 
 
 void rabbitPlanner::publishPath()
@@ -262,8 +204,41 @@ void rabbitPlanner::actionExecute(const fmExecutors::follow_pathGoalConstPtr& go
 	path->clear();
 	for(unsigned int i=0;i<goal->path.poses.size();i++)
 	{
-		path->push_back(goal->path.poses.at(i));
+		if(goal->path.poses[i].header.frame_id != this->odom_frame)
+		{
+			geometry_msgs::PoseStamped* ps = new geometry_msgs::PoseStamped();
+			try
+			{
+				tf_listener.transformPose(this->odom_frame,goal->path.poses[i],*ps);
+				ROS_ERROR("ADDING PATH %.4f %.4f",ps->pose.position.x,ps->pose.position.y);
+				path->push_back(*ps);
+			}
+			catch (tf::TransformException& ex){
+				ROS_WARN("PATH transform failed %s",ex.what());
+			}
+		}
+		else
+		{
+			path->push_back(goal->path.poses.at(i));
+		}
 	}
+
+	if(path->size() == 0)
+	{
+		geometry_msgs::PoseStamped p;
+
+		p.header.frame_id = odom_frame;
+		p.header.stamp = ros::Time::now();
+		p.pose.position.x = base.getX();
+		p.pose.position.y = base.getY();
+		p.pose.position.z = base.getZ();
+		tf::quaternionTFToMsg(transform.getRotation(),p.pose.orientation);
+		result_msg.resulting_pose = p;
+		action_server.setAborted(result_msg,"Path is empty");
+		success= true;
+	}
+
+
 	ROS_INFO("Path has %d entries",path->size());
 	publishPath();
 
@@ -315,66 +290,6 @@ void rabbitPlanner::publishWPAB()
 	tf_broadcaster.sendTransform(tf_B);
 }
 
-bool rabbitPlanner::calculateRabbit()
-{
-	bool ret = false;
-	static tf::Vector3 AB;
-	static double ABSquared;
-	static tf::Vector3 Abase;
-	static double rabbitScale;
-
-	AB = B-A;
-	ABSquared = AB[1]*AB[1]+AB[0]*AB[0];
-	Abase = B-base;
-
-	if(ABSquared == 0)
-	{
-		ROS_ERROR("Received path with two consecutive identical poses, does not compute!");
-	}
-	else
-	{
-
-		// distance from point to line
-		rabbitScale = (Abase[0]*AB[0] + Abase[1]*AB[1])/ABSquared;
-
-		// if the distance from the point (vehicle) to the line(AB) is negative we have passed the line segment
-		// and should navigate to the next
-		if (rabbitScale <= 0)
-		{
-			rabbit = B;
-			ROS_INFO("Switching waypoint due to rabbitScale %.4f",rabbitScale);
-			current_waypoint++;
-
-			if(current_waypoint > path->size())
-			{
-				place_safe_rabbit();
-				publishResult();
-				ret = true;
-			}
-		} else {
-			rabbit = ((B-(rabbitScale * AB)));
-
-			if(rabbit_type == "fixed"){
-				rabbit = rabbit + (deltaRabbit)*AB/ABSquared;
-			}else if(rabbit_type == "float"){
-				rabbit = (B-rabbit)/deltaRabbit+rabbit;
-			}else if(rabbit_type == "auto")
-			{
-				double auto_factor = deltaRabbit * rabbit.distance(base);
-				if(auto_factor < 1)
-				{
-					auto_factor = 1;
-				}
-				//ROS_INFO("Rabbit distance ABase is %.4f",rabbit.distance(base));
-				rabbit = (B-rabbit)/(auto_factor)+rabbit;
-			}else{
-				ROS_ERROR("RABBIT WENT BACK TO ITS HOLE! WRONG 'rabbit_type' ");
-			}
-		}
-	}
-	return ret;
-}
-
 void rabbitPlanner::publishRabbit()
 {
 	tf_rabbit.header.stamp = ros::Time::now();
@@ -388,6 +303,8 @@ void rabbitPlanner::publishRabbit()
 	tf_rabbit.transform.rotation.y = 0;
 	tf_rabbit.transform.rotation.z = 0;
 	tf_rabbit.transform.rotation.w = 1;
+
+	ROS_ERROR("%.4f %.4f %.4f",rabbit.getX(),rabbit.getY(),rabbit.getZ());
 
 	tf_broadcaster.sendTransform(tf_rabbit);
 }

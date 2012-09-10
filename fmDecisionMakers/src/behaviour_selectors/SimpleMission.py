@@ -7,14 +7,15 @@ import behaviours
 import actionlib
 import tf
 
-#from sensor_msgs.msg import Joy
-from joy.msg import Joy
+from sensor_msgs.msg import Joy
+
 
 import smach
 import smach_ros
 
 # behaviours used in this statemachine
 from fmExecutors.msg import follow_pathAction, follow_pathGoal
+from geometry_msgs.msg import PoseStamped
 
 from fmTools.srv import switch_muxRequest,switch_muxResponse,switch_mux
 
@@ -69,6 +70,53 @@ class SpeedToggle():
             return self.speed2
         
 
+def generate_local_path():
+    
+    p = follow_pathGoal()
+    
+    ps = PoseStamped()
+    
+    ps.pose.position.x = 5
+    ps.pose.position.y = 1
+    ps.pose.orientation.x = 1
+    ps.header.frame_id="base_footprint"
+    ps.header.stamp = rospy.Time.now()
+    
+    p.path.poses.append(ps)
+    
+    ps = PoseStamped()
+    
+    ps.pose.position.x = 10
+    ps.pose.position.y = 10
+    ps.pose.orientation.x = 1
+    ps.header.frame_id="base_footprint"
+    ps.header.stamp = rospy.Time.now()
+    
+    p.path.poses.append(ps)
+    
+    ps = PoseStamped()
+    
+    ps.pose.position.x = 30
+    ps.pose.position.y = 10
+    ps.pose.orientation.x = 1
+    ps.header.frame_id="base_footprint"
+    ps.header.stamp = rospy.Time.now()
+    
+    p.path.poses.append(ps)
+    
+    ps = PoseStamped()
+    
+    ps.pose.position.x = 30
+    ps.pose.position.y = 30
+    ps.pose.orientation.x = 1
+    ps.header.frame_id="base_footprint"
+    ps.header.stamp = rospy.Time.now()
+    
+    p.path.poses.append(ps)
+    
+    return p
+    
+
 if __name__ == "__main__":
     
     rospy.init_node("MissionMaster")
@@ -116,14 +164,14 @@ if __name__ == "__main__":
                                transitions={'succeeded':'CHANGE_REQUESTED'})
     
     #
-    # STOP and GO statemachine
+    # 
     #
-    point_and_shoot = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
+    local_path = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
+    local_path_goal = generate_local_path()
+    with local_path:
+        smach.StateMachine.add("FOLLOW_PATH_LOCAL",
+                               smach_ros.SimpleActionState("/fmExecutors/follow_path",follow_pathAction,local_path_goal))
     
-    with point_and_shoot:
-        smach.StateMachine.add("DRIVE_FORWARD", 
-                               behaviours.point_and_shoot.PointAndShoot("/fmExecutors/follow_path",10,"odom_combined","base_footprint"),
-                               )
 
     auto_mode_2 = smach.Concurrence(outcomes=['succeeded','aborted','preempted'], 
                            default_outcome='aborted',
@@ -133,7 +181,7 @@ if __name__ == "__main__":
 
     with auto_mode_2:
         smach.Concurrence.add("MONITOR_BTN_A",smach_ros.MonitorState("/fmHMI/joy", Joy, btn_3_pressed, max_checks=-1))
-        smach.Concurrence.add("AUTO_MODE",point_and_shoot)
+        smach.Concurrence.add("AUTO_MODE",local_path)
         smach.Concurrence.add("SPEED_SELECTOR",speed_selector)
         
     master = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])

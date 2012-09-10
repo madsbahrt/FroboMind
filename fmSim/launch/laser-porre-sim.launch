@@ -1,0 +1,41 @@
+<launch>
+	<param name="use_sim_time" value="true"/>
+	
+	<group ns="fmExtractors">
+		<node pkg="fmExtractors" name="row_finder" type="lidar_row_extractor"  >
+			<param name="frame_id" value="laser_link"></param>
+			<param name="subscriber_topic" value="/fmSensors/laser_msg"></param>
+		</node>
+	</group>
+	<group ns="fmTools">
+		<node pkg="fmTools" name="cmd_vel_mux" type="topic_mux">
+			<param name="topic_1_timeout" value="1"/>
+			<param name="topic_2_timeout" value="1"/>
+			<param name="topic_1_id" value="/fmHMI/wii_cmd_vel"/>
+			<param name="topic_2_id" value="/fmControllers/cmd_vel_auto"/>
+			<param name="cmd_vel_out_id" value="/fmTools/cmd_vel"/>
+		</node>
+	</group>
+	
+	<group ns="fmHMI">
+
+	<node pkg="wiimote" type="wiimote_node.py" name="remote_control" respawn="true">
+	</node>
+	
+	<node pkg="fmHMI" type="wiimote_to_twist" name="wii_to_user_twist">
+		<param name="max_angular_velocity" value="1"/>
+		<param name="max_linear_velocity" value="1"/>
+		<param name="x_axis" value="1"/>
+		<param name="y_axis" value="0"/>
+		<param name="z_axis" value="2"/>
+		<param name="invert_x" value="false"/>
+		<param name="invert_z" value="true"/>
+		<param name="invert_y" value="true"/>
+	</node>
+	
+</group>
+	
+	<node pkg="rviz" name="viss" type="rviz"/>
+	<node pkg="dynamic_reconfigure" name="dynconfig" type="reconfigure_gui"></node>
+
+</launch>

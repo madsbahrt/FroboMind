@@ -22,14 +22,16 @@ public:
 	int current_waypoint;
 
 	double deltaRabbit,deltaWaypoint;
-	std::string odom_frame, vehicle_frame,rabbit_frame,rabbit_type;
+	double angle_scale,distance_scale;
+	std::string odom_frame, vehicle_frame,rabbit_frame;
+	int rabbit_type;
 	rabbitPlanner(std::string name);
 
 	void publishPath();
 	void publishFeedback();
 	void publishResult();
 	bool planRabbit();
-
+	void setParams(int rabbit_type,double distance_scale,double angle_scale,double delta_rabbit,double delta_waypoint);
 
 
 	void actionExecute(const fmExecutors::follow_pathGoalConstPtr& goal);

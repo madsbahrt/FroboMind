@@ -24,7 +24,7 @@ class PointAndShoot(State):
         """
         State.__init__(self, outcomes=["succeeded","aborted","preempted"])
         
-        self.target_distance = target_distance
+        self.target_distance = distance
         self.__path_msg = Path()
         self.r = rospy.Rate(30)
         self.odom_frame = odom_frame

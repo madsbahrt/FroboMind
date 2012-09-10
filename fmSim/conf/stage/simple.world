@@ -3,7 +3,7 @@
 define topurg laser
 (
 
-  range_max 15.0
+  range_max 6.0
   fov 180
   samples 512
   # generic model properties
@@ -58,8 +58,8 @@ floorplan
 ( 
   name "willow"
   bitmap "map4.png"
-  size [200 200 0.5]
-  pose [ -10 10.000 0 90.000 ]
+  size [20 20 0.5]
+  pose [ 0 0 0 0.000 ]
 )
 
 # throw in a robot

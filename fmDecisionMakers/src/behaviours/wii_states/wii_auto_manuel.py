@@ -58,8 +58,11 @@ def create(auto_state,joy_topic,btn_index):
                                )
         smach.StateMachine.add("SET_AUTO_MODE", 
                                smach_ros.ServiceState("/fmTools/cmd_vel_mux/cmd_vel_mux", switch_mux, request=auto_req), 
-                               transitions={'succeeded':'AUTO_MODE','aborted':'SET_MANUEL_MODE'}
+                               transitions={'succeeded':'WAIT2','aborted':'SET_MANUEL_MODE'}
                                ) 
+        smach.StateMachine.add("WAIT2",
+                               behaviours.wait_state.WaitState(rospy.Duration(0.5)),
+                               transitions={"succeeded":"AUTO_MODE"})        
         smach.StateMachine.add("AUTO_MODE",
                                auto_wrapper,
                                transitions={'succeeded':'SET_MANUEL_MODE','preempted':'SET_MANUEL_MODE'},

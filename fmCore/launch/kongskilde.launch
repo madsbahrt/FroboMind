@@ -1,9 +1,12 @@
 <launch>
 
-<arg name="l_serial" value="/dev/ttyUSB2"/>
-<arg name="r_serial" value="/dev/ttyUSB3"/>
-<arg name="imu_serial" value="/dev/ttyUSB1"/>
-<arg name="implement_serial" value="/dev/ttyUSB0"/>
+<arg name="l_serial" value="/dev/ttyUSB1"/>
+<arg name="r_serial" value="/dev/ttyUSB0"/>
+<arg name="imu_serial" value="/dev/ttyUSB2"/>
+<arg name="implement_serial" value="/dev/ttyUSB3"/>
+<arg name="sim" default="false"/>
+
+<include file="$(find fmSim)/launch/actuator-sim.launch" if="$(arg sim)"/>
 
 <group ns="fmDecisionMakers"> 
 
@@ -27,6 +30,8 @@
 	<node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 base_footprint base_link 100"/>
 	<node pkg="tf" type="static_transform_publisher" name="laser_link_broadcaster" args="0.4 0 0.1 0 0 0 base_footprint laser_link 100"/>
 	
+	<node pkg="tf" type="static_transform_publisher" name="odom_link_broadcaster" args="0 0 0 0 0 0 odom_combined odom 100" if="$(arg sim)"/>
+	
 </group>
 
 <group ns="fmHMI">
@@ -47,7 +52,7 @@
 	
 </group>
 
-<group ns="fmKinematics">
+<group ns="fmKinematics" unless="$(arg sim)">
 
 	<node pkg="fmKinematics" name="cmd_vel_to_tracks" type="armadillo_ifk">
 			<param name="hl_subscriber_topic" value="/fmTools/cmd_vel"></param>
@@ -60,7 +65,15 @@
 
 <group ns="fmTools">
 
-		<node pkg="fmTools" name="cmd_vel_mux" type="topic_mux">
+		<node pkg="fmTools" name="cmd_vel_mux" type="topic_mux" unless="$(arg sim)">
+			<param name="topic_1_timeout" value="1"/>
+			<param name="topic_2_timeout" value="1"/>
+			<param name="topic_1_id" value="/fmHMI/wii_cmd_vel"/>
+			<param name="topic_2_id" value="/fmControllers/cmd_vel_auto"/>
+			<param name="cmd_vel_out_id" value="/fmTools/cmd_vel"/>
+		</node>
+		
+		<node pkg="fmTools" name="cmd_vel_mux" type="topic_mux_sim" if="$(arg sim)">
 			<param name="topic_1_timeout" value="1"/>
 			<param name="topic_2_timeout" value="1"/>
 			<param name="topic_1_id" value="/fmHMI/wii_cmd_vel"/>
@@ -85,7 +98,8 @@
 	
 </group>
 
-<group ns="fmActuators">
+
+<group ns="fmActuators" unless="$(arg sim)">
 
 	<node pkg="fmActuators" type="roboteq_controller" name="robotteq_l" output="screen" >
 		<param name="cmd_vel_topic" value="/fmKinematics/cmd_vel_left"/>
@@ -113,8 +127,10 @@
 	
 </group>
 
-<group ns="fmExtractors"> 
 
+
+<group ns="fmExtractors"> 
+	<group unless="$(arg sim)">
 	<node pkg="fmExtractors" name="odom_imu" type="simple_imu_odom">
 		<param name="publisher_topic" value="/fmExtractors/odom"/>
 		<param name="subscribe_imu" value="/fmSensors/IMU"/>
@@ -127,7 +143,7 @@
 		<param name="vehicle_frame" value="base_footprint"/>
 		<param name="odom_estimate_frame" value="odom_combined"/>
 	</node>
-	
+	</group>
 	<node pkg="dynamic_reconfigure" name="param_load" type="dynparam" args="load /fmExtractors/row_finder $(find fmCore)/launch/rowconf.yaml"></node>
 	
 	<node pkg="fmExtractors" name="row_finder" type="lidar_row_extractor">
@@ -137,7 +153,7 @@
 	
 </group>
 
-<group ns="fmSensors">
+<group ns="fmSensors" unless="$(arg sim)">
 	
 	<node pkg="fmSensors" name="IMU" type="vectornav_imu_node"> 
 	    <param name="subscribe_topic_id" value="/fmCSP/com4_rx" />
@@ -149,14 +165,14 @@
 	</node>
 	
 	<node pkg="fmSensors" name="laser_range" type="lms111_node" >
-        <param name="host" value="192.168.0.11"/>
+        <param name="host" value="192.168.0.10"/>
         <param name="topic_id" value="/fmSensors/laser_msg"/>
         <param name="frame_id" value="laser_link"/>
         <param name="invert_output" value="true" />
     </node>
 </group>
 
-<group ns="fmCSP">
+<group ns="fmCSP" unless="$(arg sim)">
 
 	<node pkg="fmCSP" name="USB3" type="serial_string" output="screen" >
         <param name="publisher_topic" value="/fmCSP/com3_rx" />	 

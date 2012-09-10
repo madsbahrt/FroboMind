@@ -43,6 +43,16 @@ def down_pressed(ud,msg):
     else:
         return True
     
+@smach.cb_interface(input_keys=['last_action'], output_keys=['new_action'],outcomes=['left','right'])
+def turn_left_or_right(ud):
+    if ud.last_action == "left":
+        ud.new_action = "right"
+        return "right"
+    else:
+        ud.new_action = "left"
+        return "left"    
+    
+    
 def build_fish_tail(turn_vel,drive_vel):
     fish_tail = smach.Sequence(outcomes=['succeeded','aborted','preempted'], connector_outcome='succeeded')
     
@@ -105,17 +115,17 @@ def build_raise_lower_boom():
                                btn_monitors, 
                                transitions={"raise":"MOVE_UP","lower":"MOVE_DOWN","succeeded":"MONITOR_BUTTONS"})
         smach.StateMachine.add("MOVE_UP",
-                               smach_ros.SimpleActionState("/fmImplements/move_tool",move_tool_simpleAction,goal=move_tool_simpleGoal(direction=1,timeout=10)),
+                               smach_ros.SimpleActionState("/fmImplements/RowClean/move_tool",move_tool_simpleAction,goal=move_tool_simpleGoal(direction=1,timeout=10)),
                                transitions = {"succeeded":"MONITOR_BUTTONS","aborted":"aborted","preempted":"preempted"}
                                )
         smach.StateMachine.add("MOVE_DOWN",
-                               smach_ros.SimpleActionState("/fmImplements/move_tool",move_tool_simpleAction,goal=move_tool_simpleGoal(direction=0,timeout=10)),
+                               smach_ros.SimpleActionState("/fmImplements/RowClean/move_tool",move_tool_simpleAction,goal=move_tool_simpleGoal(direction=0,timeout=10)),
                                transitions = {"succeeded":"MONITOR_BUTTONS","aborted":"aborted","preempted":"preempted"}
                                )
         
     return sm
 
-def build_turn_sm(forward_vel,turn_vel):
+def build_turn_sm(forward_vel,turn_vel,turn_left=True):
     
     turn_sm = smach.Sequence(outcomes=["succeeded","aborted","preempted"],connector_outcome='succeeded')
     with turn_sm:
@@ -125,29 +135,45 @@ def build_turn_sm(forward_vel,turn_vel):
                                         drive_forwardAction,
                                         goal=drive_forwardGoal(amount=2.5,vel=forward_vel))
         )
-        smach.Sequence.add(
-            "TURN_LEFT", 
-            smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
-                                        make_turnAction,
-                                        goal=make_turnGoal(amount=math.pi/2,vel=turn_vel))
-        )
+        if turn_left:
+            smach.Sequence.add(
+                "TURN_LEFT", 
+                smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                            make_turnAction,
+                                            goal=make_turnGoal(amount=math.pi/2,vel=turn_vel))
+            )
+        else:
+            smach.Sequence.add(
+                "TURN_RIGHT", 
+                smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                            make_turnAction,
+                                            goal=make_turnGoal(amount=-math.pi/2,vel=turn_vel))
+            )
         smach.Sequence.add(
             "DRIVE_TO_NEXT_ROW", 
             smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",
                                         drive_forwardAction,
-                                        goal=drive_forwardGoal(amount=3,vel=forward_vel))
+                                        goal=drive_forwardGoal(amount=0.5,vel=forward_vel))
         )
-        smach.Sequence.add(
-            "TURN_LEFT_INTO_ROW", 
-            smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
-                                        make_turnAction,
-                                        goal=make_turnGoal(amount=math.pi/2,vel=turn_vel)) 
-        )
+        if turn_left:
+            smach.Sequence.add(
+                "TURN_LEFT_INTO_ROW", 
+                smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                            make_turnAction,
+                                            goal=make_turnGoal(amount=math.pi/2,vel=turn_vel)) 
+            )
+        else:
+            smach.Sequence.add(
+                "TURN_RIGHT_INTO_ROW", 
+                smach_ros.SimpleActionState("/fmDecisionMakers/make_turn",
+                                            make_turnAction,
+                                            goal=make_turnGoal(amount=-math.pi/2,vel=turn_vel)) 
+            )
         smach.Sequence.add(
             "DRIVE_INTO_ROW", 
             smach_ros.SimpleActionState("/fmDecisionMakers/drive_forward",
                                         drive_forwardAction,
-                                        goal=drive_forwardGoal(amount=2.4,vel=forward_vel))
+                                        goal=drive_forwardGoal(amount=1.5,vel=forward_vel))
         )
     return turn_sm
 
@@ -176,6 +202,7 @@ def build_sm():
         smach.Concurrence.add("TIMEOUT" , behaviours.WaitState(2))
         
     row_navigator = smach.StateMachine(outcomes=["succeeded","aborted","preempted"])
+    row_navigator.userdata.distance_driven_in_row = 0
     
     with row_navigator:
         smach.StateMachine.add("FIND_ROW_WITH_TIMEOUT", 
@@ -184,18 +211,43 @@ def build_sm():
                                )
         
         smach.StateMachine.add("NAVIGATE_IN_ROW", 
-                               smach_ros.SimpleActionState("/fmDecisionMakers/navigate_in_row_simple", navigate_in_row_simpleAction,row_goal),
-                               transitions={'succeeded':'succeeded','aborted':'aborted','preempted':'preempted'}
+                               smach_ros.SimpleActionState("/fmDecisionMakers/navigate_in_row_simple", navigate_in_row_simpleAction,row_goal,result_slots=['distance_traveled']),
+                               transitions={'succeeded':'succeeded','aborted':'aborted','preempted':'preempted'},
+                               remapping={'distance_traveled':'distance_driven_in_row'}
                                )
     
-    complete_row_turn = build_turn_sm(0.5,0.5)
+    #complete_row_turn = build_turn_sm(0.5,0.5)
+    left_turn = build_turn_sm(0.5,0.5,True)
+    right_turn = build_turn_sm(0.5,0.5,False)
     
     master = smach.StateMachine(outcomes=['succeeded','aborted','preempted'])
+    master.userdata.last_action = "right"
+    master.userdata.distance_driven_in_row = 0
         
     with master:
+        smach.StateMachine.add("LOWER_IMPLEMENT",
+                                smach_ros.SimpleActionState("/fmImplements/RowClean/move_tool",move_tool_simpleAction,goal=move_tool_simpleGoal(direction=0,timeout=7)),
+                                transitions = {"succeeded":"DRIVE_IN_ROW","aborted":"aborted","preempted":"preempted"}
+                                )
         smach.StateMachine.add("DRIVE_IN_ROW",
                                row_navigator,
-                               transitions={'succeeded':'succeeded','aborted':'aborted','preempted':'preempted'})
+                               transitions={'succeeded':'RAISE_IMPLEMENT','aborted':'aborted','preempted':'preempted'},
+                               remapping = {'distance_driven_in_row':'distance_driven_in_row'}
+                               )
+        smach.StateMachine.add("RAISE_IMPLEMENT",
+                                smach_ros.SimpleActionState("/fmImplements/RowClean/move_tool",move_tool_simpleAction,goal=move_tool_simpleGoal(direction=1,timeout=7)),
+                                transitions = {"succeeded":"LEFT_OR_RIGHT","aborted":"aborted","preempted":"preempted"}
+                                )
+        smach.StateMachine.add("LEFT_OR_RIGHT", 
+                               smach.CBState(turn_left_or_right), 
+                               transitions={"right":"TURN_OUTROW_RIGHT","left":"TURN_OUTROW_LEFT"}, 
+                               remapping = {"last_action":"last_action","new_action":"last_action"})
+        smach.StateMachine.add("TURN_OUTROW_LEFT",
+                               left_turn,
+                               transitions = {"succeeded":"LOWER_IMPLEMENT","aborted":"aborted","preempted":"preempted"})
+        smach.StateMachine.add("TURN_OUTROW_RIGHT",
+                               right_turn,
+                               transitions = {"succeeded":"LOWER_IMPLEMENT","aborted":"aborted","preempted":"preempted"})
 
     m2 = behaviours.wii_states.wii_auto_manuel.create(master, "/fmHMI/joy", 2)
     
@@ -205,7 +257,7 @@ def build_sm():
                            child_termination_cb=force_preempt)
     with m3:
         smach.Concurrence.add("MASTER",m2)
-        smach.Concurrence.add("MOVE_IMPLEMENT",build_raise_lower_boom())
+        smach.Concurrence.add("MOVE_IMPLEMENT_MANUAL",build_raise_lower_boom())
     
     return m3
     
@@ -218,11 +270,14 @@ if __name__ == "__main__":
     sm = build_sm()
     
     intro_server = smach_ros.IntrospectionServer('field_mission',sm,'/FIELDMISSION')
-    intro_server.start()    
+    intro_server.start()
+    
     
     try:
         outcome = sm.execute()
     except:
         rospy.logerr("Statemachine aborted")
+        
+    intro_server.stop()
     
     rospy.signal_shutdown('All done.')
