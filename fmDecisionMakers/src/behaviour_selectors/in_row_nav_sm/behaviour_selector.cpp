@@ -60,7 +60,7 @@ void BEHAVIOUR_SELECTOR::twisttesthandler(const geometry_msgs::TwistStampedConst
 	}
 }
 
-void BEHAVIOUR_SELECTOR::modehandler(const joy::JoyConstPtr & joy_msg) {
+void BEHAVIOUR_SELECTOR::modehandler(const sensor_msgs::JoyConstPtr & joy_msg) {
 
 	if (joy_msg->buttons[WII_BTN_PLUS] && wii_btn_plus_pushed == false) {
 

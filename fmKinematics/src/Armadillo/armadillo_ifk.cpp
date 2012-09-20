@@ -4,7 +4,7 @@
 #include <boost/asio.hpp>
 #include <sstream>
 #include <string>
-#include "joy/Joy.h" //dead man button
+#include "sensor_msgs/Joy.h" //dead man button
 #include "fmMsgs/rtq.h"
 #include "fmMsgs/rtq_command.h"
 #include "geometry_msgs/TwistStamped.h"

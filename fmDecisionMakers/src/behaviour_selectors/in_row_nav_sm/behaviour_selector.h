@@ -31,7 +31,7 @@
 #ifndef BEHAVIOUR_SELECTOR_H_
 #define BEHAVIOUR_SELECTOR_H_
 
-#include <joy/Joy.h>
+#include <sensor_msgs/Joy.h>
 #include <ros/ros.h>
 #include <geometry_msgs/TwistStamped.h>
 
@@ -89,7 +89,7 @@ public:
 	~BEHAVIOUR_SELECTOR();
 
 	void modewd(const ros::TimerEvent& e);
-	void modehandler(const joy::JoyConstPtr & joy_msg);
+	void modehandler(const sensor_msgs::JoyConstPtr & joy_msg);
 	void twistautonomoushandler(const geometry_msgs::TwistStampedConstPtr & twist_msg);
 	void twistmanualhandler(const geometry_msgs::TwistStampedConstPtr & twist_msg);
 	void twisttesthandler(const geometry_msgs::TwistStampedConstPtr & twist_msg);

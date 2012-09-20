@@ -24,9 +24,10 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_genmsg()
 #uncomment if you have defined services
 #rosbuild_gensrv()
+rosbuild_add_boost_directories()
 
 rosbuild_add_executable(kongskilde_row_cleaner_node src/kongskilde_rowcleaner/kongskilde_rowcleaner_node.cpp src/kongskilde_rowcleaner/kongskilderowcleaner.cpp )
-
+rosbuild_link_boost(kongskilde_row_cleaner_node thread)
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)

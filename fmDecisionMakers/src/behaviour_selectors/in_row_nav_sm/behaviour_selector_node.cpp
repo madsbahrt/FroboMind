@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 	bs.twist_publisher_ = nh.advertise<geometry_msgs::TwistStamped>(bs.twist_cmd_pub_top_.c_str(),1);
 
 	//Handle deadman button and joy watchdog funtionality
-	bs.joy_subscriber_ = nh.subscribe<joy::Joy>(bs.joy_sub_top_, 1, &BEHAVIOUR_SELECTOR::modehandler, &bs);
+	bs.joy_subscriber_ = nh.subscribe<sensor_msgs::Joy>(bs.joy_sub_top_, 1, &BEHAVIOUR_SELECTOR::modehandler, &bs);
 	bs.wd_timer_ =  nh.createTimer(ros::Duration(0.01),&BEHAVIOUR_SELECTOR::modewd, &bs,0);
 
 	//Handle callbacks

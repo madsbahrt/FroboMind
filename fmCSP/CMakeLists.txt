@@ -25,19 +25,19 @@ rosbuild_add_boost_directories()
 
 rosbuild_add_executable(serial_string2 src/Serial_Port/serial_string/serial_string2.cpp)
 rosbuild_add_executable(serial_string2 src/Serial_Port/serial_string/serialInterface.cpp)
-rosbuild_link_boost(serial_string2 system)
+rosbuild_link_boost(serial_string2 system thread)
 
 rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serial_string.cpp)
 rosbuild_add_executable(serial_string src/Serial_Port/serial_string/serialInterface.cpp)
-rosbuild_link_boost(serial_string system)
+rosbuild_link_boost(serial_string system thread)
 
 rosbuild_add_executable(serial_binary src/Serial_Port/serial_binary/serial_binary.cpp)
 rosbuild_add_executable(serial_binary src/Serial_Port/serial_binary/serial_binary_interface.cpp)
-rosbuild_link_boost(serial_binary system)
+rosbuild_link_boost(serial_binary system thread)
 
 rosbuild_add_executable(bluetooth_serial_string src/Serial_Bluetooth/serial_bluetooth.cpp)
 rosbuild_add_executable(bluetooth_serial_string src/Serial_Bluetooth/Bluetooth.cpp)
-rosbuild_link_boost(bluetooth_serial_string system)
+rosbuild_link_boost(bluetooth_serial_string system thread)
 target_link_libraries(bluetooth_serial_string bluetooth)
 
 
