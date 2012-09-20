@@ -52,3 +52,23 @@ srv_gen/
 # Emacs
 \#*#
 *~
+
+# FroboMind Specific #
+######################
+fmControllers/cfg/cpp
+fmControllers/docs
+fmControllers/src/fmControllers
+
+fmExecutors/cfg/cpp
+fmExecutors/docs
+fmExecutors/src/fmExecutors
+
+fmExtractors/cfg/cpp
+fmExtractors/docs
+fmExtractors/src/fmExtractors
+
+fmImplements/msg
+
+*.cfgc
+*.pyc
+fmDecisionMakers/msg/
