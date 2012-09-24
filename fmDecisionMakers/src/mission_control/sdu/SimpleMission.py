@@ -2,6 +2,7 @@
 import roslib; 
 roslib.load_manifest("fmDecisionMakers")
 import rospy
+import threading
 
 import behaviours
 import actionlib
@@ -117,7 +118,7 @@ def generate_local_path():
     return p
     
 
-if __name__ == "__main__":
+def main():
     
     rospy.init_node("MissionMaster")
     #
@@ -196,9 +197,17 @@ if __name__ == "__main__":
 
 
     intro_server = smach_ros.IntrospectionServer('field_mission',master,'/FIELDMISSION')
-    intro_server.start()    
+    intro_server.start()
+ 
     
-    outcome =  master.execute()
+    smach_thread = threading.Thread(target = master.execute)
+    smach_thread.start()
     
-    rospy.signal_shutdown('All done.')
+    rospy.spin();
 
+    master.request_preempt()
+    intro_server.stop()
+    print "Really ending"
+
+if __name__ == "__main__":
+    main()

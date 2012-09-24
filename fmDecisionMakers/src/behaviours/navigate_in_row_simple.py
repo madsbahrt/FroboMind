@@ -16,18 +16,29 @@ from geometry_msgs.msg import Twist
 
 class NavigateInRowSimple():
     """
-    Behaviour to navigate in a row given an fmMsgs/row message
+    Executor to navigate in a row given an fmMsgs/row message
+
     
-    The row is navigated based on the desired offset from row,
-    which is interpreted as the desired offset from the center of the row.
+    This executor navigates in a row given a fmMsgs/row message
+    the row is navigated based on the desired offset from the row.
+    This executor publishes a cmd_vel directly. 
+
+    If the row message received is too old the executor aborts.
+    
+    If a transform between the robot and odometry frame exists 
+    then the distance driven in the row is returned as a result.
+    
     """
     __feedback_msg = navigate_in_row_simpleFeedback()
     __goal_msg = navigate_in_row_simpleResult()
     
     def __init__(self,name,rowtopic,odom_frame,vehicle_frame):
         """
-            initialises the behaviour.
-            starts the action server, connects to the row_topic
+            Initialise the action server 
+            @param name: the name of the action server to start
+            @param rowtopic: the topic id of the row message to use for navigating
+            @param odom_frame: the frame in which the robot is moving
+            @param vehicle_frame: the frame id of the vehicles base
         """
         
         ## Setup some default values even though they are received via the goal
@@ -70,6 +81,7 @@ class NavigateInRowSimple():
     def preempt_cb(self):
         """
             Called when the action client wishes to preempt us.
+            Currently we just publish a velocity of zero in order to stop the vehicle.
         """
         rospy.loginfo("preempt received")
         self.__send_safe_velocity()
@@ -136,6 +148,13 @@ class NavigateInRowSimple():
         
             
     def on_timer(self,e):
+        """ 
+            The main loop of this executor
+            
+            if we are active and a recent row message is present 
+            a set of velocities is produced that will guide the vehicle in the row.
+            if the row message reports that headland is detected sufficiently, the executor succeeds.
+        """
         if self._server.is_active():
             if self.cur_row:
                 if (rospy.Time.now() - self.cur_row.header.stamp) > rospy.Duration(1):

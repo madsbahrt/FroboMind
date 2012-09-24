@@ -10,10 +10,16 @@ from smach import State
 
 class PlanFollow(State):
     """
-        This state follows a given plan, if the state is 
-        preempted the current step in the plan
+        This smach state forwards a given waypoint AB plan to the AB executor,
+        if the state is preempted the current step in the plan
         is recorded and when the state is activated again 
         it continues from the stored point in the plan.
+        this allows a user to be able to stop while following the AB plan 
+        and do other stuff. 
+        
+        Futhermore this State outputs the current AB line as userdata so other
+        states can use the current AB line in another context e.g. 'stop and go'
+        or other.
     """
     def __init__(self,plan,action_name):
         """
@@ -78,6 +84,9 @@ class PlanFollow(State):
             
         
     def on_feedback_from_action(self,feedback):
+        """
+            update local state given the feedback from the AB lines executor.
+        """
         self.cur_index = feedback.reached_pose_nr - 1
 
     

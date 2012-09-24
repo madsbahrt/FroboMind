@@ -14,8 +14,11 @@ from tf import TransformListener,LookupException,ConnectivityException
 class StopAndGO(State):
     """
         Given an AB line it will drive \'distance\' meters in the direction of the line A->B
+        Can be used in situations were a task is needed to be performed every X meters on A->B
+        So instead of manually breaking up the large line this state can be used. 
+        Requires the use of the AB lines executor and a valid AB line given as userdata.
     """
-    def __init__(self,name,distance,odom_frame,vehicle_frame,cmd_vel_producer,velocity):
+    def __init__(self,name,distance,odom_frame,vehicle_frame):
         """
             initialises the behaviour.
             starts the action server
@@ -28,8 +31,6 @@ class StopAndGO(State):
         self.r = rospy.Rate(30)
         self.odom_frame = odom_frame
         self.vehicle_frame = vehicle_frame
-        self.desired_vel = velocity
-        self.cmd_vel_node = cmd_vel_producer
         self.desired_dist = distance
         self.__listen = TransformListener()
         
@@ -44,8 +45,6 @@ class StopAndGO(State):
         self.__path_msg.poses = []
         self.goal = userdata.AB_path
         outcome = "aborted"
-        
-        rospy.set_param(self.cmd_vel_node, self.desired_vel)
         
         if not self._action_client.wait_for_server(rospy.Duration(30)):
             done = True
@@ -94,7 +93,6 @@ class StopAndGO(State):
             B = np.array([self.goal[1].pose.position.x,self.goal[1].pose.position.y])
             base = np.array([trans[0],trans[1]])
             # project our position onto the AB line
-            print "Stop_and_go: input A: %f %f B: %f %f" % (A[0],A[1],B[0],B[1])
             AB = B - A
             ABSquared = AB[1]*AB[1] + AB[0]*AB[0]
             
@@ -117,7 +115,6 @@ class StopAndGO(State):
                 
                 self.__path_msg.poses.append(Ap)
                 self.__path_msg.poses.append(Bp)
-                print "Stop_and_go: output A: %f %f B: %f %f" % (local_A[0],local_A[1],local_B[0],local_B[1])
                 
                 ret = True
                 

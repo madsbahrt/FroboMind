@@ -8,8 +8,9 @@ import behaviours
 import actionlib
 import tf
 
-#from sensor_msgs.msg import Joy
-from joy.msg import Joy
+from sensor_msgs.msg import Joy
+import threading
+
 
 import smach
 import smach_ros
@@ -198,10 +199,13 @@ if __name__ == "__main__":
 
     intro_server = smach_ros.IntrospectionServer('field_mission',master,'/FIELDMISSION')
     intro_server.start()    
+        
+    # Execute SMACH tree in a separate thread so that we can ctrl-c the script
+    smach_thread = threading.Thread(target = master.execute)
+    smach_thread.start()
     
-    outcome =  master.execute()
-    
-    
-    
-    rospy.signal_shutdown('All done.')
+    rospy.spin();
+
+    master.request_preempt()
+    intro_server.stop()
 

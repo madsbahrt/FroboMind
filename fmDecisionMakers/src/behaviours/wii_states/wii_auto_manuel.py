@@ -1,7 +1,7 @@
 import rospy
 import smach
 import smach_ros
-import behaviours
+
 from fmTools.srv import switch_muxRequest,switch_muxResponse,switch_mux
 
 from sensor_msgs.msg import Joy

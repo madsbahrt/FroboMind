@@ -18,8 +18,8 @@ from fmExecutors.msg import *
 
 class DriveForwardAction():
     """
-        Performs a X degree turn either to the left or right 
-        depending on the given goal.
+        Drives x meters either forward or backwards depending on the given distance.
+        the velocity should always be positive. 
     """
     def __init__(self,name,odom_frame,base_frame):
         """
@@ -28,6 +28,7 @@ class DriveForwardAction():
         @param odom_frame: the frame the robot is moving in (odom_combined)
         @param base_frame: the vehicles own frame (usually base_link)
         """
+        
         self._action_name = name
         self.__odom_frame = odom_frame
         self.__base_frame = base_frame
@@ -71,10 +72,10 @@ class DriveForwardAction():
     def on_timer(self,e):
         """
             called regularly by a ros timer
-            
-            This function exevutes the main loop of this action
-            if a goal is active a rabbit is placed initially at the desired distance 
-            from the robot at either left or right.
+            in here we simply orders the vehicle to start moving either forward 
+            or backwards depending on the distance sign, while monitoring the 
+            travelled distance, if the distance is equal to or greater then this
+            action succeeds.
         """
         if self.__server.is_active():
             if self.new_goal:
@@ -126,9 +127,6 @@ class DriveForwardAction():
         return ret
     
     def __publish_cmd_vel(self,stop):
-        """
-            place the rabbit to either the right or left of a circle with desired radius.
-        """
         vel = Twist()
         if self.__desired_amount > 0:
             vel.linear.x = self.vel

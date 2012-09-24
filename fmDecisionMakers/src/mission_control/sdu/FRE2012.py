@@ -9,8 +9,8 @@ import actionlib
 import math
 import tf
 
-#from sensor_msgs.msg import Joy
-from joy.msg import Joy
+from sensor_msgs.msg import Joy
+import threading
 
 import smach
 import smach_ros
@@ -188,9 +188,10 @@ if __name__ == "__main__":
     intro_server = smach_ros.IntrospectionServer('field_mission',sm,'/FIELDMISSION')
     intro_server.start()    
     
-    try:
-        outcome = sm.execute()
-    except:
-        rospy.logerr("Statemachine aborted")
+    smach_thread = threading.Thread(target = sm.execute)
+    smach_thread.start()
     
-    rospy.signal_shutdown('All done.')
+    rospy.spin();
+
+    sm.request_preempt()
+    intro_server.stop()

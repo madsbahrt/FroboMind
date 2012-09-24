@@ -1,0 +1,211 @@
+<launch>
+
+<arg name="l_serial" value="/dev/ttyUSB1"/>
+<arg name="r_serial" value="/dev/ttyUSB0"/>
+<arg name="imu_serial" value="/dev/ttyUSB2"/>
+<arg name="implement_serial" value="/dev/ttyUSB3"/>
+<arg name="sim" default="false"/>
+
+<include file="$(find fmSim)/launch/actuator-sim.launch" if="$(arg sim)"/>
+
+<group ns="fmDecisionMakers"> 
+
+    <node pkg="fmDecisionMakers" name="navigate_in_row_simple" type="navigate_in_row_simple.py">
+    </node>
+
+    <node pkg="fmDecisionMakers" name="make_turn" type="make_turn.py">
+    </node>
+
+    <node pkg="fmDecisionMakers" name="drive_forward" type="drive_forward.py">
+    </node>
+    <!--  
+    <node pkg="fmDecisionMakers" name="MISSION" type="Kongskilde.py" output="screen">
+    </node>-->
+  
+</group>
+
+<group ns="transforms">
+
+    <node pkg="tf" type="static_transform_publisher" name="imu_link_broadcaster" args="0 0.0 0.8 0 0 0 base_footprint imu_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 base_footprint base_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="laser_link_broadcaster" args="0.4 0 0.1 0 0 0 base_footprint laser_link 100"/>
+
+    <node pkg="tf" type="static_transform_publisher" name="odom_link_broadcaster" args="0 0 0 0 0 0 odom_combined odom 100" if="$(arg sim)"/>
+
+</group>
+
+<group ns="fmHMI">
+
+    <node pkg="wiimote" type="wiimote_node.py" name="remote_control" respawn="true">
+    </node>
+
+    <node pkg="fmHMI" type="wiimote_to_twist" name="wii_to_user_twist">
+        <param name="max_angular_velocity" value="1"/>
+        <param name="max_linear_velocity" value="1"/>
+        <param name="x_axis" value="1"/>
+        <param name="y_axis" value="0"/>
+        <param name="z_axis" value="2"/>
+        <param name="invert_x" value="false"/>
+        <param name="invert_z" value="true"/>
+        <param name="invert_y" value="true"/>
+    </node>
+
+</group>
+
+<group ns="fmKinematics" unless="$(arg sim)">
+
+    <node pkg="fmKinematics" name="cmd_vel_to_tracks" type="armadillo_ifk">
+            <param name="hl_subscriber_topic" value="/fmTools/cmd_vel"></param>
+            <param name="ll_publisher_topic_left" value="/fmKinematics/cmd_vel_left"></param>
+            <param name="ll_publisher_topic_right" value="/fmKinematics/cmd_vel_right"></param>
+            <param name="deadmanbutton_topic" value="/fmHMI/joy"></param>
+    </node>
+
+</group>
+
+<group ns="fmTools">
+
+        <node pkg="fmTools" name="cmd_vel_mux" type="topic_mux" unless="$(arg sim)">
+            <param name="topic_1_timeout" value="1"/>
+            <param name="topic_2_timeout" value="1"/>
+            <param name="topic_1_id" value="/fmHMI/wii_cmd_vel"/>
+            <param name="topic_2_id" value="/fmControllers/cmd_vel_auto"/>
+            <param name="cmd_vel_out_id" value="/fmTools/cmd_vel"/>
+        </node>
+
+        <node pkg="fmTools" name="cmd_vel_mux" type="topic_mux_sim" if="$(arg sim)">
+            <param name="topic_1_timeout" value="1"/>
+            <param name="topic_2_timeout" value="1"/>
+            <param name="topic_1_id" value="/fmHMI/wii_cmd_vel"/>
+            <param name="topic_2_id" value="/fmControllers/cmd_vel_auto"/>
+            <param name="cmd_vel_out_id" value="/fmTools/cmd_vel"/>
+        </node>
+
+        <node pkg="fmTools" type="laser_filter" name="laser_filter">
+            <param name="in"  value="/fmSensors/laser_msg"/>
+            <param name="out" value="/fmSensors/laser_msg_filtered"/>
+        </node>
+
+</group>
+ 
+<group ns="fmImplements">
+
+    <node pkg="fmImplements" name="RowClean" type="kongskilde_row_cleaner_node">
+        <param name="serial_rx_sub" value="/fmCSP/com3_rx" />
+        <param name="serial_tx_pub" value="/fmCSP/com3_tx" />
+        <param name="invert_operation" value="true"/>
+    </node>
+
+</group>
+
+
+<group ns="fmActuators" unless="$(arg sim)">
+
+    <node pkg="fmActuators" type="roboteq_controller" name="robotteq_l" output="screen" >
+        <param name="cmd_vel_topic" value="/fmKinematics/cmd_vel_left"/>
+        <param name="serial_rx_topic" value="/fmCSP/S0_rx"/>
+        <param name="serial_tx_topic" value="/fmCSP/S0_tx"/>
+        <param name="deadman_joy_topic" value="/fmHMI/joy"/>
+        <param name="encoder_topic" value="/fmSensors/encoder_left"/>
+        <param name="status_topic" value="/fmActuators/status_left"/>
+        <param name="max_time_diff" value="1"/>
+        <param name="deadman_joy_button_index" value="3"/>
+        <param name="deadman_joy_max_missing" value="30"/>
+    </node>
+
+    <node pkg="fmActuators" type="roboteq_controller" name="robotteq_r" output="screen" >
+        <param name="cmd_vel_topic" value="/fmKinematics/cmd_vel_right"/>
+        <param name="serial_rx_topic" value="/fmCSP/S1_rx"/>
+        <param name="serial_tx_topic" value="/fmCSP/S1_tx"/>
+        <param name="deadman_joy_topic" value="/fmHMI/joy"/>
+        <param name="encoder_topic" value="/fmSensors/encoder_right"/>
+        <param name="status_topic" value="/fmActuators/status_right"/>
+        <param name="max_time_diff" value="1"/>
+        <param name="deadman_joy_button_index" value="3"/>
+        <param name="deadman_joy_max_missing" value="30"/>
+    </node>
+
+</group>
+
+
+
+<group ns="fmExtractors"> 
+    <group unless="$(arg sim)">
+    <node pkg="fmExtractors" name="odom_imu" type="simple_imu_odom">
+        <param name="publisher_topic" value="/fmExtractors/odom"/>
+        <param name="subscribe_imu" value="/fmSensors/IMU"/>
+        <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_right"/>
+        <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_left"/>
+        <param name="conv_ticks_to_meter_left" value="0.001335"/>
+        <param name="conv_ticks_to_meter_right" value="0.001335"/>
+        <param name="max_time_diff" value="1"/>
+        <param name="distance_between_wheels_in_meter" value="2.3"/>
+        <param name="vehicle_frame" value="base_footprint"/>
+        <param name="odom_estimate_frame" value="odom_combined"/>
+    </node>
+    </group>
+    <node pkg="dynamic_reconfigure" name="param_load" type="dynparam" args="load /fmExtractors/row_finder $(find fmCore)/launch/rowconf.yaml"></node>
+
+    <node pkg="fmExtractors" name="row_finder" type="lidar_row_extractor">
+        <param name="frame_id" value="laser_link"></param>
+        <param name="subscriber_topic" value="/fmSensors/laser_msg"></param>
+    </node>
+
+</group>
+
+<group ns="fmSensors" unless="$(arg sim)">
+
+    <node pkg="fmSensors" name="IMU" type="vectornav_imu_node"> 
+        <param name="subscribe_topic_id" value="/fmCSP/com4_rx" />
+        <param name="publish_topic_id" value="/fmSensors/IMU" />
+        <param name="frame_id" value="imu_link" />
+        <param name="cov_x" value="0.001"/>
+        <param name="cov_y" value="0.001"/>
+        <param name="cov_z" value="0.001"/>
+    </node>
+
+    <node pkg="fmSensors" name="laser_range" type="lms111_node" >
+        <param name="host" value="192.168.0.10"/>
+        <param name="topic_id" value="/fmSensors/laser_msg"/>
+        <param name="frame_id" value="laser_link"/>
+        <param name="invert_output" value="true" />
+    </node>
+</group>
+
+<group ns="fmCSP" unless="$(arg sim)">
+
+    <node pkg="fmCSP" name="USB3" type="serial_string" output="screen" >
+        <param name="publisher_topic" value="/fmCSP/com3_rx" />  
+        <param name="subscriber_topic" value="/fmCSP/com3_tx" />
+        <param name="device" value="$(arg implement_serial)" /> 
+        <param name="baudrate" value="38400" />
+        <param name="termination_character" value="10"/>
+    </node>
+
+    <node pkg="fmCSP" name="USB4" type="serial_string">
+        <param name="publisher_topic" value="/fmCSP/com4_rx" />  
+        <param name="subscriber_topic" value="/fmCSP/com4_tx" />    
+        <param name="device" value="$(arg imu_serial)" />
+        <param name="baudrate" value="115200" />
+        <param name="termination_character" value="10"/>
+    </node>
+
+    <node pkg="fmCSP" name="USB1" type="serial_string2">
+        <param name="publisher_topic" value="/fmCSP/S0_rx" />    
+        <param name="subscriber_topic" value="/fmCSP/S0_tx" />  
+        <param name="device" value="$(arg l_serial)" /> 
+        <param name="baudrate" value="115200" />
+        <param name="termination_character" value="13"/>
+    </node>
+
+    <node pkg="fmCSP" name="USB2" type="serial_string2">
+        <param name="publisher_topic" value="/fmCSP/S1_rx" />    
+        <param name="subscriber_topic" value="/fmCSP/S1_tx" />  
+        <param name="device" value="$(arg r_serial)" /> 
+        <param name="baudrate" value="115200" />
+        <param name="termination_character" value="13"/>
+    </node>
+
+</group>
+
+</launch>
