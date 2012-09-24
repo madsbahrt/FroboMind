@@ -1,0 +1,7 @@
+<launch>
+
+    <include file="$(find fmCore)/launch/hako-base.launch"/>
+    <include file="$(find fmCore)/launch/hako-hmi.launch"/>
+    <include file="$(find fmCore)/launch/hako-sensors.launch"/>
+    
+</launch>

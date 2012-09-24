@@ -28,8 +28,8 @@ int main(int argc, char **argv)
   }
   else
   {
-	  can.can_rx_publisher_ = nh.advertise<fmMsgs::can>(publisher_topic.c_str(),1);
-	  can.can_tx_subscriber_ = nh.subscribe(subscriber_topic.c_str(),10,&SocketCan::processCanTxEvent,&can);
+	  can.can_rx_publisher_ = nh.advertise<fmMsgs::can>(publisher_topic.c_str(),20);
+	  can.can_tx_subscriber_ = nh.subscribe(subscriber_topic.c_str(),20,&SocketCan::processCanTxEvent,&can);
 	  ros::spin();
   }
 

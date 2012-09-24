@@ -1,0 +1,45 @@
+<launch>
+
+    <group ns="fmCSP">
+        <node pkg="fmCSP" name="can_0_if" type="can_socketcan">
+              <param name="device" value="can0"/>
+              <param name="publisher_topic" value="can0_rx"/>
+              <param name="subscriber_topic" value="can0_tx"/>
+        </node>
+    </group>
+
+    <group ns="fmPSP">
+        <node pkg="fmPSP" name="ESXInterface" type="hakotractor_psp">
+              <param name="can_tx_publisher_topic" value="/fmCSP/can0_tx"/>
+              <param name="can_rx_subscriber_topic" value="/fmCSP/can0_rx"/>
+              <param name="encoder_publisher_topic" value="/fmSensors/encoder_lr"/>
+              <param name="angle_publisher_topic" value="/fmSensors/encoder_angle"/>
+              <param name="cmd_vel_subscriber_topic" value="/fmKinematics/cmd_vel"/>
+              <param name="steering_angle_subscriber_topic" value="/fmKinematics/steering_angle_cmd"/>
+        </node>
+    </group>
+
+    <group ns="fmHMI">
+        <node pkg="wiimote" type="wiimote_node.py" name="remote_control" respawn="true">
+        </node>
+        <node pkg="fmHMI" type="wiimote_to_twist" name="wii_to_user_twist">
+            <param name="max_angular_velocity" value="1"/>
+            <param name="max_linear_velocity" value="1"/>
+            <param name="x_axis" value="1"/>
+            <param name="y_axis" value="0"/>
+            <param name="z_axis" value="2"/>
+            <param name="invert_x" value="false"/>
+            <param name="invert_z" value="true"/>
+            <param name="invert_y" value="true"/>
+        </node>
+    </group>
+    
+    <group ns="fmKinematics">
+        <node pkg="fmKinematics" name="cmd_vel_to_angle" type="asubot_twist_to_angle_cmd">
+            <param name="steering_angle_publisher_topic" value="/fmKinematics/steering_angle_cmd"></param>
+            <param name="twist_subscriber_topic" value="/fmHMI/wii_cmd_vel"></param>
+            <param name="twist_publisher_topic" value="/fmKinematics/cmd_vel"></param>
+        </node>
+    </group>
+
+</launch>

@@ -46,6 +46,8 @@ bin/
 lib/
 msg_gen/
 srv_gen/
+CMakeCache.txt
+CMakeFiles/
 
 # Editor backup files #
 #######################
@@ -72,3 +74,5 @@ fmImplements/msg
 *.cfgc
 *.pyc
 fmDecisionMakers/msg/
+
+

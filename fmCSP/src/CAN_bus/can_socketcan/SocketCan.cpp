@@ -73,13 +73,20 @@ void SocketCan::processCanTxEvent(const fmMsgs::can::ConstPtr& msg)
 	{
 		tx.can_id = msg->id;
 	}
-	tx.can_dlc = msg->length & (1 << 31);
+	tx.can_dlc = msg->length;
 
 	for(int i=0; i<msg->length; i++)
 	{
 		tx.data[i] = msg->data[i];
 	}
-	boost::asio::write(descriptor_, boost::asio::buffer(&tx, sizeof(tx)));
+	try
+	{
+	 boost::asio::write(descriptor_, boost::asio::buffer(&tx, sizeof(tx)));
+	}
+	catch (boost::system::system_error &e)
+	{
+		ROS_ERROR(e.what());
+	}
 }
 
 void SocketCan::canRxHandler(const boost::system::error_code& error, size_t bytes_transferred)

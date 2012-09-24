@@ -6,20 +6,21 @@
  */
 
 #include "EXSInterface.h"
+#include <cmath>
 
 EXSInterface::EXSInterface()
 {
 	// TODO Auto-generated constructor stub
 	steering_angle_updated = false;
 	cmd_vel_updated = false;
-	ok = false;
-
 
 	engine_speed = 50;
 	steering_angle_rad = 0;
 	steering_angle_to_int = 20;
 	cmd_vel_ms = 0;
 	cmd_vel_to_int = 20;
+
+	last_heartbeat_tx = ros::Time::now();
 
 }
 
@@ -30,6 +31,7 @@ EXSInterface::~EXSInterface()
 
 void EXSInterface::onCANMsg(const fmMsgs::can::ConstPtr& msg)
 {
+	int16_t angle = 0;
 	switch (msg->id) {
 		case can_id_rx_t::CAN_ID_HAKO_IO:
 
@@ -54,6 +56,10 @@ void EXSInterface::onCANMsg(const fmMsgs::can::ConstPtr& msg)
 		case can_id_rx_t::CAN_ID_STEERING_ACK:
 			break;
 		case can_id_rx_t::CAN_ID_STEERING_ANGLE_ACK:
+			angle = msg->data[0] | (msg->data[1] << 8);
+			angle_msg.encoderticks = angle;
+			angle_msg.header.stamp = msg->header.stamp;
+			angle_pub.publish(angle_msg);
 			break;
 		case can_id_rx_t::CAN_ID_STEERING_REPORT:
 			break;
@@ -67,32 +73,63 @@ void EXSInterface::onCANMsg(const fmMsgs::can::ConstPtr& msg)
 
 void EXSInterface::onTimer(const ros::TimerEvent& e)
 {
-	if(steering_angle_updated || cmd_vel_updated)
+	if(steering_angle_updated)
 	{
-		steering_angle_updated = cmd_vel_updated = false;
+		steering_angle_updated =  false;
 
 		can_msg.id = can_id_tx.CAN_ID_STEERING_ANGLE_CMD;
-		can_msg.length = 8;
+		can_msg.length = 2;
 
-		// write steering angle
-		int16_t tmp = (int16_t)(steering_angle_rad*steering_angle_to_int);
-		can_msg.data[0] = tmp;
-		can_msg.data[1] = tmp >> 8;
+		/* transimt angle in deci-degrees */
+		int16_t angle = (steering_angle_rad/(2*M_PI) * (360)) * 10;
+		can_msg.data[0] = angle;
+		can_msg.data[1] = angle >> 8;
 
-		// write velocity command
-		tmp = cmd_vel_ms * cmd_vel_to_int;
-		can_msg.data[2] = tmp;
-		can_msg.data[3] = tmp >> 8;
+		can_tx_pub.publish(can_msg);
+	}
 
-		// wirte engine speed
-		can_msg.data[4] = engine_speed;
-		can_msg.data[6] = 'A';
+	if(cmd_vel_updated)
+	{
+		cmd_vel_updated = false;
+
+		can_msg.id = can_id_tx.CAN_ID_CVT_CONTROL_CMD;
+		can_msg.length = 4;
+
+		// convert m/s to um/s (micrometer per second)
+		int32_t speed_ums = cmd_vel_ms * 1000000;
+		can_msg.data[0] = speed_ums;
+		can_msg.data[1] = speed_ums >> 8;
+		can_msg.data[2] = speed_ums >> 16;
+		can_msg.data[3] = speed_ums >> 24;
+
+		can_msg.data[3] &= 0x3f;
+		can_msg.data[3] |= 0xc0;
+
+		can_tx_pub.publish(can_msg);
+	}
+
+	ros::Time t = ros::Time::now();
+
+	if((t - last_odom_poll_msg).toSec() > 0.1)
+	{
+		last_odom_poll_msg = t;
+		can_msg.id = can_id_tx.CAN_ID_ENCODER_REQ;
+		can_msg.length = 2;
+		can_msg.data[0] = can_msg.data[1] = 0;
 
 		can_tx_pub.publish(can_msg);
 	}
 
 
-
+	if( (t - last_heartbeat_tx).toSec() > 0.1 )
+	{
+		last_heartbeat_tx = t;
+		// transmit heartbeat
+		can_msg.id = can_id_tx.CAN_ID_HEARTBEAT;
+		can_msg.length = 1;
+		can_msg.data[0] = 0xA5;
+		can_tx_pub.publish(can_msg);
+	}
 }
 
 void EXSInterface::onSteeringAngle(

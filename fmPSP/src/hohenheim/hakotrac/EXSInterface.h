@@ -46,6 +46,7 @@ typedef struct
 	static const uint32_t CAN_ID_ENCODER_REQ = 0x110; // only for can device 2??
 	static const uint32_t CAN_ID_RPM_CMD = 0x200;
 	static const uint32_t CAN_ID_CURVATURE_CMD = 0x141;
+	static const uint32_t CAN_ID_HEARTBEAT = 0x070;
 
 }can_id_tx_t;
 
@@ -64,6 +65,7 @@ public:
 
 	ros::Publisher can_tx_pub;
 	ros::Publisher encoder_pub;
+	ros::Publisher angle_pub;
 
 private:
 
@@ -71,6 +73,7 @@ private:
 	static const can_id_tx_t can_id_tx;
 
 	fmMsgs::encoder enc_msg;
+	fmMsgs::encoder angle_msg;
 	fmMsgs::can can_msg;
 
 	double steering_angle_rad;
@@ -81,8 +84,9 @@ private:
 
 	bool cmd_vel_updated;
 	bool steering_angle_updated;
-	bool ok;
 
+	ros::Time last_heartbeat_tx;
+	ros::Time last_odom_poll_msg;
 
 
 
