@@ -1,9 +1,15 @@
 <launch>
 
-    <arg name="use_gps" value="false"/>
+    <arg name="use_gps" default="false"/>
+    <arg name="usb_serial_imu" default="/dev/ttyUSB0"/>
+    <arg name="usb_serial_gps" default="/dev/ttyUSB1" if="$(arg use_gps)"/>
 
-    <include file="$(find fmCore)/launch/hako-base.launch"/>
-    <include file="$(find fmCore)/launch/hako-sensors.launch"/>
-    <include file="$(find fmCore)/launch/hako-localization.launch"/>
+    <include file="$(find fmCore)/launch/hakotrac/hako-base.launch"/>
+
+    <include file="$(find fmCore)/launch/hakotrac/hako-localization.launch">
+            <arg name="use_gps" value="$(arg use_gps)"/>
+            <arg name="usb_serial_imu" value="$(arg usb_serial_imu)"/>
+            <arg name="usb_serial_gps" value="$(arg usb_serial_gps)" if="$(arg use_gps)"/>
+    </include>
     
 </launch>

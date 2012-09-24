@@ -1,11 +1,15 @@
 <launch>
 
+    <arg name="use_gps"/>
+    <arg name="usb_serial_imu"/>
+    <arg name="usb_serial_gps" if="$(arg use_gps)"/>
+    
 <group ns="fmCSP">
 
     <node pkg="fmCSP" name="USB1" type="serial_string" if="$(arg use_gps)">
         <param name="publisher_topic" value="/fmCSP/com1_rx" />  
         <param name="subscriber_topic" value="/fmCSP/com1_tx" />
-        <param name="device" value="/dev/ttyACM0" />    
+        <param name="device" value="$(arg usb_serial_gps)" />    
         <param name="baudrate" value="115200" />
         <param name="termination_character" value="10"/>
     </node>
@@ -13,7 +17,7 @@
     <node pkg="fmCSP" name="USB0" type="serial_string">
         <param name="publisher_topic" value="/fmCSP/com0_rx" />  
         <param name="subscriber_topic" value="/fmCSP/com0_tx" />    
-        <param name="device" value="/dev/ttyUSB0" />
+        <param name="device" value="$(arg usb_serial_imu)" />
         <param name="baudrate" value="115200" />
         <param name="termination_character" value="10"/>
     </node>
@@ -44,10 +48,10 @@
         <param name="subscribe_imu" value="/fmSensors/IMU"/>
         <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_lr"/>
         <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_lr"/>
-        <param name="conv_ticks_to_meter_left" value="0.001335"/>
-        <param name="conv_ticks_to_meter_right" value="0.001335"/>
+        <param name="conv_ticks_to_meter_left" value="0.017"/>
+        <param name="conv_ticks_to_meter_right" value="0.017"/>
         <param name="max_time_diff" value="1"/>
-        <param name="distance_between_wheels_in_meter" value="2.3"/>
+        <param name="distance_between_wheels_in_meter" value="1.4"/>
         <param name="vehicle_frame" value="base_footprint"/>
         <param name="odom_estimate_frame" value="odom_combined"/>
     </node>
@@ -55,7 +59,7 @@
 
 <group ns="fmExtractors" if="$(arg use_gps)">
 
-    <node pkg="fmExtractors" name="UTM_TO_ODOM" type="utm_to_odom" output="screen"> 
+    <node pkg="fmExtractors" name="utm_to_odom" type="utm_to_odom" > 
         <param name="subscribe_topic_id" value="/fmExtractors/utm" />
         <param name="publish_topic_id" value="/fmExtractors/gps_odom" />
         <param name="odom_frame_id" value="odom_combined" />
@@ -64,14 +68,14 @@
         <param name="gps_variance" value="1"/>
     </node>
     
-    <node pkg="fmExtractors" name="GPGGA_TO_UTM" type="gps_state" output="screen"> 
+    <node pkg="fmExtractors" name="gpgga_to_utm" type="gps_state"> 
         <param name="subscribe_topic_id" value="/fmSensors/gpgga" />
         <param name="publish_topic_id" value="/fmExtractors/utm" />
     </node>
     
     <node pkg="fmExtractors" name="wheel_odometry" type="simple_odom">
-        <param name="conv_ticks_to_meter_left" value="0.00120"/>
-        <param name="conv_ticks_to_meter_right" value="0.00120"/> 
+        <param name="conv_ticks_to_meter_left" value="0.017"/>
+        <param name="conv_ticks_to_meter_right" value="0.017"/> 
         <param name="distance_between_wheels_in_meter" value="1.4"></param>
         <param name="max_time_diff" value="1"></param>      
         <param name="publisher_topic"        value="/fmExtractors/wheel_odom" />
@@ -82,7 +86,7 @@
 </group>
 
 <group ns="fmProcessors" if="$(arg use_gps)">
- <node pkg="fmProcessors" type="odom_estimation" name="Odometry_Estimation" output="screen" >
+ <node pkg="fmProcessors" type="odom_estimation" name="odometry_Estimation" >
     <param name="imu_subscriber_topic" value="/fmSensors/IMU"/>
     <param name="odom_subscriber_topic"     value="/fmExtractors/wheel_odom"/>
     <param name="gps_odom_subscriber_topic" value="/fmExtractors/gps_odom"/>
