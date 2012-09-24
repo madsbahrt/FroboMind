@@ -1,0 +1,10 @@
+<launch>
+    <arg name="use_gps"/>
+    
+    <group ns="transforms">
+        <node pkg="tf" type="static_transform_publisher" name="imu_link_broadcaster" args="0 0.0 0.8 0 0 0 base_footprint imu_link 100"/>
+        <node pkg="tf" type="static_transform_publisher" name="gps_link_broadcaster" args="0 0.0 2 0 0 0 base_footprint gps_link 100" if="$(arg use_gps)"/>
+        <node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 base_footprint base_link 100"/>
+        <node pkg="tf" type="static_transform_publisher" name="laser_link_broadcaster" args="0.4 0 0.1 0 0 0 base_footprint laser_link 100"/>
+    </group>
+</launch>
