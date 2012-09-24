@@ -30,9 +30,9 @@ rosbuild_genmsg()
 #rosbuild_gensrv()
 
 
-rosbuild_add_executable(rabbitPlanner src/waypoint_executors/AB_lines_executor/rabbitPlanner_node.cpp)
-rosbuild_add_executable(rabbitPlanner src/waypoint_executors/AB_lines_executor/rabbitPlanner.cpp)
-#rosbuild_add_executable(rabbitPlanner src/waypoint_executors/AB_lines_executor/pathParser.cpp)
+rosbuild_add_executable(rabbitPlanner src/plan_executors/AB_lines_executor/rabbitPlanner_node.cpp)
+rosbuild_add_executable(rabbitPlanner src/plan_executors/AB_lines_executor/rabbitPlanner.cpp)
+#rosbuild_add_executable(rabbitPlanner src/plan_executors/AB_lines_executor/pathParser.cpp)
 #target_link_libraries(rabbitPlanner yaml-cpp)
 
 #common commands for building c++ executables and libraries
