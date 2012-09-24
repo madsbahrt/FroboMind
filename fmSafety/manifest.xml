@@ -1,0 +1,15 @@
+<package>
+  <description brief="fmSafety">
+
+     fmSafety
+
+  </description>
+  <author>Kjeld Jensen</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/fmSafety</url>
+  <depend package="roscpp"/>
+
+</package>
+
+
