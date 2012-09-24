@@ -1,7 +1,9 @@
 <launch>
 
+    <arg name="use_gps" value="false"/>
+
     <include file="$(find fmCore)/launch/hako-base.launch"/>
-    <include file="$(find fmCore)/launch/hako-hmi.launch"/>
     <include file="$(find fmCore)/launch/hako-sensors.launch"/>
+    <include file="$(find fmCore)/launch/hako-localization.launch"/>
     
 </launch>

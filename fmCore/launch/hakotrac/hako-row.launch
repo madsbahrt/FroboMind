@@ -1,0 +1,15 @@
+<launch>
+
+<group ns="fmExtractors"> 
+    
+    <node pkg="dynamic_reconfigure" name="param_load" type="dynparam" args="load /fmExtractors/row_finder $(find fmCore)/launch/hakotrac/rowconf.yaml"/>
+    
+    <node pkg="fmExtractors" name="row_finder" type="lidar_row_extractor">
+        <param name="frame_id" value="laser_link"></param>
+        <param name="subscriber_topic" value="/fmSensors/laser_msg"></param>
+    </node>
+    
+</group>
+
+
+</launch>
