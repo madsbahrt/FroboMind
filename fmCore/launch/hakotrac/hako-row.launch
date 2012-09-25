@@ -8,7 +8,8 @@
  -->
 <group ns="fmExtractors"> 
     
-    <node pkg="dynamic_reconfigure" name="param_load" type="dynparam" args="load /fmExtractors/row_finder $(find fmCore)/launch/hakotrac/rowconf.yaml"/>
+    <node pkg="dynamic_reconfigure" name="param_load" type="dynparam" args="load /fmExtractors/row_finder $(find fmCore)/launch/hakotrac/rowconf.yaml" unless="$(arg sim)"/>
+    <node pkg="dynamic_reconfigure" name="param_load" type="dynparam" args="load /fmExtractors/row_finder $(find fmCore)/launch/hakotrac/conf/hako-sim-row.yaml" if="$(arg sim)"/>
     
     <node pkg="fmExtractors" name="row_finder" type="lidar_row_extractor">
         <param name="frame_id" value="laser_link"></param>

@@ -16,48 +16,48 @@ import smach_ros
 from fmExecutors.msg import drive_forwardGoal, drive_forwardAction,make_turnGoal,make_turnAction
 
 
-def build_u_turn_sm(length, width, turn_radius , direction_l,vel_fw,vel_turn):
+def build_u_turn_sm(length_in, length_out, width, turn_radius , direction_l,vel_fw,vel_turn):
     """
     """
     # vel is in m/s turn radius is in meter
     turn =  vel_turn/turn_radius;
     
     if direction_l:
-        lr_amount = math.pi/2.1
+        lr_amount = math.pi/2 - 10*math.pi/180.
     else:
-        lr_amount = -math.pi/2.1
+        lr_amount = -math.pi/2 + 10*math.pi/180.
      
     uturn_sm = smach.StateMachine(outcomes=["succeeded","aborted","preempted"])
     
     with uturn_sm:
-        smach.StateMachine.add("DRIVE_FW_1", 
+        smach.StateMachine.add("DRIVE_FW_IN", 
                                smach_ros.SimpleActionState("/fmExecutors/drive_forward", 
                                                            drive_forwardAction, 
-                                                           goal = drive_forwardGoal(amount=(length-turn_radius), vel=vel_fw ) ), 
+                                                           goal = drive_forwardGoal(amount=(length_in-turn_radius), vel=vel_fw ) ), 
                                transitions={"succeeded":"TURN_1"}, 
                                )
         smach.StateMachine.add("TURN_1",
                                smach_ros.SimpleActionState("/fmExecutors/make_turn",
                                                            make_turnAction,
                                                            goal= make_turnGoal(amount = lr_amount, vel=turn, forward_vel=vel_turn)),
-                               transitions={"succeeded":"DRIVE_FW_2"}
+                               transitions={"succeeded":"DRIVE_FW_CROSS"}
                                )
-        smach.StateMachine.add("DRIVE_FW_2", 
+        smach.StateMachine.add("DRIVE_FW_CROSS", 
                                smach_ros.SimpleActionState("/fmExecutors/drive_forward", 
                                                            drive_forwardAction, 
-                                                           goal = drive_forwardGoal(amount=(width-turn_radius), vel=vel_fw ) ), 
+                                                           goal = drive_forwardGoal(amount=(width-turn_radius*2), vel=vel_fw ) ), 
                                transitions={"succeeded":"TURN_2"}, 
                                )
         smach.StateMachine.add("TURN_2",
                                smach_ros.SimpleActionState("/fmExecutors/make_turn",
                                                            make_turnAction,
                                                            goal= make_turnGoal(amount = lr_amount, vel=turn, forward_vel=vel_turn)),
-                               transitions={"succeeded":"DRIVE_FW_3"}
+                               transitions={"succeeded":"DRIVE_FW_OUT"}
                                )
-        smach.StateMachine.add("DRIVE_FW_3",
+        smach.StateMachine.add("DRIVE_FW_OUT",
                                smach_ros.SimpleActionState("/fmExecutors/drive_forward", 
                                                            drive_forwardAction, 
-                                                           goal = drive_forwardGoal(amount=(length-turn_radius), vel=vel_fw ) ), 
+                                                           goal = drive_forwardGoal(amount=(length_out-turn_radius), vel=vel_fw ) ), 
                                transitions={"succeeded":"succeeded"}, 
                                )
     

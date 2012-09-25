@@ -35,7 +35,14 @@ from sensor_msgs.msg import Joy
 def force_preempt(a):
     return True
 
-
+@smach.cb_interface(input_keys=["next_turn_in"],output_keys=["next_turn_out"],outcomes=['left','right'])
+def on_turn_selection(ud):
+    if ud.next_turn_in == "left":
+        ud.next_turn_out = "right"
+        return 'left'
+    else:
+        ud.next_turn_out = "left"
+        return 'right'
 
 def build_main_sm():
     """
@@ -46,20 +53,43 @@ def build_main_sm():
     # Create the inrow behaviour
     # 
     row_goal = navigate_in_row_simpleGoal()
-    row_goal.desired_offset_from_row = -0.2
-    row_goal.distance_scale = -0.8
+    row_goal.desired_offset_from_row = 0
+    row_goal.distance_scale = -0.5
     row_goal.forward_velcoity = 0.5
     row_goal.headland_timeout = 20
-    row_goal.P = 2
+    row_goal.P = 1.5
     
     row_nav = build_row_nav_sm(row_goal,2)
 
-    uturn = build_u_turn_sm(2, 1.5, 0.5, False, 0.5, 0.4)
-    
-    
-    
 
-    return uturn
+    #length_in, length_out, width, turn_radius , direction_l,vel_fw,vel_turn):
+    uturn_right = build_u_turn_sm(2,1.5, 1.7, 0.5, False, 0.5, 0.4)
+    uturn_left = build_u_turn_sm(2,1.5, 1.7, 0.5, True, 0.5, 0.4)
+    
+    main_sm = smach.StateMachine(["succeeded","aborted","preempted"])
+    main_sm.userdata.next_turn = "right"
+    
+    with main_sm:
+        smach.StateMachine.add("NAVIGATE_IN_ROW",
+                                row_nav,
+                                transitions={"succeeded":"TURN_SELECTOR"},
+                                )
+        smach.StateMachine.add("TURN_SELECTOR",
+                               smach.CBState(on_turn_selection, outcomes=["left","right"], input_keys=["next_turn_in"], output_keys=["next_turn_out"]),
+                               transitions={"left":"MAKE_TURN_LEFT","right":"MAKE_TURN_RIGHT"},
+                               remapping = {"next_turn_in":"next_turn","next_turn_out":"next_turn"}
+                               
+                               )
+        smach.StateMachine.add("MAKE_TURN_RIGHT",
+                               uturn_right,
+                               transitions={"succeeded":"NAVIGATE_IN_ROW"}
+                               )
+        smach.StateMachine.add("MAKE_TURN_LEFT",
+                               uturn_left,
+                               transitions={"succeeded":"NAVIGATE_IN_ROW"}
+                               )
+
+    return main_sm
     
     
 if __name__ == "__main__":
