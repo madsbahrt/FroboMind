@@ -11,6 +11,7 @@
             <param name="invert_x" value="false"/>
             <param name="invert_z" value="true"/>
             <param name="invert_y" value="true"/>
+            <param name="moving_average_size" value="20"/>
         </node>
     </group>
 

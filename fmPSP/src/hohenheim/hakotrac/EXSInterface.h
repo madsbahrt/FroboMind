@@ -99,6 +99,8 @@ private:
 
 	ros::Time last_wii;
 
+	ros::Time last_steering;
+
 
 
 };

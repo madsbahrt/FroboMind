@@ -29,6 +29,7 @@ EXSInterface::EXSInterface()
 	x_prev = y_prev = z_prev = 0 ;
 
 	last_wii = ros::Time::now();
+	last_steering = ros::Time::now();
 }
 
 EXSInterface::~EXSInterface()
@@ -77,8 +78,9 @@ void EXSInterface::onCANMsg(const fmMsgs::can::ConstPtr& msg)
 
 void EXSInterface::onTimer(const ros::TimerEvent& e)
 {
+	ros::Time t = ros::Time::now();
 
-	if((ros::Time::now() - last_wii) > ros::Duration(1))
+	if((t - last_wii) > ros::Duration(1))
 	{
 		deadman_active = false;
 	}
@@ -88,8 +90,9 @@ void EXSInterface::onTimer(const ros::TimerEvent& e)
 		ROS_ERROR_THROTTLE(1,"Deadman not active for Hako sending safe cvt and zero steering");
 	}
 
-	if(steering_angle_updated)
+	if(steering_angle_updated && (t - last_steering) > ros::Duration(0.2))
 	{
+		last_steering = t;
 		steering_angle_updated =  false;
 
 		can_msg.id = can_id_tx.CAN_ID_STEERING_ANGLE_CMD;
@@ -143,7 +146,7 @@ void EXSInterface::onTimer(const ros::TimerEvent& e)
 
 
 
-	ros::Time t = ros::Time::now();
+
 
 	if((t - last_odom_poll_msg).toSec() > 0.1)
 	{
@@ -196,7 +199,7 @@ void EXSInterface::onJoy(const sensor_msgs::Joy::ConstPtr& msg)
 	else
 	{
 		wii_watchdog_count = 0;
-		if(msg->buttons[2])
+		if(msg->buttons[3])
 		{
 			deadman_active = true;
 		}
