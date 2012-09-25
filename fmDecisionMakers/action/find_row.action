@@ -1,8 +1,0 @@
-#goal
-uint8 quality
----
-#result
-uint8 goal_found
----
-#feedback
-uint8 percentage_covered

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import roslib; 
-roslib.load_manifest("fmDecisionMakers")
+roslib.load_manifest("fmExecutors")
 import rospy
 
 import actionlib
@@ -11,7 +11,6 @@ from tf import TransformListener, TransformBroadcaster
 from geometry_msgs.msg import Twist
 
 
-from fmDecisionMakers.msg import *
 from fmExecutors.msg import *
 
 
