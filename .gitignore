@@ -54,6 +54,8 @@ CMakeFiles/
 # Emacs
 \#*#
 *~
+# Midnight Commander
+.mc.menu
 
 # FroboMind Specific #
 ######################
