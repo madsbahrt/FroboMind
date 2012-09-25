@@ -95,19 +95,17 @@ class TurnAction():
                 else:
                     if self.__get_current_position():
                         if self.__desired_amount > 0:
-                            if self.compare_yaw_left_turn(self.__start_yaw,self.__cur_yaw, self.__desired_amount):
+                            if self.compare_yaw_turn(self.__start_yaw,self.__cur_yaw, self.__desired_amount):
                                 result = make_turnResult()
                                 result.end_yaw = self.__cur_yaw
                                 self.__server.set_succeeded(result, "turn completed")
                                 self.__publish_cmd_vel(0)
                             else:
                                 self.__publish_cmd_vel(1)
-                                self.__feedback.start = self.__start_yaw
-                                self.__feedback.current = self.__cur_yaw
-                                self.__feedback.target= self.__start_yaw + self.__desired_amount
-                                self.__server.publish_feedback(self.__feedback)
+                                
                         else:
-                             if self.compare_yaw_right_turn(self.__start_yaw,self.__cur_yaw,self.__desired_amount):
+                                # notice swap of position and call of yaw
+                             if self.compare_yaw_turn(self.__cur_yaw, self.__start_yaw, self.__desired_amount*-1):
                                 result = make_turnResult()
                                 result.end_yaw = self.__cur_yaw
                                 self.__server.set_succeeded(result, "turn completed")
@@ -122,34 +120,22 @@ class TurnAction():
                     else:
                         self.__publish_cmd_vel(0)
     
-    def compare_yaw_left_turn(self,start,end,amount):
-        target = start + amount
-        
-        diff = target - end
+    def compare_yaw_turn(self,start,current,amount):
+        diff = current - start
         
         if diff > math.pi:
-            diff -= 2*math.pi
-        elif diff < -math.pi:
-            diff += 2*math.pi
-
-        rospy.logerr("left " + str(diff))
-        if diff < 0:
-            return True
-        else:
-            return False
-            
+            diff -= 2 * math.pi
+        elif diff < - math.pi:
+            diff += 2 * math.pi
         
-    def compare_yaw_right_turn(self,start,end,amount):
-        target = start + amount
         
-        diff = target - end
-        if diff > math.pi:
-            diff -= 2*math.pi
-        elif diff < -math.pi:
-            diff += 2*math.pi
+        self.__feedback.start = start
+        self.__feedback.current = current
+        self.__feedback.target = diff
+        self.__server.publish_feedback(self.__feedback)
         
-        rospy.logerr("right " + str(diff))
-        if diff > 0:
+        
+        if diff >= amount:
             return True
         else:
             return False
@@ -158,7 +144,7 @@ class TurnAction():
     def __get_start_position(self):
         ret = False
         try:
-            self.__start_pos = self.__listen.lookupTransform(self.__base_frame,self.__odom_frame,rospy.Time(0))
+            self.__start_pos = self.__listen.lookupTransform(self.__odom_frame,self.__base_frame,rospy.Time(0))
             self.__start_yaw = tf.transformations.euler_from_quaternion(self.__start_pos[1])[2]
             ret = True
         except (tf.LookupException, tf.ConnectivityException),err:
@@ -169,7 +155,7 @@ class TurnAction():
     def __get_current_position(self):
         ret = False
         try:
-            self.__cur_pos = self.__listen.lookupTransform(self.__base_frame, self.__odom_frame,rospy.Time(0))
+            self.__cur_pos = self.__listen.lookupTransform( self.__odom_frame,self.__base_frame,rospy.Time(0))
             self.__cur_yaw = tf.transformations.euler_from_quaternion(self.__cur_pos[1])[2]
             ret = True
         except (tf.LookupException, tf.ConnectivityException),err:

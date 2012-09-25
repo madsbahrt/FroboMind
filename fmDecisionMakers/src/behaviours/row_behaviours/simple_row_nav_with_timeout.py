@@ -17,6 +17,7 @@ import smach_ros
 from fmDecisionMakers.msg import navigate_in_row_simpleAction, navigate_in_row_simpleGoal
 
 from fmMsgs.msg import row
+import behaviours
 
 def on_rows(ud,msg):
     if msg.leftvalid and msg.rightvalid:
@@ -54,9 +55,9 @@ def build_row_nav_sm(row_goal,timeout):
                                find_row_timeout_sm,
                                transitions={"aborted":"aborted","succeeded":"ROW_NAVIGATOR","preempted":"preempted"})
         smach.StateMachine.add("ROW_NAVIGATOR",
-                               smach_ros.SimpleActionState("/fmExecutors/navigate_in_row_simple",navigate_in_row_simpleAction, goal=row_nav_goal), 
+                               smach_ros.SimpleActionState("/fmExecutors/navigate_in_row_simple",navigate_in_row_simpleAction, goal=row_goal), 
                                transitions = {"succeeded":"succeeded","aborted":"aborted","preempted":"preempted"}, 
                                )
         
     
-    return row_navigato
+    return row_navigator

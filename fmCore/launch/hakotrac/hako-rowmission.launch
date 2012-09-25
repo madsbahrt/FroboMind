@@ -22,12 +22,12 @@
         <arg name="use_gps" value="$(arg use_gps)"/>
         <arg name="sim" value="$(arg sim)"/>
     </include>
-    <!-- 
+    
     <include file="$(find fmCore)/launch/hakotrac/hako-row.launch">
         <arg name="laser_scanner_ip" value="$(arg laser_scanner_ip)"/>
         <arg name="sim" value="$(arg sim)"/>
     </include>
-     -->
+    
     <include file="$(find fmCore)/launch/hakotrac/hako-hmi.launch"/>
     
     <group ns="fmExecutors">
