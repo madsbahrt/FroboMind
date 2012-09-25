@@ -27,8 +27,10 @@ rosbuild_add_executable(husmands_kalman src/state_estimators/husmandsKalman/husm
 
 rosbuild_add_boost_directories()
 
-rosbuild_add_executable(odom_estimation src/state_estimators/odometry/odometry_estimation.cpp src/state_estimators/odometry/PositionEstimator.cpp)
-rosbuild_add_executable(odom_estimation src/state_estimators/odometry/HeadingEstimator.cpp )
+IF(EXISTS /usr/local/include/kalman/ekfilter.hpp)
+ rosbuild_add_executable(odom_estimation src/state_estimators/odometry/odometry_estimation.cpp src/state_estimators/odometry/PositionEstimator.cpp)
+    rosbuild_add_executable(odom_estimation src/state_estimators/odometry/HeadingEstimator.cpp )
+ENDIF(EXISTS /usr/local/include/kalman/ekfilter.hpp)
 
 
 #common commands for building c++ executables and libraries
