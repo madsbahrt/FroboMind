@@ -69,7 +69,7 @@ private:
   //  Parameters
   std::string subscriber_topic, publisher_topic;
   int normal_movement_button, slow_movement_button;
-  int x_axis, y_axis, z_axis;
+  int x_axis, y_axis, z_axis , avgn;
   bool invert_x_axis, invert_y_axis, invert_z_axis;
   double gravitation, max_linear_velocity, max_angular_velocity;
   double x_acceleration, y_acceleration, z_acceleration;
@@ -121,6 +121,8 @@ WiiToTwist::WiiToTwist()
   local_n.param("invert_x_axis", invert_x_axis, false);
   local_n.param("invert_y_axis", invert_y_axis, false);
   local_n.param("invert_z_axis", invert_z_axis, false);
+  local_n.param("moving_average_size", avgn, 10);
+
   local_n.param("scale_linear_velocity_x", scale_linear_velocity_x, 1.0);
   local_n.param("scale_angular_velocity_z", scale_angular_velocity_z, 1.0);
   local_n.param("scale_slow_velocity", scale_slow_velocity, 0.1);
@@ -128,9 +130,9 @@ WiiToTwist::WiiToTwist()
   local_n.param<std::string> ("publisher_topic", publisher_topic, "wii_cmd_vel");
 
   // Initialize ring-buffers
-  x_buffer.set_capacity(6);
-  y_buffer.set_capacity(6);
-  z_buffer.set_capacity(6);
+  x_buffer.set_capacity(avgn);
+  y_buffer.set_capacity(avgn);
+  z_buffer.set_capacity(avgn);
   for (int i=0; i<x_buffer.capacity(); i++) x_buffer.push_back(0.0);
   for (int i=0; i<y_buffer.capacity(); i++) y_buffer.push_back(0.0);
   for (int i=0; i<z_buffer.capacity(); i++) z_buffer.push_back(0.0);
@@ -147,10 +149,16 @@ void WiiToTwist::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
   y_buffer.push_back((double)joy -> axes[y_axis]);
   z_buffer.push_back((double)joy -> axes[z_axis]);
 
-  //  4th order Runge Kutta filter
-  x_acceleration = (x_buffer.at(0) + 2 * x_buffer.at(1) + 2 * x_buffer.at(2) + x_buffer.at(3)) / 6.0;
-  y_acceleration = (y_buffer.at(0) + 2 * y_buffer.at(1) + 2 * y_buffer.at(2) + y_buffer.at(3)) / 6.0;
-  z_acceleration = (z_buffer.at(0) + 2 * z_buffer.at(1) + 2 * z_buffer.at(2) + z_buffer.at(3)) / 6.0;
+  double x_acc_temp = y_acc_temp = z_acc_temp = 0;
+  for(int i = 0; i < avgn;i++){
+	  x_acc_temp += x_buffer.at(i);
+	  y_acc_temp += y_buffer.at(i);
+	  z_acc_temp += z_buffer.at(i);
+  }
+
+  x_acceleration = x_acc_temp / avgn;
+  y_acceleration = y_acc_temp / avgn;
+  z_acceleration = z_acc_temp / avgn;
   //x_acceleration = (x_buffer[0] + 2 * x_buffer[1] + 2 * x_buffer[2] + x_buffer[3]) / 6.0;
   //y_acceleration = (y_buffer[0] + 2 * y_buffer[1] + 2 * y_buffer[2] + y_buffer[3]) / 6.0;
   //z_acceleration = (z_buffer[0] + 2 * z_buffer[1] + 2 * z_buffer[2] + z_buffer[3]) / 6.0;
