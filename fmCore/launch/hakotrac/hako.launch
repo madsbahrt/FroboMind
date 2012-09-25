@@ -15,5 +15,8 @@
     <include file="$(find fmCore)/launch/hakotrac/hako-tf.launch">
         <arg name="use_gps" value="$(arg use_gps)"/>
     </include>
+
+	<include file="$(find fmCore)/launch/hakotrac/hako-action.launch" />
+
     
 </launch>

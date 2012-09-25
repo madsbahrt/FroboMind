@@ -1,0 +1,27 @@
+<launch>
+	<group ns="fmControllers">
+	    <node pkg="fmControllers" name="hako_engine_rpm" type="engine_rpm_control" > 
+	        <param name="subscribe_topic_id" value="/fmHMI/joy" />
+	        <param name="publish_topic_id" value="/fmControllers/engine_rpm" />
+		<param name="idle_rpm" value="1000"/>
+		<param name="low_rpm" value="1300"/>
+		<param name="medium_rpm" value="1700"/>
+		<param name="high_rpm" value="2000"/>
+	    </node>
+	</group>
+
+	<group ns="fmHMI">
+        	<node pkg="wiimote" type="wiimote_node.py" name="remote_control" respawn="true">
+	        </node>
+        	<node pkg="fmHMI" type="wiimote_to_twist" name="wii_to_user_twist">
+	            <param name="max_angular_velocity" value="1"/>
+	            <param name="max_linear_velocity" value="1"/>
+	            <param name="x_axis" value="1"/>
+	            <param name="y_axis" value="0"/>
+	            <param name="z_axis" value="2"/>
+	            <param name="invert_x" value="false"/>
+	            <param name="invert_z" value="true"/>
+	            <param name="invert_y" value="true"/>
+	        </node>
+	</group>
+</launch>
