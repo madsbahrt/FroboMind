@@ -1,9 +1,18 @@
 Background\ ColorB=0
 Background\ ColorG=0
 Background\ ColorR=0
-Camera\ Config=113.566 0.256275 3.61716 -0.624198
+Camera\ Config=75.2208 -0.310769 2.56896 -0.624198
 Camera\ Type=rviz::FixedOrientationOrthoViewController
-Fixed\ Frame=/laser_link
+Fixed\ Frame=/odom_combined
+GPS\ raw.Angle\ Tolerance=0.1
+GPS\ raw.ColorB=0
+GPS\ raw.ColorG=0.1
+GPS\ raw.ColorR=1
+GPS\ raw.Enabled=0
+GPS\ raw.Keep=100
+GPS\ raw.Length=1
+GPS\ raw.Position\ Tolerance=0.1
+GPS\ raw.Topic=
 Grid.Alpha=0.5
 Grid.Cell\ Size=0.1
 Grid.ColorB=0.5
@@ -19,7 +28,7 @@ Grid.OffsetZ=0
 Grid.Plane=0
 Grid.Plane\ Cell\ Count=1000
 Grid.Reference\ Frame=<Fixed Frame>
-IMU.Enabled=1
+IMU.Enabled=0
 IMU.Marker\ Topic=visualization_marker
 IMU.Queue\ Size=100
 Laser\ Scan..AxisColorAutocompute\ Value\ Bounds=1
@@ -35,11 +44,11 @@ Laser\ Scan..IntensityChannel\ Name=intensity
 Laser\ Scan..IntensityMax\ ColorB=0
 Laser\ Scan..IntensityMax\ ColorG=1
 Laser\ Scan..IntensityMax\ ColorR=0.00784314
-Laser\ Scan..IntensityMax\ Intensity=1
+Laser\ Scan..IntensityMax\ Intensity=0
 Laser\ Scan..IntensityMin\ ColorB=0
 Laser\ Scan..IntensityMin\ ColorG=0
 Laser\ Scan..IntensityMin\ ColorR=0
-Laser\ Scan..IntensityMin\ Intensity=1
+Laser\ Scan..IntensityMin\ Intensity=0
 Laser\ Scan..IntensityUse\ full\ RGB\ spectrum=0
 Laser\ Scan.Alpha=1
 Laser\ Scan.Billboard\ Size=0.02
@@ -64,7 +73,7 @@ Path.Alpha=1
 Path.ColorB=0
 Path.ColorG=1
 Path.ColorR=0.1
-Path.Enabled=0
+Path.Enabled=1
 Path.Topic=/fmExecutors/path
 Point\ Cloud..AxisColorAutocompute\ Value\ Bounds=1
 Point\ Cloud..AxisColorAxis=2
@@ -89,16 +98,16 @@ Point\ Cloud.Alpha=1
 Point\ Cloud.Billboard\ Size=0.01
 Point\ Cloud.Color\ Transformer=Intensity
 Point\ Cloud.Decay\ Time=0
-Point\ Cloud.Enabled=0
+Point\ Cloud.Enabled=1
 Point\ Cloud.Position\ Transformer=XYZ
 Point\ Cloud.Queue\ Size=10
 Point\ Cloud.Selectable=1
 Point\ Cloud.Style=1
 Point\ Cloud.Topic=/fmExtractors/point_cloud
-Property\ Grid\ Splitter=799,78
-Property\ Grid\ State=expanded=.Global Options;splitterratio=0.5
-QMainWindow=000000ff00000000fd000000030000000000000205000003bffc0200000001fb000000100044006900730070006c006100790073010000001d000003bf000000ee00ffffff0000000100000130000003bffc0200000003fb0000001e0054006f006f006c002000500072006f0070006500720074006900650073010000001d000000f90000006700fffffffb0000000a00560069006500770073010000011c000001c1000000bb00fffffffb0000001200530065006c0065006300740069006f006e01000002e3000000f90000006700ffffff00000003000007800000003efc0100000001fb0000000800540069006d0065010000000000000780000002bf00ffffff0000043f000003bf00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
-Rabbit\ plan\ marker.Enabled=0
+Property\ Grid\ Splitter=619,78
+Property\ Grid\ State=expanded=.Global Options,TF.Enabled;splitterratio=0.5
+QMainWindow=000000ff00000000fd0000000300000000000001cc0000030bfc0200000001fb000000100044006900730070006c006100790073010000001d0000030b000000ee00ffffff00000001000001300000030bfc0200000003fb0000001e0054006f006f006c002000500072006f0070006500720074006900650073010000001d000000c90000006700fffffffb0000000a0056006900650077007301000000ec0000016d000000bb00fffffffb0000001200530065006c0065006300740069006f006e010000025f000000c90000006700ffffff00000003000006400000003efc0100000001fb0000000800540069006d0065010000000000000640000002bf00ffffff000003380000030b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+Rabbit\ plan\ marker.Enabled=1
 Rabbit\ plan\ marker.Marker\ Topic=/fmTools/rabbit_markers
 Rabbit\ plan\ marker.Queue\ Size=100
 Row\ marker.Enabled=1
@@ -112,7 +121,7 @@ TF.Show\ Arrows=1
 TF.Show\ Axes=1
 TF.Show\ Names=1
 TF.Update\ Interval=0.05
-Target\ Frame=/laser_link
+Target\ Frame=/base_footprint
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 [Display0]
@@ -122,28 +131,40 @@ Name=TF
 ClassName=rviz::OdometryDisplay
 Name=Odometry
 [Display2]
+ClassName=rviz::OdometryDisplay
+Name=GPS raw
+[Display3]
 ClassName=rviz::GridDisplay
 Name=Grid
-[Display3]
-ClassName=rviz::MarkerDisplay
-Name=IMU
 [Display4]
 ClassName=rviz::MarkerDisplay
-Name=Row marker
+Name=IMU
 [Display5]
+ClassName=rviz::MarkerDisplay
+Name=Row marker
+[Display6]
 ClassName=rviz::LaserScanDisplay
 Name=Laser Scan
-[Display6]
+[Display7]
 ClassName=rviz::MarkerDisplay
 Name=Rabbit plan marker
-[Display7]
+[Display8]
 ClassName=rviz::PathDisplay
 Name=Path
-[Display8]
+[Display9]
 ClassName=rviz::PointCloudDisplay
 Name=Point Cloud
+[TF.Frames.]
+base_footprint.Enabled=1
+base_laser_link.Enabled=1
+base_link.Enabled=1
+imu_link.Enabled=1
+laser_link.Enabled=1
+map.Enabled=1
+odom.Enabled=1
+odom_combined.Enabled=1
 [Window]
-Height=1056
-Width=1920
-X=1533
+Height=876
+Width=1600
+X=-67
 Y=-29

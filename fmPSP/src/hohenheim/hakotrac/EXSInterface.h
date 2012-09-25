@@ -13,6 +13,7 @@
 #include <fmMsgs/steering_angle_cmd.h>
 #include <geometry_msgs/Twist.h>
 #include <fmMsgs/encoder.h>
+#include <sensor_msgs/Joy.h>
 
 typedef struct
 {
@@ -62,6 +63,7 @@ public:
 
 	void onSteeringAngle(const fmMsgs::steering_angle_cmd::ConstPtr & msg);
 	void onCmdVel(const geometry_msgs::Twist::ConstPtr& msg);
+	void onJoy(const sensor_msgs::Joy::ConstPtr& msg);
 
 	ros::Publisher can_tx_pub;
 	ros::Publisher encoder_pub;
@@ -88,6 +90,14 @@ private:
 	ros::Time last_heartbeat_tx;
 	ros::Time last_odom_poll_msg;
 
+	double x_prev,y_prev,z_prev;
+
+	unsigned int wii_watchdog_count;
+	unsigned int wii_watchdog_limit;
+
+	bool deadman_active;
+
+	ros::Time last_wii;
 
 
 

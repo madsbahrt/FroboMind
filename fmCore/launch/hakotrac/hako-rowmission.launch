@@ -6,7 +6,7 @@
     <arg name="laser_scanner_ip" default="192.168.0.11"/>
     <arg name="sim" default="false"/>
     
-    <param name="use_sim_time" value="true" if="$(arg sim)"/>
+    <!--   <param name="use_sim_time" value="true" if="$(arg sim)"/>-->
 
     <include file="$(find fmCore)/launch/hakotrac/hako-base.launch">
         <arg name="sim" value="$(arg sim)"/>
@@ -30,5 +30,12 @@
     </include>
     
     <include file="$(find fmCore)/launch/hakotrac/hako-hmi.launch"/>
+    
+    <group ns="fmExecutors">
+        <node pkg="fmExecutors" name="navigate_in_row_simple" type="navigate_in_row_simple.py"></node>
+        <node pkg="fmExecutors" name="make_turn" type="make_turn.py"></node>
+        <node pkg="fmExecutors" name="drive_forward" type="drive_forward.py"></node>
+    </group>
+    <include file="$(find fmCore)/launch/hakotrac/hako-AB.launch"/>
 
 </launch>

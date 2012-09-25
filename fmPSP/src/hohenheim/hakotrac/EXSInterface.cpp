@@ -22,6 +22,13 @@ EXSInterface::EXSInterface()
 
 	last_heartbeat_tx = ros::Time::now();
 
+	deadman_active =false;
+	wii_watchdog_count = 0;
+	wii_watchdog_limit = 30;
+
+	x_prev = y_prev = z_prev = 0 ;
+
+	last_wii = ros::Time::now();
 }
 
 EXSInterface::~EXSInterface()
@@ -34,13 +41,10 @@ void EXSInterface::onCANMsg(const fmMsgs::can::ConstPtr& msg)
 	int16_t angle = 0;
 	switch (msg->id) {
 		case can_id_rx_t::CAN_ID_HAKO_IO:
-
 			break;
 		case can_id_rx_t::CAN_ID_HAKOSTATE:
-
 			break;
 		case can_id_rx_t::CAN_ID_GEAR_AND_POWER:
-
 			break;
 		case can_id_rx_t::CAN_ID_HORN_ACK:
 			ROS_DEBUG_NAMED("HORN","Received ack msg");
@@ -73,6 +77,17 @@ void EXSInterface::onCANMsg(const fmMsgs::can::ConstPtr& msg)
 
 void EXSInterface::onTimer(const ros::TimerEvent& e)
 {
+
+	if((ros::Time::now() - last_wii) > ros::Duration(1))
+	{
+		deadman_active = false;
+	}
+
+	if(deadman_active == false)
+	{
+		ROS_ERROR_THROTTLE(1,"Deadman not active for Hako sending safe cvt and zero steering");
+	}
+
 	if(steering_angle_updated)
 	{
 		steering_angle_updated =  false;
@@ -82,8 +97,16 @@ void EXSInterface::onTimer(const ros::TimerEvent& e)
 
 		/* transimt angle in deci-degrees */
 		int16_t angle = (steering_angle_rad/(2*M_PI) * (360)) * 10;
-		can_msg.data[0] = angle;
-		can_msg.data[1] = angle >> 8;
+		if(deadman_active)
+		{
+			can_msg.data[0] = angle;
+			can_msg.data[1] = angle >> 8;
+		}
+		else
+		{
+			can_msg.data[0] = 0;
+			can_msg.data[1] = 0;
+		}
 
 		can_tx_pub.publish(can_msg);
 	}
@@ -96,17 +119,29 @@ void EXSInterface::onTimer(const ros::TimerEvent& e)
 		can_msg.length = 4;
 
 		// convert m/s to um/s (micrometer per second)
-		int32_t speed_ums = cmd_vel_ms * 1000000;
-		can_msg.data[0] = speed_ums;
-		can_msg.data[1] = speed_ums >> 8;
-		can_msg.data[2] = speed_ums >> 16;
-		can_msg.data[3] = speed_ums >> 24;
+		if(deadman_active)
+		{
+			int32_t speed_ums = cmd_vel_ms * 1000000;
+			can_msg.data[0] = speed_ums;
+			can_msg.data[1] = speed_ums >> 8;
+			can_msg.data[2] = speed_ums >> 16;
+			can_msg.data[3] = speed_ums >> 24;
 
-		can_msg.data[3] &= 0x3f;
-		can_msg.data[3] |= 0xc0;
+			can_msg.data[3] &= 0x3f;
+			can_msg.data[3] |= 0xc0;
+		}
+		else
+		{
+			can_msg.data[0] = 0;
+			can_msg.data[1] = 0;
+			can_msg.data[2] = 0;
+			can_msg.data[3] = 0x40;
+		}
 
 		can_tx_pub.publish(can_msg);
 	}
+
+
 
 	ros::Time t = ros::Time::now();
 
@@ -144,4 +179,36 @@ void EXSInterface::onCmdVel(const geometry_msgs::Twist::ConstPtr& msg)
 {
 	cmd_vel_updated = true;
 	cmd_vel_ms = msg->linear.x;
+}
+
+void EXSInterface::onJoy(const sensor_msgs::Joy::ConstPtr& msg)
+{
+	if ( ((msg-> axes[0]) == x_prev) && ((msg -> axes[1]) == y_prev) && ((msg -> axes[2]) == z_prev))
+	{
+
+		wii_watchdog_count++;
+
+		if (wii_watchdog_count > wii_watchdog_limit)
+		{
+			  deadman_active = false;
+		}
+	}
+	else
+	{
+		wii_watchdog_count = 0;
+		if(msg->buttons[2])
+		{
+			deadman_active = true;
+		}
+		else
+		{
+			deadman_active = false;
+		}
+	}
+
+	x_prev = msg -> axes[0];
+	y_prev = msg -> axes[1];
+	z_prev = msg -> axes[2];
+
+	last_wii = msg->header.stamp;
 }

@@ -64,6 +64,7 @@ class TurnAction():
         g = self.__server.accept_new_goal()
         self.__desired_amount= g.amount
         self.turn_vel = g.vel
+        self.forward_vel = g.forward_vel
         
         self.__cur_pos = None
         self.__cur_yaw = 0
@@ -186,9 +187,12 @@ class TurnAction():
             vel.angular.z = self.turn_vel
         else: 
             vel.angular.z = -self.turn_vel
-            
+        
+        vel.linear.x = self.forward_vel    
+        
         if stop == 0:
             vel.angular.z = 0
+            vel.linear.x = 0
         
         self.vel_pub.publish(vel)
     

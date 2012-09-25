@@ -18,6 +18,7 @@
               <param name="angle_publisher_topic" value="/fmSensors/encoder_angle"/>
               <param name="cmd_vel_subscriber_topic" value="/fmKinematics/cmd_vel"/>
               <param name="steering_angle_subscriber_topic" value="/fmKinematics/steering_angle_cmd"/>
+              <param name="joy_deadman_subscriber_topic" value="/fmHMI/joy"/>
         </node>
     </group>
 
@@ -50,11 +51,4 @@
 	            <param name="cmd_vel_out_id" value="/fmTools/cmd_vel"/>
 	        </node>
 	</group>
-
-
-
-
-
-    
-
 </launch>
