@@ -15,8 +15,8 @@ import smach
 import smach_ros
 
 # behaviours used in this statemachine
-from fmDecisionMakers.msg import navigate_in_row_simpleAction, navigate_in_row_simpleGoal
-from fmDecisionMakers.msg import make_turnAction, make_turnGoal, drive_forwardAction, drive_forwardGoal
+from fmExecutors.msg  import navigate_in_row_simpleAction, navigate_in_row_simpleGoal
+from fmExecutors.msg  import make_turnAction, make_turnGoal, drive_forwardAction, drive_forwardGoal
 from fmImplements.msg import move_tool_simpleAction, move_tool_simpleGoal
 from fmMsgs.msg import row
 import behaviours.wii_states.wii_auto_manuel

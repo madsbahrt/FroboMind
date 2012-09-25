@@ -18,8 +18,8 @@ from geometry_msgs.msg import PoseStamped
 from nav_msgs.msg import Path
 
 # behaviours used in this statemachine
-from fmDecisionMakers.msg import navigate_in_rowAction
-from fmDecisionMakers.msg import find_rowAction
+from fmExecutors.msg  import navigate_in_rowAction
+from fmExecutors.msg  import find_rowAction
 from fmExecutors.msg import follow_pathAction, follow_pathGoal
 
 from fmTools.srv import switch_muxRequest,switch_muxResponse,switch_mux
