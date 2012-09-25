@@ -64,6 +64,7 @@ fmControllers/src/fmControllers
 fmExecutors/cfg/cpp
 fmExecutors/docs
 fmExecutors/src/fmExecutors
+fmExecutors/msg/
 
 fmExtractors/cfg/cpp
 fmExtractors/docs
