@@ -1,0 +1,15 @@
+<launch>
+
+
+<arg name="use_rviz" default="false"/>
+
+<group ns="fmHMI">
+
+    <node pkg="rqt_gui" name="gui" type="rqt_gui" unless="$(arg use_rviz)"/>
+
+    <node pkg="rviz" name="gui" type="rviz" args="$(find fmCore)/launch/hakotrac/conf/rviz-row.vcg" if="$(arg use_rviz)"/>
+</group>
+
+
+
+</launch>

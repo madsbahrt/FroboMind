@@ -1,7 +1,9 @@
 <launch>
 
+    <arg name="sim" default="false"/>
+
     <group ns="fmCSP">
-        <node pkg="fmCSP" name="can_0_if" type="can_socketcan">
+        <node pkg="fmCSP" name="can_0_if" type="can_socketcan" unless="$(arg sim)">
               <param name="device" value="can0"/>
               <param name="publisher_topic" value="can0_rx"/>
               <param name="subscriber_topic" value="can0_tx"/>
@@ -9,7 +11,7 @@
     </group>
 
     <group ns="fmPSP">
-        <node pkg="fmPSP" name="ESXInterface" type="hakotractor_psp">
+        <node pkg="fmPSP" name="ESXInterface" type="hakotractor_psp" unless="$(arg sim)">
               <param name="can_tx_publisher_topic" value="/fmCSP/can0_tx"/>
               <param name="can_rx_subscriber_topic" value="/fmCSP/can0_rx"/>
               <param name="encoder_publisher_topic" value="/fmSensors/encoder_lr"/>
@@ -19,12 +21,40 @@
         </node>
     </group>
 
-    <group ns="fmKinematics">
+    <group ns="fmKinematics" unless="$(arg sim)">
         <node pkg="fmKinematics" name="cmd_vel_to_angle" type="asubot_twist_to_angle_cmd">
             <param name="steering_angle_publisher_topic" value="/fmKinematics/steering_angle_cmd"></param>
-            <param name="twist_subscriber_topic" value="/fmHMI/wii_cmd_vel"></param>
+            <param name="twist_subscriber_topic" value="/fmTools/cmd_vel"></param>
             <param name="twist_publisher_topic" value="/fmKinematics/cmd_vel"></param>
         </node>
     </group>
+    
+    <!-- 
+    launch a cmd_vel multiplexer in order to be able to switch between 
+    using the wii_cmd_vel (user) or the cmd_vel_auto (robot).
+    -->
+	<group ns="fmTools">
+	        <node pkg="fmTools" name="cmd_vel_mux" type="topic_mux" unless="$(arg sim)">
+	            <param name="topic_1_timeout" value="1"/>
+	            <param name="topic_2_timeout" value="1"/>
+	            <param name="topic_1_id" value="/fmHMI/wii_cmd_vel"/>
+	            <param name="topic_2_id" value="/fmControllers/cmd_vel_auto"/>
+	            <param name="cmd_vel_out_id" value="/fmTools/cmd_vel"/>
+	        </node>
+	
+	        <node pkg="fmTools" name="cmd_vel_mux" type="topic_mux_sim" if="$(arg sim)">
+	            <param name="topic_1_timeout" value="1"/>
+	            <param name="topic_2_timeout" value="1"/>
+	            <param name="topic_1_id" value="/fmHMI/wii_cmd_vel"/>
+	            <param name="topic_2_id" value="/fmControllers/cmd_vel_auto"/>
+	            <param name="cmd_vel_out_id" value="/fmTools/cmd_vel"/>
+	        </node>
+	</group>
+
+
+
+
+
+    
 
 </launch>
