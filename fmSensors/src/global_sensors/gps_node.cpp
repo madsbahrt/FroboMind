@@ -187,7 +187,7 @@ int main(int argc, char **argv)
 	std::string publish_topic_id;
 
 	n.param<std::string>("subscribe_topic_id", subscribe_topic_id,
-			"fmBSP/gps_msg");
+			"fmCSP/gps_msg");
 	n.param<std::string>("publish_topic_id", publish_topic_id,
 			"fmSensors/gpgga_msg");
 
