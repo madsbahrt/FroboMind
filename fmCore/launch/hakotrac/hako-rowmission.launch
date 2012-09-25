@@ -4,23 +4,27 @@
     <arg name="usb_serial_imu" default="/dev/ttyUSB0"/>
     <arg name="usb_serial_gps" default="/dev/ttyUSB1" if="$(arg use_gps)"/>
     <arg name="laser_scanner_ip" default="192.168.0.11"/>
+    <arg name="sim" default="false"/>
 
     <include file="$(find fmCore)/launch/hakotrac/hako-base.launch">
-        <arg name="sim" value="false"/>
+        <arg name="sim" value="$(arg sim)"/>
     </include>
 
-    <include file="$(find fmCore)/launch/hakotrac/hako-localization.launch">
+    <include file="$(find fmCore)/launch/hakotrac/hako-localization.launch" unless="$(arg sim)">
             <arg name="use_gps" value="$(arg use_gps)"/>
             <arg name="usb_serial_imu" value="$(arg usb_serial_imu)"/>
             <arg name="usb_serial_gps" value="$(arg usb_serial_gps)" if="$(arg use_gps)"/>
+            <arg name="sim" value="$(arg sim)"/
     </include>
     
     <include file="$(find fmCore)/launch/hakotrac/hako-tf.launch">
         <arg name="use_gps" value="$(arg use_gps)"/>
+        <arg name="sim" value="$(arg sim)"/>
     </include>
     
     <include file="$(find fmCore)/launch/hakotrac/hako-row.launch">
         <arg name="laser_scanner_ip" value="$(arg laser_scanner_ip)"/>
+        <arg name="sim" value="$(arg sim)"/>
     </include>
     
     <include file="$(find fmCore)/launch/hakotrac/hako-hmi.launch"/>

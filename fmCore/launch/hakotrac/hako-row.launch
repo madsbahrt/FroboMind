@@ -1,6 +1,6 @@
 <launch>
 <arg name="laser_scanner_ip" default="192.168.0.11"/>
-
+<arg name="sim" default="false"/>
 <!-- 
     Launch the row extractor node and configure it with the parameters found 
     in rowconf.yaml 
@@ -21,7 +21,7 @@
     Launch the node for interfacing with the LMS111
  -->
 <group ns="fmSensors">
-    <node pkg="fmSensors" name="laser_range" type="lms111_node"  respawn="true" >
+    <node pkg="fmSensors" name="laser_range" type="lms111_node"  respawn="true" unless="$(arg sim)">
         <param name="host" value="$(arg laser_scanner_ip)"/>
         <param name="topic_id" value="/fmSensors/laser_msg"/>
         <param name="frame_id" value="laser_link"/>

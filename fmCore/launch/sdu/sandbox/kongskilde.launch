@@ -131,18 +131,18 @@
 
 <group ns="fmExtractors"> 
     <group unless="$(arg sim)">
-    <node pkg="fmExtractors" name="odom_imu" type="simple_imu_odom">
-        <param name="publisher_topic" value="/fmExtractors/odom"/>
-        <param name="subscribe_imu" value="/fmSensors/IMU"/>
-        <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_right"/>
-        <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_left"/>
-        <param name="conv_ticks_to_meter_left" value="0.001335"/>
-        <param name="conv_ticks_to_meter_right" value="0.001335"/>
-        <param name="max_time_diff" value="1"/>
-        <param name="distance_between_wheels_in_meter" value="2.3"/>
-        <param name="vehicle_frame" value="base_footprint"/>
-        <param name="odom_estimate_frame" value="odom_combined"/>
-    </node>
+	    <node pkg="fmExtractors" name="odom_imu" type="simple_imu_odom">
+	        <param name="publisher_topic" value="/fmExtractors/odom"/>
+	        <param name="subscribe_imu" value="/fmSensors/IMU"/>
+	        <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_right"/>
+	        <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_left"/>
+	        <param name="conv_ticks_to_meter_left" value="0.001335"/>
+	        <param name="conv_ticks_to_meter_right" value="0.001335"/>
+	        <param name="max_time_diff" value="1"/>
+	        <param name="distance_between_wheels_in_meter" value="2.3"/>
+	        <param name="vehicle_frame" value="base_footprint"/>
+	        <param name="odom_estimate_frame" value="odom_combined"/>
+	    </node>
     </group>
     <node pkg="dynamic_reconfigure" name="param_load" type="dynparam" args="load /fmExtractors/row_finder $(find fmCore)/launch/rowconf.yaml"></node>
 
