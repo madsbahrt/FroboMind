@@ -22,6 +22,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_gensrv()
 
 rosbuild_add_executable(husmands_kalman src/state_estimators/husmandsKalman/husmandskalman_node.cpp)
+rosbuild_add_executable(kalman_row_estimator src/state_estimators/kalmanRowEstimators/kalman_row_estimator.cpp)
 #rosbuild_add_executable(row_kalman_estimate src/state_estimators/husmandsKalman/row_kalman_filter.cpp)
 
 

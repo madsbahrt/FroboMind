@@ -324,7 +324,7 @@ double SafetyExtractor::processPointCloudLeft(sensor_msgs::PointCloud & pointclo
 			//}
 		}
 	}
-	return pow((1-ratio),2);
+	return ratio;
 }
 double SafetyExtractor::processPointCloudRight(sensor_msgs::PointCloud & pointcloud){
 	double ratio = 0;
@@ -455,7 +455,7 @@ double SafetyExtractor::processPointCloudRight(sensor_msgs::PointCloud & pointcl
 			//}
 		}
 	}
-	return pow((1-ratio),2);
+	return ratio;
 }
 
 
