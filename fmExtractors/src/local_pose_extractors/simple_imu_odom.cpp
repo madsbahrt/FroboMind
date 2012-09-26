@@ -134,7 +134,12 @@ public:
 				odom_broadcaster.sendTransform(odom_trans);
 
 				odom.header.stamp = ros::Time::now();
-				odom.header.frame_id = "local_odom";
+				odom.header.frame_id = "odom_combined";
+
+				odom.pose.pose.position.x = odom_trans.transform.translation.x;
+				odom.pose.pose.position.y = odom_trans.transform.translation.y;
+				odom.pose.pose.orientation = odom_quat;
+
 				odom.twist.twist.linear.x  = dx;
 				odom.twist.twist.angular.z = dtheta;
 

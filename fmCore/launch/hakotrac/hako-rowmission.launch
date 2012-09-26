@@ -3,10 +3,10 @@
     <arg name="use_gps" default="false"/>
     <arg name="usb_serial_imu" default="/dev/ttyUSB0"/>
     <arg name="usb_serial_gps" default="/dev/ttyUSB1" if="$(arg use_gps)"/>
-    <arg name="laser_scanner_ip" default="192.168.0.11"/>
+    <arg name="laser_scanner_ip" default="192.168.0.10"/>
     <arg name="sim" default="false"/>
     
-    <!--   <param name="use_sim_time" value="true" if="$(arg sim)"/>-->
+    <param name="use_sim_time" value="true" if="$(arg sim)"/>
 
     <include file="$(find fmCore)/launch/hakotrac/hako-base.launch">
         <arg name="sim" value="$(arg sim)"/>
@@ -35,6 +35,5 @@
         <node pkg="fmExecutors" name="make_turn" type="make_turn.py"></node>
         <node pkg="fmExecutors" name="drive_forward" type="drive_forward.py"></node>
     </group>
-    <include file="$(find fmCore)/launch/hakotrac/hako-AB.launch"/>
 
 </launch>

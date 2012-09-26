@@ -41,6 +41,8 @@ int main(int argc, char** argv)
 
 	s1 = nh.subscribe<fmMsgs::can>(can_sub.c_str(),10,&EXSInterface::onCANMsg,&esx);
 	s2 = nh.subscribe<fmMsgs::steering_angle_cmd> (steering_sub,10,&EXSInterface::onSteeringAngle,&esx);
+	s5 = nh.subscribe<fmMsgs::engine_rpm> (rpm_topic,10,&EXSInterface::onRPMCmd,&esx);
+
 	s3 = nh.subscribe<geometry_msgs::Twist> (cmd_vel_sub,10,&EXSInterface::onCmdVel,&esx);
 	s4 = nh.subscribe<sensor_msgs::Joy>(wii_sub,10,&EXSInterface::onJoy,&esx);
 

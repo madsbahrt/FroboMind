@@ -13,7 +13,9 @@
 #include <fmMsgs/steering_angle_cmd.h>
 #include <geometry_msgs/Twist.h>
 #include <fmMsgs/encoder.h>
+#include <fmMsgs/engine_rpm.h>
 #include <sensor_msgs/Joy.h>
+
 
 typedef struct
 {
@@ -64,7 +66,7 @@ public:
 	void onSteeringAngle(const fmMsgs::steering_angle_cmd::ConstPtr & msg);
 	void onCmdVel(const geometry_msgs::Twist::ConstPtr& msg);
 	void onJoy(const sensor_msgs::Joy::ConstPtr& msg);
-	void onRPMCmd(const fmMsgs::somethjing);
+	void onRPMCmd(const fmMsgs::engine_rpm::ConstPtr& msg);
 
 	ros::Publisher can_tx_pub;
 	ros::Publisher encoder_pub;

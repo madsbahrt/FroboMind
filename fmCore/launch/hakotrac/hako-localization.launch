@@ -1,10 +1,11 @@
 <launch>
 
+    <arg name="sim" default="false"/>
     <arg name="use_gps"/>
-    <arg name="usb_serial_imu"/>
-    <arg name="usb_serial_gps" if="$(arg use_gps)"/>
+    <arg name="usb_serial_imu" default="/dev/ttyUSB0" unless="$(arg sim)"/>
+    <arg name="usb_serial_gps" default="/dev/ttyUSB1" if="$(arg use_gps)"/>
     
-<group ns="fmCSP">
+<group ns="fmCSP" unless="$(arg sim)">
 
     <node pkg="fmCSP" name="USB1" type="serial_string" if="$(arg use_gps)">
         <param name="publisher_topic" value="/fmCSP/com1_rx" />  
@@ -38,18 +39,19 @@
         <param name="cov_x" value="0.001"/>
         <param name="cov_y" value="0.001"/>
         <param name="cov_z" value="0.001"/>
+        <param name="use_enu" value="true"/>
     </node>
    
 </group>
 
-<group ns="fmExtractors" unless="$(arg use_gps)">
+<group ns="fmExtractors">
    <node pkg="fmExtractors" name="odom_imu" type="simple_imu_odom">
         <param name="publisher_topic" value="/fmExtractors/odom"/>
         <param name="subscribe_imu" value="/fmSensors/IMU"/>
         <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_lr"/>
         <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_lr"/>
-        <param name="conv_ticks_to_meter_left" value="0.017"/>
-        <param name="conv_ticks_to_meter_right" value="0.017"/>
+        <param name="conv_ticks_to_meter_left" value="0.0175"/>
+        <param name="conv_ticks_to_meter_right" value="0.0175"/>
         <param name="max_time_diff" value="1"/>
         <param name="distance_between_wheels_in_meter" value="1.4"/>
         <param name="vehicle_frame" value="base_footprint"/>
@@ -72,7 +74,7 @@
         <param name="subscribe_topic_id" value="/fmSensors/gpgga" />
         <param name="publish_topic_id" value="/fmExtractors/utm" />
     </node>
-    
+    <!--  
     <node pkg="fmExtractors" name="wheel_odometry" type="simple_odom">
         <param name="conv_ticks_to_meter_left" value="0.017"/>
         <param name="conv_ticks_to_meter_right" value="0.017"/> 
@@ -82,9 +84,9 @@
         <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_lr" />
         <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_lr" />
     </node>
-
+    -->
 </group>
-
+<!-- 
 <group ns="fmProcessors" if="$(arg use_gps)">
  <node pkg="fmProcessors" type="odom_estimation" name="odometry_Estimation" >
     <param name="imu_subscriber_topic" value="/fmSensors/IMU"/>
@@ -103,5 +105,5 @@
     <param name="angle_update_distance_threshold" value="0.1"/>
   </node> 
 </group>
-
+ -->
 </launch>

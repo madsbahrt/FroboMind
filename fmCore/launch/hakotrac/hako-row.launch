@@ -26,7 +26,7 @@
         <param name="host" value="$(arg laser_scanner_ip)"/>
         <param name="topic_id" value="/fmSensors/laser_msg"/>
         <param name="frame_id" value="laser_link"/>
-        <param name="invert_output" value="true" />
+        <param name="invert_output" value="false" />
     </node>
 </group>
 

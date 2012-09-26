@@ -149,7 +149,9 @@ void WiiToTwist::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
   y_buffer.push_back((double)joy -> axes[y_axis]);
   z_buffer.push_back((double)joy -> axes[z_axis]);
 
+  double y_acc_temp,z_acc_temp;
   double x_acc_temp = y_acc_temp = z_acc_temp = 0;
+
   for(int i = 0; i < avgn;i++){
 	  x_acc_temp += x_buffer.at(i);
 	  y_acc_temp += y_buffer.at(i);

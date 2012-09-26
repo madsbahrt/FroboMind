@@ -21,9 +21,11 @@ public:
 	geometry_msgs::TwistStamped t1_msg;
 	geometry_msgs::Twist t2_msg;
 	geometry_msgs::Twist msg_out;
+	geometry_msgs::TwistStamped msg_out2;
 	bool topic2_override;
 
 	ros::Publisher p;
+	ros::Publisher p2;
 
 	CmdVelMux(ros::Duration max_delta_topic1,ros::Duration max_delta_topic2)
 	{
@@ -120,7 +122,12 @@ public:
 			msg_out.angular.z = 0;
 		}
 
+		msg_out2.header.stamp = ros::Time::now();
+		msg_out2.twist.linear = msg_out.linear;
+		msg_out2.twist.angular = msg_out.angular;
+
 		p.publish(msg_out);
+		p2.publish(msg_out2);
 
 	}
 };
@@ -134,7 +141,7 @@ int main(int argc, char** argv)
 	ros::NodeHandle nh("~");
 	ros::NodeHandle n;
 
-	std::string topic1_id,topic2_id,outid;
+	std::string topic1_id,topic2_id,outid,outid2;
 	double t1,t2;
 
 	ros::Subscriber s1,s2;
@@ -145,6 +152,7 @@ int main(int argc, char** argv)
 	nh.param<std::string>("topic_1_id",topic1_id,"/fmTools/cmd_vel_1");
 	nh.param<std::string>("topic_2_id",topic2_id,"/fmTools/cmd_vel_2");
 	nh.param<std::string>("cmd_vel_out_id",outid,"/fmTools/cmd_vel");
+	nh.param<std::string>("cmd_vel_stamped_out_id",outid2,"/fmTools/cmd_vel");
 
 	CmdVelMux* mux;
 
@@ -154,7 +162,7 @@ int main(int argc, char** argv)
 	s2 = nh.subscribe<geometry_msgs::Twist,CmdVelMux>(topic2_id,10,&CmdVelMux::onTopic2,mux);
 
 	mux->p = nh.advertise<geometry_msgs::Twist>(outid,10);
-
+	mux->p2 = nh.advertise<geometry_msgs::TwistStamped>(outid2,10);
 	ros::Timer t = nh.createTimer(ros::Duration(0.05),&CmdVelMux::spin,mux);
 
 	ros::ServiceServer service = nh.advertiseService<CmdVelMux,fmTools::switch_mux::Request,fmTools::switch_mux::Response>("cmd_vel_mux",&CmdVelMux::on_mux_server_request,mux);

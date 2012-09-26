@@ -3,15 +3,15 @@
         <node pkg="wiimote" type="wiimote_node.py" name="remote_control" respawn="true">
         </node>
         <node pkg="fmHMI" type="wiimote_to_twist" name="wii_to_user_twist">
-            <param name="max_angular_velocity" value="1"/>
-            <param name="max_linear_velocity" value="1"/>
+            <param name="max_angular_velocity" value="0.1"/>
+            <param name="max_linear_velocity" value="0.2"/>
             <param name="x_axis" value="1"/>
             <param name="y_axis" value="0"/>
             <param name="z_axis" value="2"/>
             <param name="invert_x" value="false"/>
             <param name="invert_z" value="true"/>
             <param name="invert_y" value="true"/>
-            <param name="moving_average_size" value="20"/>
+            <param name="moving_average_size" value="10"/>
         </node>
     </group>
 

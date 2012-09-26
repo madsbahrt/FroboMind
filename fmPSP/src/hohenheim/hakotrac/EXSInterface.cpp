@@ -215,9 +215,11 @@ void EXSInterface::onJoy(const sensor_msgs::Joy::ConstPtr& msg)
 	last_wii = msg->header.stamp;
 }
 
-void EXSInterface::onRPMCmd(const fmMsgs::somethjing)
+void EXSInterface::onRPMCmd(const fmMsgs::engine_rpm::ConstPtr& msg)
 {
-	uint32_t rpm_mhz;
+
+
+	uint32_t rpm_mhz = ((double)msg->rpm)/60.0 * 1000;
 
 	can_msg.id = can_id_tx.CAN_ID_RPM_CMD;
 	can_msg.length = 8;

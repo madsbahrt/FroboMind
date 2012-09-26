@@ -38,18 +38,20 @@ geometry_msgs::Twist twist_cmd_out;
 ros::Publisher wheel_pub;
 ros::Publisher twist_pub;
 
+double vehicle_length;
+
 void twistmsgCallbackHandler(const geometry_msgs::TwistStampedConstPtr& twist_msg) {
 
 	aes25_msg.header.stamp = ros::Time::now();
 
-	const double V = 3; // velocity m/s
-	const double L = 1.2; // distance between back and frontwheels
+	const double V = twist_msg->twist.linear.x; // velocity m/s
+	const double L = vehicle_length; // distance between back and frontwheels
 
 	double omega = twist_msg->twist.angular.z;
 
 	aes25_msg.steering_angle = atan2(omega*L,V);
 
-	twist_cmd_out.linear.x = twist_msg->twist.linear.x;
+	twist_cmd_out.linear.x = V;
 
 	twist_pub.publish(twist_cmd_out);
 	wheel_pub.publish(aes25_msg);
@@ -70,6 +72,7 @@ int main(int argc, char **argv) {
 	nh.param<std::string> ("steering_angle_publisher_topic", ASubot_wheel_publisher_topic,"/fmKinematics/steering_angle_cmd");
 	nh.param<std::string> ("cmd_vel_publisher_topic", twist_publisher_topic,"/fmKinematics/cmd_vel");
 	nh.param<std::string> ("twist_subscriber_topic", twist_subscriber_topic,"/fmControllers/cmd_vel");
+	nh.param<double> ("axle_distance_front_rear",vehicle_length,1.56);
 
 	wheel_pub = nh.advertise<fmMsgs::steering_angle_cmd> (ASubot_wheel_publisher_topic.c_str(),1,1);
 	twist_pub = nh.advertise<geometry_msgs::Twist>(twist_publisher_topic,1,1);
@@ -77,11 +80,8 @@ int main(int argc, char **argv) {
 
 	aes25_msg.header.stamp = ros::Time::now();
 
-	const double V = 1; // velocity m/s
-	const double L = 1.2; // distance between back and frontwheels
 
-	double omega = 0;
-	aes25_msg.steering_angle = atan2(omega*L,V);
+	aes25_msg.steering_angle = 0;
 	twist_cmd_out.linear.x = 0;
 	wheel_pub.publish(aes25_msg);
 	twist_pub.publish(twist_cmd_out);

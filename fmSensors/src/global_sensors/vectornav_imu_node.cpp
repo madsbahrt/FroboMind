@@ -56,7 +56,7 @@ public:
 		}
 
 	}
-
+	bool enu_selected;
 	sensor_msgs::Imu imu_msg;
 	ros::Publisher imu_pub;
 	std::string frame_id;
@@ -82,25 +82,54 @@ private:
 					imu_msg.header.stamp = ros::Time::now();
 					imu_msg.header.frame_id = frame_id;
 
-					// NED orientation
-					imu_msg.orientation.x = boost::lexical_cast<float>(*tok_iter++);
-					imu_msg.orientation.y = boost::lexical_cast<float>(*tok_iter++);
-					imu_msg.orientation.z = boost::lexical_cast<float>(*tok_iter++);
-					imu_msg.orientation.w = boost::lexical_cast<float>(*tok_iter++);
 
-					tok_iter++; //skip magnetometer
-					tok_iter++;
-					tok_iter++;
+					if(enu_selected)
+					{
+						// ENU ORIENTATION
+						/* swap x and y and negate z
+						 *
+						 * */
+						imu_msg.orientation.y = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.orientation.x = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.orientation.z = - boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.orientation.w = boost::lexical_cast<float>(*tok_iter++);
 
-					// acceleration
-					imu_msg.linear_acceleration.x = boost::lexical_cast<float>(*tok_iter++);
-					imu_msg.linear_acceleration.y = boost::lexical_cast<float>(*tok_iter++);
-					imu_msg.linear_acceleration.z = boost::lexical_cast<float>(*tok_iter++);
+						tok_iter++; //skip magnetometer
+						tok_iter++;
+						tok_iter++;
 
-					// angular rates
-					imu_msg.angular_velocity.x = boost::lexical_cast<float>(*tok_iter++);
-					imu_msg.angular_velocity.y = boost::lexical_cast<float>(*tok_iter++);
-					imu_msg.angular_velocity.z = boost::lexical_cast<float>(*tok_iter++);
+						// acceleration swap x y negate z
+						imu_msg.linear_acceleration.y = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.linear_acceleration.x = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.linear_acceleration.z = - boost::lexical_cast<float>(*tok_iter++);
+
+						// angular rates swap  x y and negate z
+						imu_msg.angular_velocity.y = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.angular_velocity.x = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.angular_velocity.z = -boost::lexical_cast<float>(*tok_iter++);
+					}
+					else
+					{
+						// NED orientation
+						imu_msg.orientation.x = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.orientation.y = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.orientation.z = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.orientation.w = boost::lexical_cast<float>(*tok_iter++);
+
+						tok_iter++; //skip magnetometer
+						tok_iter++;
+						tok_iter++;
+
+						// acceleration
+						imu_msg.linear_acceleration.x = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.linear_acceleration.y = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.linear_acceleration.z = boost::lexical_cast<float>(*tok_iter++);
+
+						// angular rates
+						imu_msg.angular_velocity.x = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.angular_velocity.y = boost::lexical_cast<float>(*tok_iter++);
+						imu_msg.angular_velocity.z = boost::lexical_cast<float>(*tok_iter++);
+					}
 
 					imu_pub.publish(imu_msg);
 
@@ -184,6 +213,7 @@ int main(int argc, char **argv)
   nh.param<std::string> ("subscribe_topic_id", subscribe_topic_id, "fmCSP/com1_rx");
   nh.param<std::string> ("publish_topic_id", publish_topic_id, "imu_msg");
   nh.param<std::string> ("frame_id", imu.frame_id, "base_link");
+  nh.param<bool>("use_enu",imu.enu_selected,false);
 
   nh.param<double> ("cov_x",cov_x,1.0);
   nh.param<double> ("cov_y",cov_y,1.0);
