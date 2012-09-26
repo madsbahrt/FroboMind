@@ -39,6 +39,8 @@ rosbuild_add_executable(IN_ROW_NAV src/nav_controllers/in_row_nav/pid_regulator.
 rosbuild_add_executable(rabbit_follower_node src/nav_controllers/rabbit_follower/rabbit_follower_node.cpp)
 rosbuild_add_executable(rabbit_follower_node src/nav_controllers/rabbit_follower/RabbitFollow.cpp)
 
+rosbuild_add_executable(engine_rpm_control src/system_controllers/engine_rpm_control/engine_rpm.cpp)
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
