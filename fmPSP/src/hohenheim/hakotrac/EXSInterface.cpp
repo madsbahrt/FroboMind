@@ -14,7 +14,6 @@ EXSInterface::EXSInterface()
 	steering_angle_updated = false;
 	cmd_vel_updated = false;
 
-	engine_speed = 50;
 	steering_angle_rad = 0;
 	steering_angle_to_int = 20;
 	cmd_vel_ms = 0;
@@ -214,4 +213,20 @@ void EXSInterface::onJoy(const sensor_msgs::Joy::ConstPtr& msg)
 	z_prev = msg -> axes[2];
 
 	last_wii = msg->header.stamp;
+}
+
+void EXSInterface::onRPMCmd(const fmMsgs::somethjing)
+{
+	uint32_t rpm_mhz;
+
+	can_msg.id = can_id_tx.CAN_ID_RPM_CMD;
+	can_msg.length = 8;
+	can_msg.data[0] = 0xC5;
+	can_msg.data[1] = can_msg.data[2] = can_msg.data[3] = 0;
+	can_msg.data[4] = rpm_mhz;
+	can_msg.data[5] = rpm_mhz >> 8;
+	can_msg.data[6] = rpm_mhz >> 16;
+	can_msg.data[7] = rpm_mhz >> 24;
+
+	can_tx_pub.publish(can_msg);
 }

@@ -64,6 +64,7 @@ public:
 	void onSteeringAngle(const fmMsgs::steering_angle_cmd::ConstPtr & msg);
 	void onCmdVel(const geometry_msgs::Twist::ConstPtr& msg);
 	void onJoy(const sensor_msgs::Joy::ConstPtr& msg);
+	void onRPMCmd(const fmMsgs::somethjing);
 
 	ros::Publisher can_tx_pub;
 	ros::Publisher encoder_pub;
@@ -82,7 +83,6 @@ private:
 	double steering_angle_to_int;
 	double cmd_vel_ms;
 	double cmd_vel_to_int;
-	double engine_speed;
 
 	bool cmd_vel_updated;
 	bool steering_angle_updated;
