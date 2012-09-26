@@ -48,6 +48,8 @@ class DriveForwardAction():
         self.turn_vel = 0
         self.new_goal = False
         
+        self.fix_offset = 0
+        
         self.__server.start()
 
     def preempt_cb(self):
@@ -64,6 +66,7 @@ class DriveForwardAction():
         g = self.__server.accept_new_goal()
         self.__desired_amount= g.amount
         self.vel = g.vel
+        self.fix_offset = g.fix_offset
         
         self.new_goal = True
     
@@ -131,8 +134,11 @@ class DriveForwardAction():
         else:
             vel.linear.x = -self.vel
         
+        vel.angular.z = self.fix_offset
+        
         if stop == 0:
             vel.linear.x = 0
+            vel.angular.z = 0
             
         self.vel_pub.publish(vel)
 

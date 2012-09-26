@@ -50,8 +50,8 @@
         <param name="subscribe_imu" value="/fmSensors/IMU"/>
         <param name="enc_r_subscriber_topic" value="/fmSensors/encoder_lr"/>
         <param name="enc_l_subscriber_topic" value="/fmSensors/encoder_lr"/>
-        <param name="conv_ticks_to_meter_left" value="0.0175"/>
-        <param name="conv_ticks_to_meter_right" value="0.0175"/>
+        <param name="conv_ticks_to_meter_left" value="0.00875"/>
+        <param name="conv_ticks_to_meter_right" value="0.00875"/>
         <param name="max_time_diff" value="1"/>
         <param name="distance_between_wheels_in_meter" value="1.4"/>
         <param name="vehicle_frame" value="base_footprint"/>
@@ -76,8 +76,8 @@
     </node>
     <!--  
     <node pkg="fmExtractors" name="wheel_odometry" type="simple_odom">
-        <param name="conv_ticks_to_meter_left" value="0.017"/>
-        <param name="conv_ticks_to_meter_right" value="0.017"/> 
+        <param name="conv_ticks_to_meter_left" value="0.00875"/>
+        <param name="conv_ticks_to_meter_right" value="0.00875"/> 
         <param name="distance_between_wheels_in_meter" value="1.4"></param>
         <param name="max_time_diff" value="1"></param>      
         <param name="publisher_topic"        value="/fmExtractors/wheel_odom" />
