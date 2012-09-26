@@ -20,7 +20,7 @@ def build_u_turn_sm(length_in, length_out, width, turn_radius , direction_l,vel_
     """
     """
     # vel is in m/s turn radius is in meter
-    turn =  vel_turn/turn_radius;
+    turn =  0.2;
     
     if direction_l:
         lr_amount = 1.41

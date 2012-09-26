@@ -197,19 +197,15 @@ class NavigateInRowSimple():
             to calculate a total error based on the scalings provided by the goal
         """
 
-        if self.cur_row.leftvalid and self.cur_row.rightvalid:
-            # calculate the mean angle error so we can 
-            # maintain a somewhat straight line in a crooked row
-            angle_error = (self.cur_row.leftangle + self.cur_row.rightangle) / 2
-            dist_error  = self.cur_row.rightdistance - self.cur_row.leftdistance 
-            dist_error  = dist_error - self.desired_offset 
-            self.left_valid_count = 0
-            self.right_valid_count = 0
-        else:
-            angle_error = 0.0
-            dist_error  = 0.0
-            self.left_valid_count += 1
-            self.right_valid_count += 1
+
+        # calculate the mean angle error so we can 
+        # maintain a somewhat straight line in a crooked row
+        angle_error = (self.cur_row.leftangle + self.cur_row.rightangle) / 2
+        dist_error  = self.cur_row.rightdistance - self.cur_row.leftdistance 
+        dist_error  = dist_error - self.desired_offset 
+        self.left_valid_count = 0
+        self.right_valid_count = 0
+
             
         if self.right_valid_count > 30 or self.left_valid_count > 30:
             self._server.set_aborted(None, "Aborted due to one row not being valid")
@@ -232,7 +228,7 @@ if __name__ == "__main__":
     
     rospy.init_node("navigate_in_row_simple")
     
-    NavigateInRowSimple(rospy.get_name(),"/fmExtractors/rows","odom_combined","base_footprint")
+    NavigateInRowSimple(rospy.get_name(),"/fmProcessors/row_estimate","odom_combined","base_footprint")
     
     rospy.spin()
     

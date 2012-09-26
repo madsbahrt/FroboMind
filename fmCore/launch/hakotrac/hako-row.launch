@@ -6,6 +6,14 @@
     in rowconf.yaml 
 
  -->
+ 
+ <group ns="fmProcessors">
+    <node pkg="fmProcessors" name="row_kf" type="kalman_row_estimator">
+    </node>
+ 
+ 
+ </group>
+ 
 <group ns="fmExtractors"> 
     
     <node pkg="dynamic_reconfigure" name="param_load" type="dynparam" args="load /fmExtractors/row_finder $(find fmCore)/launch/hakotrac/rowconf.yaml" unless="$(arg sim)"/>

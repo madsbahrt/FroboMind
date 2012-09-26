@@ -63,8 +63,8 @@ def build_main_sm():
 
 
     #length_in, length_out, width, turn_radius , direction_l,vel_fw,vel_turn, fix_offset):
-    uturn_right = build_u_turn_sm(2,1.5, 1.7, 0.5, False, 0.4, 0.2,-0.02)
-    uturn_left = build_u_turn_sm(2,1.5, 1.7, 0.5, True, 0.4, 0.2,-0.02)
+    uturn_right = build_u_turn_sm(6,3.5, 8, 2.5, False, 0.4, 0.4,-0.021)
+    uturn_left = build_u_turn_sm(2,3.5, 1.7, 0.5, True, 0.4, 0.4,-0.02)
     
     main_sm = smach.StateMachine(["succeeded","aborted","preempted"])
     main_sm.userdata.next_turn = "right"
