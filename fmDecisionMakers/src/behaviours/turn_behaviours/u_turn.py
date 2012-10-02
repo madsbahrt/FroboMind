@@ -20,12 +20,15 @@ def build_u_turn_sm(length_in, length_out, width, turn_radius , direction_l,vel_
     """
     """
     # vel is in m/s turn radius is in meter
-    turn =  0.2;
+    if not direction_l:
+        turn = vel_turn/turn_radius + 0.08
+    else:
+        turn = vel_turn/turn_radius
     
     if direction_l:
-        lr_amount = 1.41
+        lr_amount = 1.42
     else:
-        lr_amount = -1.41
+        lr_amount = -1.42
      
     uturn_sm = smach.StateMachine(outcomes=["succeeded","aborted","preempted"])
     

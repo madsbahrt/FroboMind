@@ -202,7 +202,10 @@ class NavigateInRowSimple():
         # maintain a somewhat straight line in a crooked row
         angle_error = (self.cur_row.leftangle + self.cur_row.rightangle) / 2
         dist_error  = self.cur_row.rightdistance - self.cur_row.leftdistance 
-        dist_error  = dist_error - self.desired_offset 
+        dist_error  = dist_error - self.desired_offset
+        if not self.cur_row.leftvalid or not self.cur_row.rightvalid:
+            dist_error = 0
+            
         self.left_valid_count = 0
         self.right_valid_count = 0
 

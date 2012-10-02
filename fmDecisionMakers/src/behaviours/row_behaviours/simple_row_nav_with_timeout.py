@@ -51,9 +51,6 @@ def build_row_nav_sm(row_goal,timeout):
     row_navigator = smach.StateMachine(outcomes=["succeeded","aborted","preempted"])
     
     with row_navigator:
-        smach.StateMachine.add("FIND_ROW_TIMEOUT",
-                               find_row_timeout_sm,
-                               transitions={"aborted":"aborted","succeeded":"ROW_NAVIGATOR","preempted":"preempted"})
         smach.StateMachine.add("ROW_NAVIGATOR",
                                smach_ros.SimpleActionState("/fmExecutors/navigate_in_row_simple",navigate_in_row_simpleAction, goal=row_goal), 
                                transitions = {"succeeded":"succeeded","aborted":"aborted","preempted":"preempted"}, 

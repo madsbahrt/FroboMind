@@ -54,20 +54,20 @@ def build_main_sm():
     # 
     row_goal = navigate_in_row_simpleGoal()
     row_goal.desired_offset_from_row = 0
-    row_goal.distance_scale = -0.5
-    row_goal.forward_velcoity = 0.2
-    row_goal.headland_timeout = 20
-    row_goal.P = 1.5
+    row_goal.distance_scale = -0.35
+    row_goal.forward_velcoity = 0.8
+    row_goal.headland_timeout = 5
+    row_goal.P = 0.3
     
     row_nav = build_row_nav_sm(row_goal,2)
 
 
     #length_in, length_out, width, turn_radius , direction_l,vel_fw,vel_turn, fix_offset):
-    uturn_right = build_u_turn_sm(6,3.5, 8, 2.5, False, 0.4, 0.4,-0.021)
-    uturn_left = build_u_turn_sm(2,3.5, 1.7, 0.5, True, 0.4, 0.4,-0.02)
+    uturn_right = build_u_turn_sm(7,3, 9.5, 3, False, 0.4, 0.4,-0.035)
+    uturn_left = build_u_turn_sm(7,3, 8.1, 3, True, 0.4, 0.4,-0.035)
     
     main_sm = smach.StateMachine(["succeeded","aborted","preempted"])
-    main_sm.userdata.next_turn = "right"
+    main_sm.userdata.next_turn = "left"
     
     with main_sm:
         smach.StateMachine.add("NAVIGATE_IN_ROW",
@@ -89,7 +89,7 @@ def build_main_sm():
                                transitions={"succeeded":"NAVIGATE_IN_ROW"}
                                )
 
-    return uturn_right
+    return main_sm
     
     
 if __name__ == "__main__":
