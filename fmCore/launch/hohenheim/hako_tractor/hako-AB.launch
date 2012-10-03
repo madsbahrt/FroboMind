@@ -1,0 +1,29 @@
+<launch>
+    <group ns="fmExecutors" >
+        <node pkg="fmExecutors" name="rabbitPlanner" type="rabbitPlanner" output="screen">
+            <param name="deltaRabbit" value="10" />
+            <param name="deltaWaypoint" value="0.1" />
+            <param name="rabbit_type" value="auto" />
+            <param name="odometry_frame" value="odom_combined" />
+            <param name="vehicle_frame" value="base_footprint" />
+            <param name="rabbit_frame" value="rabbit" />
+        </node>
+    </group>
+    
+    <group ns="fmControllers" >
+        <node pkg="fmControllers" name="rabbit_follower" type="rabbit_follower_node">
+            <param name="cmd_vel_topic_id" value="/fmControllers/cmd_vel_auto"/>
+            <param name="rabbit_frame_id" value="rabbit"/>
+            <param name="vehicle_frame_id" value="base_footprint"/>
+            <param name="P_gain" value="2"/>
+            <param name="field_of_view_rad" value="6.28"/>
+            <param name="max_angular_vel" value="1.5"/>
+            <param name="max_linear_vel" value="1.0"/>
+            <param name="oscilation_bounds" value="0.5"/>
+            <param name="target_acquired_tolerance" value="0.1"/>
+        </node>
+    </group>
+    
+    <node pkg="fmTools" name="planviz" type="rabbit_planner_marker"></node>
+
+</launch>
