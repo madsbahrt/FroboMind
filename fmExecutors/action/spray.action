@@ -1,0 +1,6 @@
+float64 distance
+float64 spray_time
+---
+uint32 n_sprays
+---
+int32 cur_sprays
