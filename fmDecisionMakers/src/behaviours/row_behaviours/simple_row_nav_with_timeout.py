@@ -14,7 +14,7 @@ import smach
 import smach_ros
 
 # Actions used in this statemachine
-from fmDecisionMakers.msg import navigate_in_row_simpleAction, navigate_in_row_simpleGoal
+from fmExecutors.msg import navigate_in_row_simpleAction, navigate_in_row_simpleGoal
 
 from fmMsgs.msg import row
 import behaviours

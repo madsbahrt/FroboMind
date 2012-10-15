@@ -5,7 +5,7 @@ import smach_ros
 from fmTools.srv import switch_muxRequest,switch_muxResponse,switch_mux
 
 from sensor_msgs.msg import Joy
-
+import behaviours
 
 def should_preempt(arg):
     return True

@@ -120,7 +120,7 @@ bool rabbitPlanner::planRabbit()
 					angle_error *= -1;
 				}
 
-				ROS_INFO("Rabbit distance error is %.4f angle error is %.4f",distance_error,angle_error);
+				ROS_INFO_THROTTLE(0.5,"Rabbit distance error is %.4f angle error is %.4f",distance_error,angle_error);
 				rabbit = (B-rabbit) / (angle_error/angle_scale + distance_error/distance_scale) + rabbit;
 			}else{
 				ROS_ERROR("RABBIT WENT BACK TO ITS HOLE! WRONG 'rabbit_type' ");

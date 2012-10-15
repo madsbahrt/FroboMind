@@ -51,15 +51,17 @@ class PlanFollow(State):
         # reset cur_index as we are now at step zero in our new plan
         self.cur_index = 0
        
-        if not self._action_client.wait_for_server(rospy.Duration(30)):
+        if not self._action_client.wait_for_server(rospy.Duration(0)):
             self.done = True
             self.outcome = "aborted"
+            print "Could not connect to action server"
         else:
             self._action_client.send_goal(self.goal,feedback_cb=self.on_feedback_from_action)
+            rospy.logdebug("Sending goal to action server")
             
         while not self.done:
             if self.preempt_requested():
-                print "preemption requested"
+                rospy.logdebug("preemption requested")
                 # inform action_client by aborting
                 self._action_client.cancel_goal()
                 self.service_preempt()
@@ -69,11 +71,10 @@ class PlanFollow(State):
                 status = self._action_client.get_state() 
                 if status in [actionlib.GoalStatus.ABORTED,actionlib.GoalStatus.LOST,actionlib.GoalStatus.PREEMPTED]:
                     self.outcome = "aborted"
-                    print status
+                    "aborted due to result from action server: %s" % (status)
                     self.done = True
                 elif status == actionlib.GoalStatus.SUCCEEDED:
                     self.outcome = "succeeded"
-                    print status
                     self.done = True
                 else:
                     self.r.sleep()
@@ -88,5 +89,4 @@ class PlanFollow(State):
             update local state given the feedback from the AB lines executor.
         """
         self.cur_index = feedback.reached_pose_nr - 1
-
-    
+        print "feedback received %d" % (feedback.reached_pose_nr)
