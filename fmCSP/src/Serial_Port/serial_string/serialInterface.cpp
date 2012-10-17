@@ -54,6 +54,7 @@ void serialInterface::readHandler(const boost::system::error_code& error,
 	{
 
 		istream is(&readbuffer);
+
 		string str;
 
 		/*
