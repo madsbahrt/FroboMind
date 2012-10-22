@@ -29,6 +29,11 @@ rosbuild_add_executable(topcon src/Motor_Controllers/TopConAES25/AES-25_electric
 rosbuild_add_executable(topcon src/Motor_Controllers/TopConAES25/AES-25_node.cpp)
 
 rosbuild_link_boost(topcon system)
+
+IF(EXISTS /usr/lib/libJAIFactory.so)
+    rosbuild_add_executable(sprayer src/IO_Actuators/JAI_Camera/sdu_sprayer.cpp src/IO_Actuators/JAI_Camera/jai_ad-080ge.cc)
+    target_link_libraries(sprayer JAIFactory) 
+ENDIF(EXISTS /usr/lib/libJAIFactory.so)
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)
