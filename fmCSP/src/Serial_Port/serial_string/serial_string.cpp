@@ -72,7 +72,7 @@ int main(int argc, char **argv)
   s_publisher = nh.advertise<fmMsgs::serial> (publisher_topic.c_str(), 20,1);
 
   serialInterface serialInterface(s_publisher);
-  serialInterface.term_char = (char)10;
+  serialInterface.term_char = (char)term;
   serialInterface.openDevice(device, baudrate);
 
 

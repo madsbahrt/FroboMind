@@ -13,6 +13,7 @@
 #include <boost/thread.hpp>
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
+#include <string>
 
 
 BluetoothSerial::BluetoothSerial() : descriptor_(ioService_)
@@ -67,21 +68,27 @@ void BluetoothSerial::processSerialTxEvent(const fmMsgs::serial::ConstPtr& msg)
 void BluetoothSerial::RxHandler(const boost::system::error_code& error, size_t bytes_transferred)
 {
 
-	if (bytes_transferred)
+	if ( (bytes_transferred > 0)&& (error == 0))
 	{
 
 		std::istream is(&readbuffer);
-		char line[128];
+		std::string str;
 
-		// only read until bytes_transferred to avoid reading after \n
 		// if the streambuffer contains a second line boost should call us again
-		is.getline(line,bytes_transferred,term_char);
+		std::getline(is,str,term_char);
 
-		/* publish data ro ros */
-		++serial_rx_msg_.header.seq;
-		serial_rx_msg_.data = line;
-		serial_rx_msg_.header.stamp = ros::Time::now();
-		serial_rx_publisher_.publish(serial_rx_msg_);
+		if(is.failbit || is.badbit)
+		{
+			ROS_ERROR("Failed to extract line from serial");
+		}
+		else
+		{
+			/* publish data ro ros */
+			++serial_rx_msg_.header.seq;
+			serial_rx_msg_.data = str.c_str();
+			serial_rx_msg_.header.stamp = ros::Time::now();
+			serial_rx_publisher_.publish(serial_rx_msg_);
+		}
 	}
 	BluetoothSerial::readSome();
 }

@@ -35,14 +35,13 @@
  *************************************************************************************/
 
 #include "serialInterface.h"
-
+#include <string>
 using namespace std;
 
 
 serialInterface::serialInterface(ros::Publisher& rx_publisher) :
 		serial_(io_)
 {
-	ROS_DEBUG("Constructor");
 
 	s_rx_publisher_ = rx_publisher;
 }
@@ -51,21 +50,31 @@ void serialInterface::readHandler(const boost::system::error_code& error,
 		size_t bytes_transferred)
 {
 
-	if (bytes_transferred)
+	if ((bytes_transferred > 0) && (error == 0))
 	{
 
 		istream is(&readbuffer);
-		char line[128];
+		string str;
 
-		// only read until bytes_transferred to avoid reading after \n
-		// if the streambuffer contains a second line boost should call us again
-		is.getline(line,bytes_transferred,term_char);
+		/*
+		 * Read a single line from the stream, the stream should contain atleast
+		 * one termchar. If there are more than one line in the streambuf we let
+		 * boost asio handle that and call us again.
+		 * */
+		getline(is,str,term_char);
 
-		/* publish data ro ros */
-		++serial_rx_msg.header.seq;
-		serial_rx_msg.data = line;
-		serial_rx_msg.header.stamp = ros::Time::now();
-		s_rx_publisher_.publish(serial_rx_msg);
+		if(is.bad() || is.fail())
+		{
+			ROS_ERROR("Failed to extract line from serial %d");
+		}
+		else
+		{
+			/* publish data to ros */
+			++serial_rx_msg.header.seq;
+			serial_rx_msg.data = str.c_str();
+			serial_rx_msg.header.stamp = ros::Time::now();
+			s_rx_publisher_.publish(serial_rx_msg);
+		}
 	}
 	serialInterface::readSome();
 }

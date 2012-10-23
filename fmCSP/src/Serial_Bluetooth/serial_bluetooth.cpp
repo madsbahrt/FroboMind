@@ -10,6 +10,7 @@ int main(int argc, char **argv)
 
   ros::NodeHandle n("~");
   ros::NodeHandle nh;
+  int term;
 
   std::string device,publisher_topic,subscriber_topic,addr;
 
@@ -17,10 +18,10 @@ int main(int argc, char **argv)
   n.param<std::string>("publisher_topic", publisher_topic, "can_rx");
   n.param<std::string>("subscriber_topic", subscriber_topic, "can_tx");
   n.param<std::string>("bluetooth_address",addr,"00:06:66:04:9E:1E");
-
+  n.param<int> ("termination_character", term,10);
   BluetoothSerial can;
 
-  can.term_char = '\n';
+  can.term_char = (char) term;
 
 
 
