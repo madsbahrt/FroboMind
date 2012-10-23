@@ -25,6 +25,8 @@ public:
 
 	ros::Publisher serial_pub;
 
+	bool sim;
+
 private:
 
 	void on_action_goal(const fmImplements::move_tool_simpleGoalConstPtr& goal);

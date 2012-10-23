@@ -21,13 +21,16 @@ int main(int argc, char **argv)
 
 
 	std::string serial_pub,serial_sub;
-	bool invert;
+	bool invert,sim;
 
 	nh.param<std::string>("serial_rx_sub",serial_sub,"/fmCSP/serial2_rx");
 	nh.param<std::string>("serial_tx_pub",serial_pub,"/fmCSP/serial2_tx");
 	nh.param<bool>("invert_operation",invert,false);
+	nh.param<bool>("sim",sim,false);
 
 	kongskilde_rowcleaner node(nh,ros::Duration(7),invert);
+
+	node.sim = sim;
 
 	ros::Subscriber s = nn.subscribe(serial_sub, 10, &kongskilde_rowcleaner::on_serial_rx, &node);
 	node.serial_pub = nn.advertise<fmMsgs::serial>(serial_pub,5);

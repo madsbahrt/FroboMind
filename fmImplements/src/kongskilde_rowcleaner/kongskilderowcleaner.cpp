@@ -75,7 +75,7 @@ void kongskilde_rowcleaner::on_action_goal(
 		{
 
 
-			if(!serial_detected)
+			if(!serial_detected && sim==false)
 			{
 				transmitStop();
 				as.setAborted(result,"No communication with robocard");
@@ -90,14 +90,7 @@ void kongskilde_rowcleaner::on_action_goal(
 			}
 			else
 			{
-				if((ros::Time::now() - started) > ros::Duration(0.2) && (ros::Time::now() - started) < ros::Duration(0.5))
-				{
-					transmitStop();
-				}
-				else
-				{
-					transmitAction(goal->direction);
-				}
+				transmitAction(goal->direction);
 			}
 		}
 		r.sleep();
