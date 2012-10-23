@@ -1,0 +1,8 @@
+#
+# Comment
+#
+0 0 down
+1 5 up
+-1 -6 down
+5 1 down
+-6 -1 nan

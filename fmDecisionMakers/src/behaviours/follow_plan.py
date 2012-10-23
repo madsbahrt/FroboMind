@@ -19,14 +19,17 @@ class PlanFollow(State):
         
         Futhermore this State outputs the current AB line as userdata so other
         states can use the current AB line in another context e.g. 'stop and go'
-        or other.
+        or other. Besides outputting the current global ab, a waypoint counter is also present
+        which can be used to activate a special 
     """
     def __init__(self,plan,action_name):
         """
             @param plan: the plan to follow 
             @param action_name: the action to call in order to execute the plan
         """
-        State.__init__(self, outcomes=["succeeded","aborted","preempted"],output_keys=['currentAB'])
+        State.__init__(self, outcomes=["succeeded","aborted","preempted"],
+                       input_keys=['currentGlobalIndexIn'],
+                       output_keys=['currentAB','currentGlobalIndexOut'])
         self.goal = follow_pathGoal()
         self.cur_index = 0
         self.action_name = action_name
@@ -43,7 +46,7 @@ class PlanFollow(State):
             and each time a pose in the plan has been executed the pose is removed from the plan
             in order to be able to be preempted and then continue the plan at a later time.
         """
-        
+        self.currentGlobalIndex = userdata.currentGlobalIndexIn
         self._action_client = actionlib.SimpleActionClient(self.action_name,follow_pathAction)
         self.done = False
         # first modify list of poses according to cur_index
@@ -80,7 +83,9 @@ class PlanFollow(State):
                     self.r.sleep()
                     
         
-        userdata.currentAB =[ self.goal.path.poses[self.cur_index],self.goal.path.poses[self.cur_index+1] ] 
+        userdata.currentAB =[ self.goal.path.poses[self.cur_index],self.goal.path.poses[self.cur_index+1] ]
+        userdata.currentGlobalIndexOut = self.currentGlobalIndex;
+        
         return self.outcome
             
         
@@ -89,4 +94,5 @@ class PlanFollow(State):
             update local state given the feedback from the AB lines executor.
         """
         self.cur_index = feedback.reached_pose_nr - 1
+        self.currentGlobalIndex += 1
         print "feedback received %d" % (feedback.reached_pose_nr)
