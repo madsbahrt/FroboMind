@@ -119,9 +119,13 @@ bool rabbitPlanner::planRabbit()
 				{
 					angle_error *= -1;
 				}
-
+				double resu = (angle_error/angle_scale + distance_error/distance_scale);
+				if(resu < 1)
+				{
+					resu = 1;
+				}
 				ROS_INFO_THROTTLE(0.5,"Rabbit distance error is %.4f angle error is %.4f",distance_error,angle_error);
-				rabbit = (B-rabbit) / (angle_error/angle_scale + distance_error/distance_scale) + rabbit;
+				rabbit = (B-rabbit) / resu + rabbit;
 			}else{
 				ROS_ERROR("RABBIT WENT BACK TO ITS HOLE! WRONG 'rabbit_type' ");
 			}
@@ -210,7 +214,7 @@ void rabbitPlanner::actionExecute(const fmExecutors::follow_pathGoalConstPtr& go
 			try
 			{
 				tf_listener.transformPose(this->odom_frame,goal->path.poses[i],*ps);
-				ROS_ERROR("ADDING PATH %.4f %.4f",ps->pose.position.x,ps->pose.position.y);
+				ROS_DEBUG("ADDING PATH %.4f %.4f",ps->pose.position.x,ps->pose.position.y);
 				path->push_back(*ps);
 			}
 			catch (tf::TransformException& ex){
@@ -304,7 +308,7 @@ void rabbitPlanner::publishRabbit()
 	tf_rabbit.transform.rotation.z = 0;
 	tf_rabbit.transform.rotation.w = 1;
 
-	ROS_ERROR("%.4f %.4f %.4f",rabbit.getX(),rabbit.getY(),rabbit.getZ());
+	ROS_DEBUG_THROTTLE(1,"%.4f %.4f %.4f",rabbit.getX(),rabbit.getY(),rabbit.getZ());
 
 	tf_broadcaster.sendTransform(tf_rabbit);
 }
