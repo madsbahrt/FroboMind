@@ -17,12 +17,14 @@ ros::Subscriber hl_subscriber;
 ros::Publisher ll_publisher_left;
 ros::Publisher ll_publisher_right;
 
+double W = 0.755; //length from center to meter
+
 // Input is a twist message from highlevel
 // Output is two rtq command messages, one for each wheel
 void callbackHandlerHlSubscriber(const geometry_msgs::TwistStamped::ConstPtr& twi)
 {
   // Forward Kinematics
-  double W = 0.755; //length from center to meter
+
   double vel_right = twi->twist.linear.x + ( W * twi->twist.angular.z );
   double vel_left = (twi->twist.linear.x - ( W * twi->twist.angular.z ));
 
@@ -47,6 +49,7 @@ int main(int argc, char **argv){
   nh.param<std::string>("hl_subscriber_topic", hl_subscriber_topic, "hl_subscriber_topic");
   nh.param<std::string>("ll_publisher_topic_left", ll_publisher_topic_left, "ll_publisher_topic_left");
   nh.param<std::string>("ll_publisher_topic_right", ll_publisher_topic_right, "ll_publisher_topic_right");
+  nh.param<double>("distance_center_to_wheel",W,0.755);
 
   hl_subscriber = nh.subscribe<geometry_msgs::TwistStamped> (hl_subscriber_topic.c_str(), 1, &callbackHandlerHlSubscriber); //seneste msg ligger klar i topic'en til fremtidige sucscribers
   ll_publisher_left = nh.advertise<geometry_msgs::TwistStamped> (ll_publisher_topic_left.c_str(), 1);

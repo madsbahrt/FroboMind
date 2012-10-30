@@ -25,6 +25,11 @@ rosbuild_add_boost_directories()
 
 #rosbuild_add_executable(roboteq src/Motor_Controllers/RoboteQ/rtq_node.cpp)
 rosbuild_add_executable(roboteq_controller src/Motor_Controllers/RoboteQ/roboteq.cpp)
+rosbuild_add_executable(hbl2350_controller src/Motor_Controllers/RoboteQ/hbl2350.cpp)
+rosbuild_link_boost(hbl2350_controller system thread)
+
+rosbuild_add_executable(frobit_vel_to_nmea src/Motor_Controllers/Frobit/frobit_motors.cpp)
+
 rosbuild_add_executable(topcon src/Motor_Controllers/TopConAES25/AES-25_electric_steering.cpp)
 rosbuild_add_executable(topcon src/Motor_Controllers/TopConAES25/AES-25_node.cpp)
 

@@ -23,6 +23,9 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_add_executable(hakotractor_psp src/hohenheim/hakotrac/EXSInterface.cpp src/hohenheim/hakotrac/EXSInterface_node.cpp )
 
+rosbuild_add_executable(frobit_psp src/sdu/frobit/frobit.cpp)
+
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)

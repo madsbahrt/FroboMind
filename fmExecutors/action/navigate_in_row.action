@@ -1,0 +1,16 @@
+#goal_definition
+float64 desired_offset_from_row
+float64 P
+float64 I
+float64 D
+float64 I_max
+float64 angle_contribution
+uint16  headland_timeout
+---
+#result definition
+bool done
+---
+#feedback
+float64 error
+float64 integral
+float64 differential

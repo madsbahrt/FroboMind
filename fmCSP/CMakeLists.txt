@@ -40,6 +40,7 @@ rosbuild_add_executable(bluetooth_serial_string src/Serial_Bluetooth/Bluetooth.c
 rosbuild_link_boost(bluetooth_serial_string system thread)
 target_link_libraries(bluetooth_serial_string bluetooth)
 
+rosbuild_add_executable(nmea_parser src/NMEA/nmea.cpp)
 
 IF(EXISTS /usr/include/can4linux.h)
 rosbuild_add_executable(can_can4linux src/CAN_bus/can_can4linux/can_can4linux.cpp)
