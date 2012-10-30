@@ -38,6 +38,7 @@ def down_pressed(ud,msg):
     else:
         return True
     
+    
 def load_path(filename):
     path = Path()
     state = []
@@ -65,11 +66,11 @@ def on_preempted(ud):
 
 @smach.cb_interface(input_keys=['max_index','path','current_index_in','boom_state_array'],
                     output_keys=['current_index_out','current_wp_out','direction_out'],
-                    outcomes=['continue','done'])
+                    outcomes=['continue','update','done'])
 def path_follow_cb(ud):
-    
+    ret = 'continue'
     if ud.current_index_in < (ud.max_index-1):
-        ud.current_index_out = ud.current_index_in + 1
+        
         if  ud.boom_state_array[ud.current_index_in] == "up":
             ud.direction_out = move_tool_simpleGoal.UP
         else:
@@ -78,7 +79,17 @@ def path_follow_cb(ud):
         wp.path.poses.append(ud.path.poses[ud.current_index_in])
         wp.path.poses.append(ud.path.poses[ud.current_index_in + 1])
         ud.current_wp_out = wp.path
-        return 'continue'
+        
+
+        
+        if ud.current_index_in == 0:
+            ret = 'update'
+        elif ud.boom_state_array[ud.current_index_in] != ud.boom_state_array[ud.current_index_in-1]:
+            ret = 'update'
+        
+        ud.current_index_out = ud.current_index_in + 1
+        
+        return ret
     else:
         return 'done'
     
@@ -103,7 +114,7 @@ def build_nav_sm(path,tool_state):
     with nav_sm:
         smach.StateMachine.add("SELECT_WP_AND_STATE", 
                                state=smach.CBState(path_follow_cb), 
-                               transitions={"continue":"UPDATE_BOOM_STATE","done":"succeeded"}, 
+                               transitions={"continue":"DRIVE_AB","update":"UPDATE_BOOM_STATE","done":"succeeded"}, 
                                remapping={"max_index":"max_index",
                                           "path":"path",
                                           "current_index_in":"current_index",

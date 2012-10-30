@@ -1,8 +1,9 @@
 #
 # Comment
 #
-0 0 down
-1 5 up
--1 -6 down
-5 1 down
--6 -1 nan
+#end of row 1
+535693.041603 6260289.85475 down
+# start of row 1
+535655.327845 6260260.76459 up
+# entry point 
+535650.983144 6260257.44429 nan

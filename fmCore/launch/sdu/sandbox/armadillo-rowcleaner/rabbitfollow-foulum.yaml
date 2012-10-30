@@ -1,7 +1,7 @@
 {
   I_gain: 0.1,
   I_max: 0.0,
-  P_gain: 1.0,
+  P_gain: 1.5,
   max_angular_vel: 0.2,
   max_linear_vel: 0.45
 }

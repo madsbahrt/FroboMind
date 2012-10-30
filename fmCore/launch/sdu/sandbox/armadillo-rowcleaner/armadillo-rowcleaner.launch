@@ -4,15 +4,15 @@
 <arg name="usb_serial_gps" default="/dev/gps"/>
 <arg name="usb_serial_imu" default="/dev/imu"/>
 <arg name="usb_serial_rcinterface" default="/dev/rcinterface"/>
-<arg name="rl" default="/dev/ttyUSB2"/>
-<arg name="rr" default="/dev/ttyUSB3"/>
+<arg name="rl" default="/dev/ttyUSB3"/>
+<arg name="rr" default="/dev/ttyUSB2"/>
 
 	<group ns="transforms">
 	    <node pkg="tf" type="static_transform_publisher" name="imu_link_broadcaster" args="0 0.0 0.8 0 0 0 base_footprint imu_link 50"/>
 	    <node pkg="tf" type="static_transform_publisher" name="gps_link_broadcaster" args="0 0.0 1.6 0 0 0 base_footprint gps_link 50"/>
 	    <node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 0 0 0 0 base_footprint base_link 50"/>
 	    <node pkg="tf" type="static_transform_publisher" name="odom_remap_link_broadcaster" args="0 0 0 0 0 0 odom_combined odom 50" if="$(arg sim)"/>
-	    <node pkg="tf" type="static_transform_publisher" name="map_link_broadcaster" args="-651205.81 -6133670.38 0 0 0 0 map odom_combined 50"/>
+	    <node pkg="tf" type="static_transform_publisher" name="map_link_broadcaster" args="-535693.041603 -6260289.85475 0 0 0 0 map odom_combined 50"/>
 	</group>
 
 	<group ns="fmExecutors" >
@@ -226,9 +226,9 @@
 	        <param name="termination_character" value="10"/>
 	    </node>
 	    
-	    <node pkg="fmCSP" name="USB0" type="serial_string">
-	        <param name="publisher_topic" value="/fmCSP/com2_rx" />  
-	        <param name="subscriber_topic" value="/fmCSP/com2_tx" />    
+	    <node pkg="fmCSP" name="USB2" type="serial_string">
+	        <param name="publisher_topic" value="/fmCSP/com3_rx" />  
+	        <param name="subscriber_topic" value="/fmCSP/com3_tx" />    
 	        <param name="device" value="$(arg usb_serial_rcinterface)" />
 	        <param name="baudrate" value="38400" />
 	        <param name="termination_character" value="10"/>
