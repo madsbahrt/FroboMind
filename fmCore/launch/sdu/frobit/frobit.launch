@@ -8,6 +8,6 @@
         <arg name="bluetooth_mac" value="$(arg bluetooth_mac)"></arg>
     </include>
     
-    <include file="$(find fmCore)/launch/sdu/frobit/frobit-teleop-keyboard.launch"/>
+    <include file="$(find fmCore)/launch/sdu/frobit/frobit-teleop-wii.launch"/>
     
 </launch>

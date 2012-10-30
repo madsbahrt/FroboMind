@@ -70,8 +70,9 @@ public:
 		duty_message.header.stamp = ros::Time::now();
 		duty_message.id = "RC";
 		duty_message.type = "VEL";
-		duty_message.data.push_back( boost::lexical_cast<std::string>( (int)left_vel ) );
+		duty_message.data.clear();
 		duty_message.data.push_back( boost::lexical_cast<std::string>( (int)right_vel ) );
+		duty_message.data.push_back( boost::lexical_cast<std::string>( (int)left_vel ) );
 
 		//publish message
 		nmea_pub.publish(duty_message);
@@ -121,6 +122,7 @@ int main(int argc, char **argv) {
 	n.param<double>("ticks_pr_round", ticks_pr_round, 360);
 	n.param<double>("ms_in_between", ms_in_between, 100);
 	n.param<double>("vel_publish_interval",interval,0.05);
+	n.param<double>("vel_timeout",frobit_motor.timeout,1);
 
 	/* m/s -> ticks/entry
 	 * 1 m/s = 1/(pi*wheel_diameter) rps = ticks_pr_round/(pi*wheel_diameter) ticks/sec = */
@@ -131,7 +133,7 @@ int main(int argc, char **argv) {
 
 	frobit_motor.nmea_pub = nh.advertise<fmMsgs::nmea>(publish_topic_id, 1);
 
-	nh.createTimer(ros::Duration(interval),&FroboMotor::on_timer,&frobit_motor);
+	ros::Timer t1= nh.createTimer(ros::Duration(interval),&FroboMotor::on_timer,&frobit_motor);
 
 	ros::spin();
 	return 0;

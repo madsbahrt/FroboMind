@@ -1,12 +1,12 @@
 /*
- * SocketCan.h
+ * Bluetooth.h
  *
  *  Created on: Mar 26, 2012
  *      Author: morl
  */
 
-#ifndef SOCKETCAN_H_
-#define SOCKETCAN_H_
+#ifndef BLUETOOTH_H_
+#define BLUETOOTH_H_
 
 #include <ros/ros.h>
 #include <ros/console.h>
@@ -43,6 +43,7 @@ public:
 	ros::Subscriber serial_tx_subscriber_;
 
 	char term_char;
+	char term_char_tx;
 
 	std::string addr_str;
 
@@ -62,4 +63,4 @@ private:
 	int s;
 };
 
-#endif /* SOCKETCAN_H_ */
+#endif /* BLUETOOTH_H_ */
