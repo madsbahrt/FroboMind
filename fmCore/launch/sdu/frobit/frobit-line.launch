@@ -1,0 +1,13 @@
+<launch>
+    <include file="$(find fmCore)/launch/sdu/frobit/frobit-base.launch"/>
+    	
+    <group ns="fmDecisionMakers">
+		<node pkg="fmDecisionMakers" name="master" type="LineMission.py"/>
+	    <node pkg="smach_viewer" name="smach_viewer" type="smach_viewer.py"/>
+    </group>
+	
+    <group ns="fmExecutors">
+ 		<node pkg="fmExecutors" name="follow_line" type="line_follow_action.py"/>
+ 		<node pkg="fmExecutors" name="timed_turn" type="timed_turn_action.py"/>
+	</group>
+</launch>

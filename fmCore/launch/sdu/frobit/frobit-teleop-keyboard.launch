@@ -1,0 +1,12 @@
+<launch>
+    <group ns="fmHMI">
+        <node pkg="fmHMI" name="key_to_twist" type="key_to_twist" output="screen">
+            <param name="scale_linear" value="0.05" />  
+            <param name="scale_angular" value="0.1" />
+            <param name="max_linear" value="2" />   
+            <param name="max_angular" value="0.5" />
+            <param name="publish_topic_id" value="/fmHMI/cmd_vel_manuel" />
+        </node>
+    </group>
+
+</launch>
