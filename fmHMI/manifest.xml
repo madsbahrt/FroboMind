@@ -15,7 +15,7 @@
   <depend package="sensor_msgs"/>
   <depend package="tf"/>
   <depend package="wiimote"/>
-
+  <depend package="std_msgs"/>
 
 </package>
 
