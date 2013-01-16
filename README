@@ -1,10 +1,8 @@
-FroboMind is a conceptual architecture for field robotics software. 
-It provides the means of using the same generic architecture and 
-components across different field robots and hereby maximizing efficiency, 
+FroboMind is a software platform for field robots. 
+It provides the means of using the same generic architecture, components and 
+middleware across different field robots and hereby maximizing efficiency, 
 reliability, modularity, extendability and code reuse. FroboMind is open source 
-and is implemented in ROS. This wiki contains the technical documentation for 
-FroboMind and related projects.
+and is implemented in ROS. 
 
+FroboMind: http://www.frobomind.org
 ROS: http://ros.org
-FroboMind: http://fieldrobot.dk/FroboMind
-FroboMind Wiki: http://wiki.fieldrobot.dk
