@@ -30,11 +30,6 @@ rosbuild_link_boost(hbl2350_controller system thread)
 
 rosbuild_add_executable(frobit_vel_to_nmea src/Motor_Controllers/Frobit/frobit_motors.cpp)
 
-rosbuild_add_executable(topcon src/Motor_Controllers/TopConAES25/AES-25_electric_steering.cpp)
-rosbuild_add_executable(topcon src/Motor_Controllers/TopConAES25/AES-25_node.cpp)
-
-rosbuild_link_boost(topcon system)
-
 IF(EXISTS /usr/lib/libJAIFactory.so)
     rosbuild_add_executable(sprayer src/IO_Actuators/JAI_Camera/sdu_sprayer.cpp src/IO_Actuators/JAI_Camera/jai_ad-080ge.cc)
     target_link_libraries(sprayer JAIFactory) 
